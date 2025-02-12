@@ -1,16 +1,15 @@
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 Editor.js script loaded!");
 
-    // Check if Editor.js is loaded
-    if (typeof EditorJS === "undefined") {
-        console.error("❌ EditorJS not loaded!");
-        return;
+    // Check if plugins are loaded
+    if (typeof Header === "undefined") {
+        console.error("❌ Error: Header plugin is missing!");
     }
-
-    // Ensure required plugins are loaded
-    if (typeof Header === "undefined" || typeof List === "undefined" || typeof Paragraph === "undefined") {
-        console.error("❌ Missing plugins! Check Header, List, and Paragraph scripts.");
-        return;
+    if (typeof List === "undefined") {
+        console.error("❌ Error: List plugin is missing!");
+    }
+    if (typeof Paragraph === "undefined") {
+        console.error("❌ Error: Paragraph plugin is missing!");
     }
 
     // Initialize Editor.js
@@ -20,12 +19,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         tools: {
             header: {
                 class: Header,
-                inlineToolbar: true,
-                config: {
-                    placeholder: "Enter a title...",
-                    levels: [2, 3, 4],
-                    defaultLevel: 2
-                }
+                inlineToolbar: true
             },
             list: {
                 class: List,
@@ -41,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 {
                     type: "header",
                     data: {
-                        text: "Default Subheading Title",
+                        text: "Type Your Title Here...",
                         level: 2
                     }
                 },
@@ -61,25 +55,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // Save Button Click Event
     document.getElementById("save-btn").addEventListener("click", async () => {
         try {
             const savedData = await editor.save();
-
-            // Get selected subtopics
-            let selectedTopics = [];
-            document.querySelectorAll(".subtopic-checkbox:checked").forEach(checkbox => {
-                selectedTopics.push(checkbox.value);
-            });
-
-            // Store the content and selected subtopics
-            const postData = {
-                editorContent: savedData,
-                selectedTopics: selectedTopics
-            };
-
-            localStorage.setItem("editorContent", JSON.stringify(postData));
-            alert("✅ Content and Subtopics Saved!");
+            localStorage.setItem("editorContent", JSON.stringify(savedData));
+            alert("✅ Content Saved!");
         } catch (error) {
             console.error("❌ Saving failed:", error);
         }
