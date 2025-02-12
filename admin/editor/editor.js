@@ -1,13 +1,38 @@
-function saveContent() {
-    let content = document.getElementById("editor").value;
-    localStorage.setItem("savedContent", content);
-    alert("Content saved!");
-}
+// Initialize Editor.js
+const editor = new EditorJS({
+    holder: 'editor',
+    tools: {
+        header: {
+            class: Header,
+            inlineToolbar: ['link']
+        },
+        list: {
+            class: List,
+            inlineToolbar: true
+        },
+        paragraph: {
+            class: Paragraph,
+            inlineToolbar: true
+        }
+    }
+});
 
-// Load content if exists
-window.onload = function() {
-    let savedContent = localStorage.getItem("savedContent");
+// Save content
+document.getElementById('save-btn').addEventListener('click', async function () {
+    try {
+        const savedData = await editor.save();
+        localStorage.setItem('editorContent', JSON.stringify(savedData));
+        alert("Content saved successfully!");
+    } catch (error) {
+        console.error('Saving failed:', error);
+    }
+});
+
+// Load saved content
+window.onload = async function () {
+    const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
-        document.getElementById("editor").value = savedContent;
+        editor.render(JSON.parse(savedContent));
     }
 };
+
