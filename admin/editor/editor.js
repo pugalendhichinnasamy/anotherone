@@ -1,5 +1,6 @@
 const editor = new EditorJS({
     holder: 'editor',
+    autofocus: true, // Enable typing by default
     tools: {
         header: {
             class: Header,
@@ -12,29 +13,21 @@ const editor = new EditorJS({
     }
 });
 
+// Default subtopics
+let subtopics = [
+    { id: 1, name: "Introduction", checked: true, order: 1 },
+    { id: 2, name: "Setup Guide", checked: true, order: 2 },
+    { id: 3, name: "Features", checked: false, order: 3 },
+    { id: 4, name: "FAQs", checked: false, order: 4 },
+    { id: 5, name: "Conclusion", checked: true, order: 5 }
+];
+
 const subtopicList = document.getElementById("subtopic-list");
-const addSubtopicBtn = document.getElementById("add-subtopic");
-let subtopics = [];
 
-// Add a new subtopic
-addSubtopicBtn.addEventListener("click", () => {
-    const subtopicName = prompt("Enter subtopic name:");
-    if (subtopicName) {
-        const subtopic = {
-            id: Date.now(),
-            name: subtopicName,
-            checked: false,
-            order: subtopics.length + 1
-        };
-        subtopics.push(subtopic);
-        renderSubtopics();
-    }
-});
-
-// Render the subtopic list with checkboxes
+// Render subtopics
 function renderSubtopics() {
     subtopicList.innerHTML = "";
-    subtopics.sort((a, b) => a.order - b.order).forEach((subtopic, index) => {
+    subtopics.sort((a, b) => a.order - b.order).forEach((subtopic) => {
         const li = document.createElement("li");
 
         // Checkbox
@@ -62,6 +55,15 @@ function renderSubtopics() {
     });
 }
 
+// Load existing subtopics or default ones
+window.onload = () => {
+    const savedSubtopics = localStorage.getItem("subtopics");
+    if (savedSubtopics) {
+        subtopics = JSON.parse(savedSubtopics);
+    }
+    renderSubtopics();
+};
+
 // Save content and subtopics
 document.getElementById("save-btn").addEventListener("click", async () => {
     try {
@@ -73,12 +75,3 @@ document.getElementById("save-btn").addEventListener("click", async () => {
         console.error("Saving failed:", error);
     }
 });
-
-// Load existing data
-window.onload = () => {
-    const savedSubtopics = localStorage.getItem("subtopics");
-    if (savedSubtopics) {
-        subtopics = JSON.parse(savedSubtopics);
-        renderSubtopics();
-    }
-};
