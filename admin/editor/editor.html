@@ -3,38 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js Backend</title>
+    <title>Editor Page</title>
+    
+    <!-- Load Editor.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="./editor.css">
+    <!-- Load Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
 
-   <!-- Load Editor.js -->
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-
-<!-- Load Required Plugins -->
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <h1>Editor.js - Subtopic Manager</h1>
+    <h1>Content Editor</h1>
 
-    <!-- Subtopics Section -->
+    <!-- Subtopic Selection -->
     <div id="subtopics">
-        <label>Subtopics (Check to show on frontend):</label>
-        <ul id="subtopic-list"></ul>
+        <h3>Select Subtopics:</h3>
+        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 1" checked> Topic 1</label><br>
+        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 2" checked> Topic 2</label><br>
+        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 3"> Topic 3</label><br>
+        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 4"> Topic 4</label><br>
+        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 5"> Topic 5</label><br>
     </div>
 
-    <!-- Editor Section -->
+    <!-- Editor Container -->
     <div id="editor"></div>
 
-    <!-- Save Button -->
+    <!-- Buttons -->
     <button id="save-btn">Save Content</button>
 
-    <!-- Load JavaScript -->
-    <script src="./editor.js"></script>
+    <script src="editor.js"></script>
 
 </body>
 </html>
