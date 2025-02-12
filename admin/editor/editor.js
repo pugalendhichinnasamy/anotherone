@@ -56,6 +56,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             list: {
                 class: List,
                 inlineToolbar: true
+            },
+            paragraph: {
+                class: Paragraph,
+                inlineToolbar: true
             }
         },
         data: {
