@@ -12,6 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 class: List,
                 inlineToolbar: true,
             }
+        },
+        onReady: () => {
+            console.log("Editor.js is ready!");
+        },
+        onChange: () => {
+            console.log("Editor content changed!");
         }
     });
 
