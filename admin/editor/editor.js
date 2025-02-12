@@ -6,38 +6,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Load Subtopics from JSON File
-    let subtopics = [];
-    try {
-        const response = await fetch("./subtopics.json");
-        subtopics = await response.json();
-    } catch (error) {
-        console.error("❌ Failed to load subtopics:", error);
+    // Ensure the required plugins are available
+    if (typeof Header === "undefined" || typeof List === "undefined" || typeof Paragraph === "undefined") {
+        console.error("❌ Missing plugins! Make sure Header, List, and Paragraph are loaded.");
+        return;
     }
-
-    const subtopicList = document.getElementById("subtopic-list");
-
-    // Render Subtopics with Checkboxes
-    function renderSubtopics() {
-        subtopicList.innerHTML = "";
-        subtopics.forEach((subtopic) => {
-            const li = document.createElement("li");
-
-            // Checkbox
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.checked = subtopic.checked;
-            checkbox.addEventListener("change", () => {
-                subtopic.checked = checkbox.checked;
-            });
-
-            li.appendChild(checkbox);
-            li.appendChild(document.createTextNode(` ${subtopic.name}`));
-            subtopicList.appendChild(li);
-        });
-    }
-
-    renderSubtopics();
 
     // Initialize Editor.js
     const editor = new EditorJS({
@@ -54,11 +27,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             },
             list: {
-                class: List,
+                class: List, // Ensure List is correctly loaded
                 inlineToolbar: true
             },
             paragraph: {
-                class: Paragraph,
+                class: Paragraph, // Ensure Paragraph is correctly loaded
                 inlineToolbar: true
             }
         },
@@ -92,8 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
             const savedData = await editor.save();
             localStorage.setItem("editorContent", JSON.stringify(savedData));
-            localStorage.setItem("subtopics", JSON.stringify(subtopics));
-            alert("✅ Content and Subtopics Saved!");
+            alert("✅ Content Saved!");
         } catch (error) {
             console.error("❌ Saving failed:", error);
         }
