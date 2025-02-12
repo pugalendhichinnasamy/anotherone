@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 Editor.js script loaded!");
 
     if (typeof EditorJS === "undefined") {
@@ -6,47 +6,21 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Initialize Editor.js
-    const editor = new EditorJS({
-        holder: "editor",
-        autofocus: true,
-        tools: {
-            header: {
-                class: Header,
-                inlineToolbar: true
-            },
-            list: {
-                class: List,  // 🔥 FIX: Ensure List is loaded
-                inlineToolbar: true
-            }
-        },
-        onReady: () => {
-            console.log("✅ Editor.js is ready!");
-        },
-        onChange: () => {
-            console.log("✏️ Editor content changed!");
-        }
-    });
-
-    if (!editor) {
-        console.error("❌ Failed to initialize Editor.js");
+    // Load Subtopics from JSON File
+    let subtopics = [];
+    try {
+        const response = await fetch("./subtopics.json");
+        subtopics = await response.json();
+    } catch (error) {
+        console.error("❌ Failed to load subtopics:", error);
     }
-
-    // Define Subtopics
-    let subtopics = [
-        { id: 1, name: "Introduction", checked: true, order: 1 },
-        { id: 2, name: "Setup Guide", checked: true, order: 2 },
-        { id: 3, name: "Features", checked: false, order: 3 },
-        { id: 4, name: "FAQs", checked: false, order: 4 },
-        { id: 5, name: "Conclusion", checked: true, order: 5 }
-    ];
 
     const subtopicList = document.getElementById("subtopic-list");
 
-    // Function to Render Subtopics
+    // Render Subtopics with Checkboxes
     function renderSubtopics() {
         subtopicList.innerHTML = "";
-        subtopics.sort((a, b) => a.order - b.order).forEach((subtopic) => {
+        subtopics.forEach((subtopic) => {
             const li = document.createElement("li");
 
             // Checkbox
@@ -57,31 +31,59 @@ document.addEventListener("DOMContentLoaded", () => {
                 subtopic.checked = checkbox.checked;
             });
 
-            // Order Input
-            const orderInput = document.createElement("input");
-            orderInput.type = "number";
-            orderInput.value = subtopic.order;
-            orderInput.style.width = "40px";
-            orderInput.addEventListener("change", () => {
-                subtopic.order = parseInt(orderInput.value);
-                renderSubtopics();
-            });
-
             li.appendChild(checkbox);
-            li.appendChild(document.createTextNode(` ${subtopic.name} `));
-            li.appendChild(orderInput);
+            li.appendChild(document.createTextNode(` ${subtopic.name}`));
             subtopicList.appendChild(li);
         });
     }
 
-    // Load subtopics from localStorage
-    const savedSubtopics = localStorage.getItem("subtopics");
-    if (savedSubtopics) {
-        subtopics = JSON.parse(savedSubtopics);
-    }
     renderSubtopics();
 
-    // Save content
+    // Initialize Editor.js
+    const editor = new EditorJS({
+        holder: "editor",
+        autofocus: true,
+        tools: {
+            header: {
+                class: Header,
+                inlineToolbar: true,
+                config: {
+                    placeholder: "Enter a title...",
+                    levels: [2, 3, 4],
+                    defaultLevel: 2
+                }
+            },
+            list: {
+                class: List,
+                inlineToolbar: true
+            }
+        },
+        data: {
+            blocks: [
+                {
+                    type: "header",
+                    data: {
+                        text: "Default Subheading Title",
+                        level: 2
+                    }
+                },
+                {
+                    type: "paragraph",
+                    data: {
+                        text: "Start writing your content here..."
+                    }
+                }
+            ]
+        },
+        onReady: () => {
+            console.log("✅ Editor.js is ready!");
+        },
+        onChange: () => {
+            console.log("✏️ Editor content changed!");
+        }
+    });
+
+    // Save Button Click Event
     document.getElementById("save-btn").addEventListener("click", async () => {
         try {
             const savedData = await editor.save();
@@ -93,4 +95,3 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
-
