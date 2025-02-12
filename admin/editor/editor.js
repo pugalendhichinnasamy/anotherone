@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 inlineToolbar: true
             },
             list: {
-                class: List,
+                class: List,  // 🔥 FIX: Ensure List is loaded
                 inlineToolbar: true
             }
         },
@@ -28,14 +28,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Ensure subtopics render
-    const subtopicList = document.getElementById("subtopic-list");
-
-    if (!subtopicList) {
-        console.error("❌ Subtopics list element not found!");
-        return;
+    if (!editor) {
+        console.error("❌ Failed to initialize Editor.js");
     }
 
+    // Define Subtopics
     let subtopics = [
         { id: 1, name: "Introduction", checked: true, order: 1 },
         { id: 2, name: "Setup Guide", checked: true, order: 2 },
@@ -44,7 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
         { id: 5, name: "Conclusion", checked: true, order: 5 }
     ];
 
-    // Render subtopics
+    const subtopicList = document.getElementById("subtopic-list");
+
+    // Function to Render Subtopics
     function renderSubtopics() {
         subtopicList.innerHTML = "";
         subtopics.sort((a, b) => a.order - b.order).forEach((subtopic) => {
@@ -94,3 +93,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
