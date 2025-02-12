@@ -24,3 +24,4 @@ document.addEventListener("DOMContentLoaded", () => {
         postContainer.innerHTML = "<p>No content available.</p>";
     }
 });
+
