@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 20px;
+}
+#editor {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-height: 300px;
+    background: #f9f9f9;
+}
+button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #0056b3;
+}
+ul {
+    list-style: none;
+}
+li {
+    margin: 5px 0;
+}
