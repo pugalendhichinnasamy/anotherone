@@ -8,33 +8,24 @@
     <!-- Load Editor.js -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
 
-    <!-- Load Plugins -->
+    <!-- Load Required Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
 
+    <!-- Ensure the correct path to styles.css -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
     <h1>Content Editor</h1>
 
-    <!-- Subtopic Selection -->
-    <div id="subtopics">
-        <h3>Select Subtopics:</h3>
-        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 1" checked> Topic 1</label><br>
-        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 2" checked> Topic 2</label><br>
-        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 3"> Topic 3</label><br>
-        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 4"> Topic 4</label><br>
-        <label><input type="checkbox" class="subtopic-checkbox" value="Topic 5"> Topic 5</label><br>
-    </div>
-
     <!-- Editor Container -->
     <div id="editor"></div>
 
-    <!-- Buttons -->
     <button id="save-btn">Save Content</button>
 
+    <!-- Ensure the correct path to editor.js -->
     <script src="editor.js"></script>
 
 </body>
