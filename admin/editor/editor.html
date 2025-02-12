@@ -1,9 +1,34 @@
-<!-- Editor.js Core -->
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor.js Backend</title>
 
-<!-- Required Tools -->
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="./editor.css">
 
-<!-- Your Custom Script -->
-<script src="/admin/editor/editor.js"></script>
+    <!-- Editor.js Core -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+    <!-- Required Tools -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+</head>
+<body>
+
+    <h1>Editor.js - Subtopic Manager</h1>
+
+    <div id="subtopics">
+        <label>Subtopics (Check to show on frontend):</label>
+        <ul id="subtopic-list"></ul>
+    </div>
+
+    <div id="editor"></div>
+    <button id="save-btn">Save Content</button>
+
+    <!-- Load Editor Script -->
+    <script src="./editor.js"></script>
+
+</body>
+</html>
