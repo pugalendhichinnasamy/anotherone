@@ -1,23 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 Editor.js script loaded!");
+
     // Initialize Editor.js
     const editor = new EditorJS({
         holder: "editor",
         autofocus: true,
         tools: {
-            header: {
-                class: Header,
-                inlineToolbar: true,
-            },
-            list: {
-                class: List,
-                inlineToolbar: true,
-            }
+            header: Header,
+            list: List,
         },
         onReady: () => {
-            console.log("Editor.js is ready!");
+            console.log("✅ Editor.js is ready!");
         },
         onChange: () => {
-            console.log("Editor content changed!");
+            console.log("✏️ Editor content changed!");
         }
     });
 
@@ -32,9 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const subtopicList = document.getElementById("subtopic-list");
 
-    // Function to render subtopics
+    // Render subtopics
     function renderSubtopics() {
-        subtopicList.innerHTML = ""; // Clear previous content
+        subtopicList.innerHTML = "";
         subtopics.sort((a, b) => a.order - b.order).forEach((subtopic) => {
             const li = document.createElement("li");
 
@@ -63,22 +59,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Load existing subtopics or use default ones
+    // Load subtopics from localStorage
     const savedSubtopics = localStorage.getItem("subtopics");
     if (savedSubtopics) {
         subtopics = JSON.parse(savedSubtopics);
     }
     renderSubtopics();
 
-    // Save button
+    // Save content
     document.getElementById("save-btn").addEventListener("click", async () => {
         try {
             const savedData = await editor.save();
             localStorage.setItem("editorContent", JSON.stringify(savedData));
             localStorage.setItem("subtopics", JSON.stringify(subtopics));
-            alert("Content and Subtopics Saved!");
+            alert("✅ Content and Subtopics Saved!");
         } catch (error) {
-            console.error("Saving failed:", error);
+            console.error("❌ Saving failed:", error);
         }
     });
 });
