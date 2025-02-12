@@ -3,13 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor</title>
-    <script src="editor.js"></script>
+    <title>Editor.js Integration</title>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+        #editor {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 300px;
+            background: #f9f9f9;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1>Content Editor</h1>
-    <textarea id="editor" rows="10" cols="50" placeholder="Write your content here..."></textarea>
-    <br>
-    <button onclick="saveContent()">Save</button>
+
+    <h1>Editor.js - Rich Text Editor</h1>
+    <div id="editor"></div>
+    <button id="save-btn">Save Content</button>
+
+    <script src="editor.js"></script>
+
 </body>
 </html>
+
