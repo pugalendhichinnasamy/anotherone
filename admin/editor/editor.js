@@ -1,14 +1,15 @@
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 Editor.js script loaded!");
 
+    // Check if Editor.js is loaded
     if (typeof EditorJS === "undefined") {
         console.error("❌ EditorJS not loaded!");
         return;
     }
 
-    // Ensure the required plugins are available
+    // Ensure required plugins are loaded
     if (typeof Header === "undefined" || typeof List === "undefined" || typeof Paragraph === "undefined") {
-        console.error("❌ Missing plugins! Make sure Header, List, and Paragraph are loaded.");
+        console.error("❌ Missing plugins! Check Header, List, and Paragraph scripts.");
         return;
     }
 
@@ -27,11 +28,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             },
             list: {
-                class: List, // Ensure List is correctly loaded
+                class: List,
                 inlineToolbar: true
             },
             paragraph: {
-                class: Paragraph, // Ensure Paragraph is correctly loaded
+                class: Paragraph,
                 inlineToolbar: true
             }
         },
@@ -64,8 +65,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("save-btn").addEventListener("click", async () => {
         try {
             const savedData = await editor.save();
-            localStorage.setItem("editorContent", JSON.stringify(savedData));
-            alert("✅ Content Saved!");
+
+            // Get selected subtopics
+            let selectedTopics = [];
+            document.querySelectorAll(".subtopic-checkbox:checked").forEach(checkbox => {
+                selectedTopics.push(checkbox.value);
+            });
+
+            // Store the content and selected subtopics
+            const postData = {
+                editorContent: savedData,
+                selectedTopics: selectedTopics
+            };
+
+            localStorage.setItem("editorContent", JSON.stringify(postData));
+            alert("✅ Content and Subtopics Saved!");
         } catch (error) {
             console.error("❌ Saving failed:", error);
         }
