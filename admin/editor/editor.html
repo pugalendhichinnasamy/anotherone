@@ -3,33 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Page</title>
-
-    <!-- Load Editor.js Core -->
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest" defer></script>
-
-    <!-- Load Required Plugins -->
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest" defer></script>
-
-    <!-- Link to external CSS -->
-    <link rel="stylesheet" href="editor.css">
+    <title>Editor.js on GitHub Pages</title>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            width: 60%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #editorjs {
+            min-height: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+        }
+        .save-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .save-btn:hover {
+            background: #0056b3;
+        }
+    </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Content Editor JS</h1>
-
-        <!-- Editor Container -->
+        <h1>Editor.js in GitHub Pages</h1>
         <div id="editorjs"></div>
-
-        <!-- Save Button -->
-        <button id="save-btn" class="save-btn">Save Content</button>
+        <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
-    <!-- Load editor.js AFTER the DOM is ready -->
-    <script src="editor.js" defer></script>
+    <script>
+        const editor = new EditorJS({
+            holder: 'editorjs',
+            autofocus: true,
+            tools: {}  // You can add plugins here
+        });
+
+        function saveData() {
+            editor.save().then((outputData) => {
+                console.log("Saved Data: ", outputData);
+                alert("Content saved! Check the console for details.");
+            }).catch((error) => {
+                console.error("Saving failed: ", error);
+            });
+        }
+    </script>
 
 </body>
 </html>
