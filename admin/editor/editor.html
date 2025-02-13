@@ -19,8 +19,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
 
-    <!-- Text Alignment Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/editorjs-text-alignment-blocktune@latest"></script>
+    <!-- Corrected Text Alignment Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/@calumk/editorjs-text-alignment-blocktune@latest"></script>
 
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; }
@@ -45,9 +45,9 @@
 
     <script>
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11 },
-            { title: "Age", number: 12 },
-            { title: "Address", number: 13 }
+            { title: "Name", number: 11, checked: false },
+            { title: "Age", number: 12, checked: false },
+            { title: "Address", number: 13, checked: false }
         ];
         let innerEditors = {};
 
@@ -56,7 +56,7 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <div>
-                            <input type="checkbox" class="checkbox">
+                            <input type="checkbox" class="checkbox" ${subheading.checked ? "checked" : ""} onchange="toggleCheckbox(${index}, this.checked)">
                             ${subheading.title}
                         </div>
                         <div class="subheading-controls">
@@ -82,7 +82,7 @@
                         paragraph: { 
                             class: Paragraph, 
                             inlineToolbar: true, 
-                            tunes: ['textAlignment']  
+                            tunes: ['textAlignment']
                         },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
@@ -100,7 +100,7 @@
                         },
                         code: CodeTool,
                         textAlignment: {
-                            class: TextAlignmentBlockTune,
+                            class: window['TextAlignmentBlockTune'],
                             config: {
                                 default: "left",
                                 availableAlignments: ["left", "center", "right", "justify"]
@@ -115,7 +115,7 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1 });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1, checked: false });
             saveSubheadings();
             renderSubheadings();
         }
@@ -129,8 +129,12 @@
         }
 
         function clearEditor(index) {
-            innerEditors[index].clear();
-            localStorage.removeItem(`editor-${index}`);
+            if (innerEditors[index]) {
+                innerEditors[index].clear();
+                localStorage.removeItem(`editor-${index}`);
+            } else {
+                console.error(`Editor instance for index ${index} is not found.`);
+            }
         }
 
         function clearAllData() {
@@ -148,6 +152,11 @@
             renderSubheadings();
         }
 
+        function toggleCheckbox(index, checked) {
+            subheadings[index].checked = checked;
+            saveSubheadings();
+        }
+
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
@@ -157,6 +166,8 @@
         window.clearEditor = clearEditor;
         window.clearAllData = clearAllData;
         window.updateOrder = updateOrder;
+        window.toggleCheckbox = toggleCheckbox;
+        
         renderSubheadings();
     </script>
 </body>
