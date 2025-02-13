@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Rich Text, Text-Only & Image Export</title>
+    <title>Nested Editor.js with Inline Tools & Auto-Save</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script> <!-- Inline Marker Tool -->
 
     <style>
         body {
@@ -37,8 +35,26 @@
             color: #333;
         }
 
+        .subheading-container {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .checkbox-label {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-label input {
+            margin-right: 10px;
+        }
+
         .editor-box {
-            min-height: 200px;
+            min-height: 150px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -46,101 +62,88 @@
             margin-top: 10px;
         }
 
-        .buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-        }
-
-        .btn {
-            padding: 10px 15px;
+        .save-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
             border: none;
             cursor: pointer;
             border-radius: 5px;
-            font-size: 14px;
-            color: white;
         }
 
-        .save-btn { background: #007bff; }
-        .text-btn { background: #28a745; }
-        .image-btn { background: #dc3545; }
-
-        .btn:hover { opacity: 0.8; }
+        .save-btn:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Rich Text, Text-Only & Image Export</h1>
+        <h1>Nested Editor.js with Inline Tools & Auto-Save</h1>
 
-        <div id="editorjs" class="editor-box"></div>
+        <div id="main-editor"></div>
 
-        <div class="buttons">
-            <button class="btn save-btn" onclick="saveData()">Save Content</button>
-            <button class="btn text-btn" onclick="convertToPlainText()">Convert to Plain Text</button>
-            <button class="btn image-btn" onclick="convertToImage()">Export as Image</button>
-        </div>
-
+        <button class="save-btn" onclick="saveAllData(true)">Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const editor = new EditorJS({
-                holder: 'editorjs',
-                autofocus: true,
-                tools: { 
-                    header: Header, 
-                    paragraph: Paragraph,
-                    raw: RawTool,  // Preserve rich-text formatting
-                    image: {
-                        class: ImageTool,
-                        config: {
-                            endpoints: { byFile: 'https://your-server/upload', byUrl: 'https://your-server/fetch' }
-                        }
+            let defaultSubheadings = ["Name", "Age", "Address", "Phone Number"];
+            let innerEditors = {}; // Store inner editors
+
+            function createSubheadingBlock(subheading, id) {
+                return `
+                    <div class="subheading-container">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="checkbox-${id}">
+                            ${subheading}
+                        </label>
+                        <div id="editor-${id}" class="editor-box"></div>
+                    </div>
+                `;
+            }
+
+            // Render default subheadings
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = defaultSubheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+
+            // Initialize Inner Editors for Each Subheading
+            defaultSubheadings.forEach((sub, index) => {
+                innerEditors[index] = new EditorJS({
+                    holder: `editor-${index}`,
+                    autofocus: false,
+                    tools: { 
+                        header: Header, 
+                        paragraph: Paragraph,
+                        marker: Marker // Adding inline Marker tool for highlighting text
                     },
-                    marker: Marker  
-                },
-                onReady: () => {
-                    console.log("Editor.js is ready!");
-                }
+                    data: { blocks: [] }
+                });
             });
 
-            function saveData() {
-                editor.save().then((outputData) => {
-                    console.log("Saved Data:", outputData);
-                    localStorage.setItem('editorData', JSON.stringify(outputData));
-                    alert("Content saved!");
-                }).catch((error) => {
-                    console.error("Saving failed:", error);
+            function saveAllData(manual = false) {
+                let allData = {};
+                let savePromises = defaultSubheadings.map((sub, index) => {
+                    return innerEditors[index].save().then(outputData => {
+                        allData[sub] = outputData;
+                    }).catch(error => console.error(`Saving failed for ${sub}:`, error));
+                });
+
+                Promise.all(savePromises).then(() => {
+                    console.log("Auto-Saved Data:", allData);
+                    if (manual) alert("Content saved! Check the console for details.");
                 });
             }
 
-            function convertToPlainText() {
-                editor.save().then((outputData) => {
-                    let plainText = outputData.blocks.map(block => block.data.text || "").join("\n");
-                    alert("Plain Text:\n\n" + plainText);
-                    console.log("Plain Text Output:", plainText);
-                });
-            }
+            // Auto-save every 10 seconds
+            setInterval(saveAllData, 10000);
 
-            function convertToImage() {
-                const editorContainer = document.querySelector('.editor-box');
-                html2canvas(editorContainer).then(canvas => {
-                    let link = document.createElement('a');
-                    link.href = canvas.toDataURL("image/png");
-                    link.download = "editor-content.png";
-                    link.click();
-                });
-            }
-
-            window.saveData = saveData;
-            window.convertToPlainText = convertToPlainText;
-            window.convertToImage = convertToImage;
+            window.saveAllData = saveAllData; // Expose globally
         });
     </script>
-
-    <!-- Load html2canvas for image export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 </body>
 </html>
