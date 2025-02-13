@@ -1,3 +1,6 @@
+
+
+
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 Editor.js script loaded!");
 
@@ -11,6 +14,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (typeof Paragraph === "undefined") {
         console.error("❌ Error: Paragraph plugin is missing!");
     }
+
+
+
+    import EditorJS from '@editorjs/editorjs'; 
+import Header from '@editorjs/header'; 
+import List from '@editorjs/list'; 
 
     // Initialize Editor.js
     const editor = new EditorJS({
