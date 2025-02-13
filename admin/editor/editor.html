@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
         body {
@@ -116,7 +118,9 @@
                     autofocus: false,
                     tools: { 
                         header: Header, 
-                        paragraph: Paragraph
+                        paragraph: Paragraph,
+                        inlineCode: InlineCode,  // Enables inline code formatting
+                        marker: Marker,  // Enables text highlighting
                     },
                     data: { blocks: [] }
                 });
