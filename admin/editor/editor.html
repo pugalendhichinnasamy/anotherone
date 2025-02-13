@@ -1,178 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js on GitHub Pages</title>
-    
-    <!-- Load Editor.js & Plugins -->
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+document.addEventListener("DOMContentLoaded", function () {
+    // Create the outer Editor.js instance
+    const outerEditor = new EditorJS({
+        holder: 'outer-editor',
+        autofocus: true,
+        tools: {},
+        onReady: () => {
+            console.log("Outer Editor.js is ready!");
+        },
+        onChange: () => {
+            saveOuterEditorData();
         }
-        .container {
-            width: 60%;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        #editorjs {
-            min-height: 300px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: #fff;
-        }
-        .save-btn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .save-btn:hover {
-            background: #0056b3;
-        }
-        .subheading {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .subheading input {
-            transform: scale(1.2);
-        }
-    </style>
-</head>
-<body>
+    });
 
-    <div class="container">
-        <h1>Editor.js in GitHub Pages</h1>
-        
-        <div id="books-section">
-            <h2>📚 Books Section</h2>
-            <div id="subheadings"></div>
-            <button onclick="addSubheading()">➕ Add Subheading</button>
-        </div>
-
-        <div id="editorjs"></div>
-        <button class="save-btn" onclick="saveData()">💾 Save Content</button>
-    </div>
-
-    <script>
-        const postID = "post-123"; // Unique post identifier for subheading IDs
-
-        // Load saved content
-        const savedData = localStorage.getItem("editorContent");
-        const savedSubheadings = JSON.parse(localStorage.getItem("subheadings")) || [];
-
-        let editor; // Declare editor globally
-
-        // Ensure scripts are loaded before initializing EditorJS
-        document.addEventListener("DOMContentLoaded", function () {
-            editor = new EditorJS({
-                holder: "editorjs",
-                autofocus: true,
-                tools: {
-                    header: { class: Header, inlineToolbar: true },
-                    list: { class: List, inlineToolbar: true },
-                    checklist: { class: Checklist, inlineToolbar: true },
-                    image: { class: ImageTool, inlineToolbar: true },
-                    code: { class: CodeTool },
-                },
-                data: savedData ? JSON.parse(savedData) : {} // Load previous data
-            });
-
-            loadSubheadings();
+    function saveOuterEditorData() {
+        outerEditor.save().then((outputData) => {
+            console.log("Outer Editor Data:", outputData);
+        }).catch((error) => {
+            console.error("Outer Editor saving failed:", error);
         });
+    }
 
-        // Auto-save every 5 seconds
-        setInterval(() => {
-            if (editor) saveData();
-        }, 5000);
-
-        function saveData() {
-            if (!editor) {
-                console.error("Editor is not initialized yet!");
-                return;
+    // Function to initialize the inner Editor.js inside a specific div
+    function initializeInnerEditor(holderId) {
+        return new EditorJS({
+            holder: holderId,
+            autofocus: false,
+            tools: {},
+            onReady: () => {
+                console.log(`Inner Editor.js inside ${holderId} is ready!`);
+            },
+            onChange: () => {
+                saveInnerEditorData(holderId);
             }
-            editor.save().then((outputData) => {
-                localStorage.setItem("editorContent", JSON.stringify(outputData));
-                localStorage.setItem("subheadings", JSON.stringify(savedSubheadings));
-                console.log("Saved Data:", outputData);
-            }).catch((error) => {
-                console.error("Saving failed:", error);
-            });
-        }
+        });
+    }
 
-        // Load subheadings from localStorage
-        function loadSubheadings() {
-            const subheadingsContainer = document.getElementById("subheadings");
-            subheadingsContainer.innerHTML = "";
+    function saveInnerEditorData(holderId) {
+        innerEditors[holderId].save().then((outputData) => {
+            console.log(`Inner Editor Data for ${holderId}:`, outputData);
+        }).catch((error) => {
+            console.error(`Inner Editor saving failed for ${holderId}:`, error);
+        });
+    }
 
-            savedSubheadings.forEach((subheading, index) => {
-                addSubheadingElement(subheading.text, subheading.checked, index);
-            });
-        }
+    // Creating an inner Editor.js instance dynamically
+    const innerEditorContainer = document.getElementById("inner-editor-container");
+    const innerEditorDiv = document.createElement("div");
+    innerEditorDiv.id = "inner-editor";
+    innerEditorContainer.appendChild(innerEditorDiv);
 
-        // Add a new subheading
-        function addSubheading() {
-            const text = prompt("Enter subheading text:");
-            if (!text) return;
-
-            savedSubheadings.push({ text, checked: false });
-            saveData();
-            loadSubheadings();
-        }
-
-        // Create a subheading element
-        function addSubheadingElement(text, checked, index) {
-            const subheadingsContainer = document.getElementById("subheadings");
-
-            const div = document.createElement("div");
-            div.className = "subheading";
-
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.checked = checked;
-            checkbox.onchange = () => {
-                savedSubheadings[index].checked = checkbox.checked;
-                saveData();
-            };
-
-            const label = document.createElement("label");
-            label.textContent = text;
-            label.style.marginLeft = "5px";
-
-            div.appendChild(checkbox);
-            div.appendChild(label);
-            subheadingsContainer.appendChild(div);
-        }
-    </script>
-
-</body>
-</html>
+    const innerEditors = {};
+    innerEditors["inner-editor"] = initializeInnerEditor("inner-editor");
+});
