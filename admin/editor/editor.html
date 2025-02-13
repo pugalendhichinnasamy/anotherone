@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Original Paste Formatting</title>
+    <title>Editor.js with Rich Text Pasting</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -11,7 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paste@latest"></script> <!-- Paste Plugin -->
 
     <style>
         body {
@@ -84,7 +83,7 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Original Paste Formatting</h1>
+        <h1>Editor.js with Rich Text Pasting</h1>
 
         <div id="main-editor"></div>
 
@@ -119,22 +118,24 @@
                     autofocus: false,
                     tools: { 
                         header: Header, 
-                        paragraph: Paragraph,
+                        paragraph: {
+                            class: Paragraph,
+                            config: {
+                                preserveBlank: true, // Keep empty paragraphs
+                                inlineToolbar: true // Show bold, italic, etc.
+                            }
+                        },
                         marker: Marker, // Inline Marker tool
                         table: {
                             class: Table,
                             inlineToolbar: true,
                             config: { rows: 2, cols: 3 }
-                        },
-                        paste: { // Paste tool for retaining formatting
-                            class: Paste,
-                            config: {
-                                keepHTML: true, // Keep bold, italic, links, etc.
-                                forcePlainText: false // Don't strip styles
-                            }
                         }
                     },
-                    data: { blocks: [] }
+                    data: { blocks: [] },
+                    onReady: () => {
+                        console.log(`Editor #${index} is ready!`);
+                    }
                 });
             });
 
