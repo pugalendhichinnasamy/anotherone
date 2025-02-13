@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Dynamic Heading Addition</title>
+    <title>Editor.js - Add Headings Dynamically</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
@@ -13,23 +13,16 @@
             font-family: Arial, sans-serif;
             background: #f4f4f4;
             margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            padding: 20px;
+            text-align: center;
         }
         .container {
             width: 60%;
+            margin: auto;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #333;
         }
         #editorjs {
             min-height: 300px;
@@ -38,20 +31,15 @@
             border-radius: 5px;
             background: #fff;
         }
-        .btn-container {
-            display: flex;
-            justify-content: center;
-            margin: 20px;
-        }
         .btn {
-            padding: 10px 20px;
+            margin-top: 10px;
+            padding: 10px 15px;
             font-size: 16px;
             background: #007bff;
             color: white;
             border: none;
             cursor: pointer;
             border-radius: 5px;
-            margin: 5px;
         }
         .btn:hover {
             background: #0056b3;
@@ -61,29 +49,23 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Dynamic Heading Addition</h1>
-        
+        <h1>Editor.js - Add Headings Dynamically</h1>
         <div id="editorjs"></div>
-
-        <div class="btn-container">
-            <button class="btn" onclick="addDefaultHeading()">➕ Add Heading</button>
-            <button class="btn" onclick="saveData()">💾 Save Content</button>
-        </div>
+        <button class="btn" onclick="addHeading()">➕ Add Heading</button>
     </div>
 
     <script>
-        const editor = new EditorJS({
+        let editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
                 header: {
                     class: Header,
                     config: {
-                        placeholder: 'Enter a heading...',
-                        levels: [2, 3, 4],
+                        placeholder: 'Enter heading...',
+                        levels: [1, 2, 3, 4],
                         defaultLevel: 2
-                    },
-                    inlineToolbar: true
+                    }
                 },
                 list: {
                     class: List,
@@ -97,20 +79,14 @@
             }
         });
 
-        function addDefaultHeading() {
-            editor.blocks.insert('header', {
-                text: 'New Heading',
-                level: 2
-            });
-        }
-
-        function saveData() {
-            editor.save().then((outputData) => {
-                console.log("Saved Data: ", outputData);
-                alert("Content saved! Check the console for details.");
-                localStorage.setItem('editorData', JSON.stringify(outputData));
+        function addHeading() {
+            editor.isReady.then(() => {
+                editor.blocks.insert('header', {
+                    text: 'New Heading',
+                    level: 2
+                });
             }).catch((error) => {
-                console.error("Saving failed: ", error);
+                console.error('Editor.js is not ready:', error);
             });
         }
     </script>
