@@ -1,17 +1,3 @@
-document.addEventListener("DOMContentLoaded", async () => {
-    console.log("🚀 Editor.js script loaded!");
-
-    // Check if plugins are loaded
-    if (typeof Header === "undefined") {
-        console.error("❌ Error: Header plugin is missing!");
-    }
-    if (typeof List === "undefined") {
-        console.error("❌ Error: List plugin is missing!");
-    }
-    if (typeof Paragraph === "undefined") {
-        console.error("❌ Error: Paragraph plugin is missing!");
-    }
-
     // Initialize Editor.js
     const editor = new editorjs({
         holder: "editorjs",
