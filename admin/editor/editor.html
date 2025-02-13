@@ -6,6 +6,7 @@
     <title>Editor.js with Checkboxes Before Subheadings</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,12 +51,11 @@
         .save-btn:hover {
             background: #0056b3;
         }
-        .checkbox-container {
+        .checkbox-label {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
         }
-        .checkbox-container input {
+        .checkbox-label input {
             margin-right: 8px;
         }
     </style>
@@ -70,65 +70,67 @@
     </div>
 
     <script>
-        class CheckboxSubheading {
-            static get toolbox() {
-                return {
-                    title: 'Checkbox Subheading',
-                    icon: '✔'
-                };
-            }
+        const subheadings = ["name", "books", "news", "things", "others"];
 
-            constructor({ data, api }) {
-                this.api = api;
-                this.data = data || { checked: false, text: '' };
-            }
-
-            render() {
-                const container = document.createElement('div');
-                container.classList.add('checkbox-container');
-
-                this.checkbox = document.createElement('input');
-                this.checkbox.type = 'checkbox';
-                this.checkbox.checked = this.data.checked;
-                this.checkbox.addEventListener('change', () => {
-                    this.data.checked = this.checkbox.checked;
-                });
-
-                this.input = document.createElement('input');
-                this.input.type = 'text';
-                this.input.placeholder = 'Enter subheading...';
-                this.input.value = this.data.text;
-                this.input.addEventListener('input', () => {
-                    this.data.text = this.input.value;
-                });
-
-                container.appendChild(this.checkbox);
-                container.appendChild(this.input);
-                return container;
-            }
-
-            save() {
-                return {
-                    checked: this.checkbox.checked,
-                    text: this.input.value
-                };
-            }
+        function loadCheckboxState() {
+            return JSON.parse(localStorage.getItem("subheadingCheckboxState")) || {};
         }
 
-        const editor = new EditorJS({
+        function saveCheckboxState(state) {
+            localStorage.setItem("subheadingCheckboxState", JSON.stringify(state));
+        }
+
+        function getEditorData() {
+            const state = loadCheckboxState();
+            return {
+                blocks: subheadings.map(id => ({
+                    id,
+                    type: "paragraph",
+                    data: {
+                        text: `<label class="checkbox-label">
+                            <input type="checkbox" id="checkbox-${id}" ${state[id] ? 'checked' : ''} onchange="updateCheckboxState('${id}')">
+                            <strong>${id.charAt(0).toUpperCase() + id.slice(1)}</strong>
+                        </label>`
+                    }
+                }))
+            };
+        }
+
+        function updateCheckboxState(id) {
+            const checkbox = document.getElementById(`checkbox-${id}`);
+            const state = loadCheckboxState();
+            state[id] = checkbox.checked;
+            saveCheckboxState(state);
+        }
+
+        let editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
-                checkboxSubheading: CheckboxSubheading
+                paragraph: {
+                    class: class {
+                        render(data) {
+                            const div = document.createElement('div');
+                            div.innerHTML = data.text;
+                            return div;
+                        }
+                        save(blockContent) {
+                            return { text: blockContent.innerHTML };
+                        }
+                    },
+                    inlineToolbar: true
+                }
             },
-            data: {
-                blocks: [
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Name' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Books' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'News' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Things' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Others' } }
-                ]
+            data: getEditorData(),
+            onReady: () => {
+                setTimeout(() => {
+                    subheadings.forEach(id => {
+                        const checkbox = document.getElementById(`checkbox-${id}`);
+                        if (checkbox) {
+                            checkbox.addEventListener("change", () => updateCheckboxState(id));
+                        }
+                    });
+                }, 100);
             }
         });
 
