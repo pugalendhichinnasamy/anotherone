@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-tool@latest"></script">
 
     <style>
         body {
@@ -117,22 +116,7 @@
                     autofocus: false,
                     tools: { 
                         header: Header, 
-                        paragraph: Paragraph,
-                        bold: {
-                            class: InlineTool,
-                            shortcut: 'CMD+B',
-                            tag: 'B'
-                        },
-                        italic: {
-                            class: InlineTool,
-                            shortcut: 'CMD+I',
-                            tag: 'I'
-                        },
-                        inlineCode: {
-                            class: InlineTool,
-                            shortcut: 'CMD+E',
-                            tag: 'CODE'
-                        }
+                        paragraph: Paragraph
                     },
                     data: { blocks: [] }
                 });
