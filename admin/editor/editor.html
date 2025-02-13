@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Nested Editors</title>
+    <title>Nested Editor.js</title>
 
-    <!-- Editor.js and Plugin CDN -->
+    <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@latest"></script>
 
     <style>
         body {
@@ -42,9 +43,9 @@
             margin-top: 20px;
         }
 
-        #inner-editor-container {
+        .inner-editor-container {
             margin-top: 20px;
-            padding: 15px;
+            padding: 10px;
             border: 1px dashed #999;
             border-radius: 5px;
         }
@@ -69,28 +70,23 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Nested Editors</h1>
+        <h1>Editor.js with Nested Editor</h1>
 
         <!-- Outer Editor -->
         <div id="outer-editor" class="editor"></div>
-
-        <!-- Inner Editor Container (inside outer) -->
-        <div id="inner-editor-container">
-            <h2>Inner Editor</h2>
-            <div id="inner-editor" class="editor"></div>
-        </div>
 
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Initialize Outer Editor
+            // Outer Editor
             const outerEditor = new EditorJS({
                 holder: 'outer-editor',
                 autofocus: true,
                 tools: {
-                    header: Header
+                    header: Header,
+                    nestedList: NestedList
                 },
                 onReady: () => {
                     console.log("Outer Editor.js is ready!");
@@ -108,37 +104,38 @@
                 });
             }
 
-            // Initialize Inner Editor inside outer
-            const innerEditor = new EditorJS({
-                holder: 'inner-editor',
-                autofocus: false,
-                tools: {
-                    header: Header
-                },
-                onReady: () => {
-                    console.log("Inner Editor.js is ready!");
-                },
-                onChange: () => {
-                    saveInnerEditorData();
-                }
-            });
-
-            function saveInnerEditorData() {
-                innerEditor.save().then((outputData) => {
-                    console.log("Inner Editor Data:", outputData);
-                }).catch((error) => {
-                    console.error("Inner Editor saving failed:", error);
+            function loadInnerEditor(containerId) {
+                return new EditorJS({
+                    holder: containerId,
+                    autofocus: false,
+                    tools: {
+                        header: Header
+                    },
+                    onReady: () => {
+                        console.log(`Inner Editor.js in ${containerId} is ready!`);
+                    }
                 });
             }
 
-            // Save both editors when button is clicked
+            // Add inner editor when clicking a block
+            document.getElementById("outer-editor").addEventListener("click", function (event) {
+                if (!document.getElementById("inner-editor")) {
+                    let innerEditorContainer = document.createElement("div");
+                    innerEditorContainer.className = "inner-editor-container";
+                    innerEditorContainer.innerHTML = `<h2>Inner Editor</h2><div id="inner-editor"></div>`;
+                    event.target.appendChild(innerEditorContainer);
+
+                    // Load inner editor inside the new block
+                    loadInnerEditor("inner-editor");
+                }
+            });
+
             function saveData() {
                 saveOuterEditorData();
-                saveInnerEditorData();
                 alert("Content saved! Check the console for details.");
             }
 
-            window.saveData = saveData; // Expose function globally for button click
+            window.saveData = saveData; // Expose function globally
         });
     </script>
 
