@@ -1,56 +1,54 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Initialize Outer Editor
-    const outerEditor = new EditorJS({
-        holder: 'outer-editor',
-        autofocus: true,
-        tools: {
-            header: Header
-        },
-        onReady: () => {
-            console.log("Outer Editor.js is ready!");
-        },
-        onChange: () => {
-            saveOuterEditorData();
-        }
-    });
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    function saveOuterEditorData() {
-        outerEditor.save().then((outputData) => {
-            console.log("Outer Editor Data:", outputData);
-        }).catch((error) => {
-            console.error("Outer Editor saving failed:", error);
-        });
-    }
+.container {
+    width: 60%;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
 
-    // Initialize Inner Editor inside outer
-    const innerEditor = new EditorJS({
-        holder: 'inner-editor',
-        autofocus: false,
-        tools: {
-            header: Header
-        },
-        onReady: () => {
-            console.log("Inner Editor.js is ready!");
-        },
-        onChange: () => {
-            saveInnerEditorData();
-        }
-    });
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
 
-    function saveInnerEditorData() {
-        innerEditor.save().then((outputData) => {
-            console.log("Inner Editor Data:", outputData);
-        }).catch((error) => {
-            console.error("Inner Editor saving failed:", error);
-        });
-    }
+.editor {
+    min-height: 300px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+    margin-top: 20px;
+}
 
-    // Save both editors when button is clicked
-    function saveData() {
-        saveOuterEditorData();
-        saveInnerEditorData();
-        alert("Content saved! Check the console for details.");
-    }
+#inner-editor-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px dashed #999;
+    border-radius: 5px;
+}
 
-    window.saveData = saveData; // Expose to global scope for button click
-});
+.save-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    background: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.save-btn:hover {
+    background: #0056b3;
+}
