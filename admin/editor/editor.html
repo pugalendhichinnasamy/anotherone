@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Rich Text Pasting</title>
+    <title>Enhanced Editor.js with Full Features</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -11,6 +11,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/text-alignment@latest"></script>
 
     <style>
         body {
@@ -83,7 +87,7 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Rich Text Pasting</h1>
+        <h1>Enhanced Editor.js with Full Features</h1>
 
         <div id="main-editor"></div>
 
@@ -117,20 +121,25 @@
                     holder: `editor-${index}`,
                     autofocus: false,
                     tools: { 
-                        header: Header, 
-                        paragraph: {
-                            class: Paragraph,
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { 
+                            class: Paragraph, 
+                            config: { preserveBlank: true, inlineToolbar: true } 
+                        },
+                        marker: Marker, // Highlight text
+                        underline: Underline, // Underline text
+                        table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
+                        list: { class: List, inlineToolbar: true },
+                        image: {
+                            class: ImageTool,
                             config: {
-                                preserveBlank: true, // Keep empty paragraphs
-                                inlineToolbar: true // Show bold, italic, etc.
+                                endpoints: {
+                                    byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY', // Replace with your image upload API
+                                    byUrl: 'https://your-image-url-endpoint.com'
+                                }
                             }
                         },
-                        marker: Marker, // Inline Marker tool
-                        table: {
-                            class: Table,
-                            inlineToolbar: true,
-                            config: { rows: 2, cols: 3 }
-                        }
+                        textAlignment: { class: TextAlignment, config: { default: "left" } } // Align text left, center, right
                     },
                     data: { blocks: [] },
                     onReady: () => {
