@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor.js on GitHub Pages</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -49,31 +54,116 @@
         .save-btn:hover {
             background: #0056b3;
         }
+        .subheading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .subheading input {
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Editor.js in GitHub Pages</h1>
+        
+        <div id="books-section">
+            <h2>📚 Books Section</h2>
+            <div id="subheadings"></div>
+            <button onclick="addSubheading()">➕ Add Subheading</button>
+        </div>
+
         <div id="editorjs"></div>
-        <button class="save-btn" onclick="saveData()">Save Content</button>
+        <button class="save-btn" onclick="saveData()">💾 Save Content</button>
     </div>
 
     <script>
+        const postID = "post-123"; // Unique post identifier for subheading IDs
+
+        // Load saved content
+        const savedData = localStorage.getItem("editorContent");
+        const savedSubheadings = JSON.parse(localStorage.getItem("subheadings")) || [];
+
+        // Initialize Editor.js
         const editor = new EditorJS({
-            holder: 'editorjs',
+            holder: "editorjs",
             autofocus: true,
-            tools: {}  // You can add plugins here
+            tools: {
+                header: { class: Header, inlineToolbar: true },
+                list: { class: List, inlineToolbar: true },
+                checklist: { class: Checklist, inlineToolbar: true },
+                image: { class: ImageTool, inlineToolbar: true },
+                code: { class: CodeTool },
+            },
+            data: savedData ? JSON.parse(savedData) : {} // Load previous data
         });
+
+        // Auto-save every 5 seconds
+        setInterval(() => {
+            saveData();
+        }, 5000);
 
         function saveData() {
             editor.save().then((outputData) => {
-                console.log("Saved Data: ", outputData);
-                alert("Content saved! Check the console for details.");
+                localStorage.setItem("editorContent", JSON.stringify(outputData));
+                localStorage.setItem("subheadings", JSON.stringify(savedSubheadings));
+                console.log("Saved Data:", outputData);
             }).catch((error) => {
-                console.error("Saving failed: ", error);
+                console.error("Saving failed:", error);
             });
         }
+
+        // Load subheadings from localStorage
+        function loadSubheadings() {
+            const subheadingsContainer = document.getElementById("subheadings");
+            subheadingsContainer.innerHTML = "";
+
+            savedSubheadings.forEach((subheading, index) => {
+                addSubheadingElement(subheading.text, subheading.checked, index);
+            });
+        }
+
+        // Add a new subheading
+        function addSubheading() {
+            const text = prompt("Enter subheading text:");
+            if (!text) return;
+
+            savedSubheadings.push({ text, checked: false });
+            saveData();
+            loadSubheadings();
+        }
+
+        // Create a subheading element
+        function addSubheadingElement(text, checked, index) {
+            const subheadingsContainer = document.getElementById("subheadings");
+
+            const div = document.createElement("div");
+            div.className = "subheading";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = checked;
+            checkbox.onchange = () => {
+                savedSubheadings[index].checked = checkbox.checked;
+                saveData();
+            };
+
+            const label = document.createElement("label");
+            label.textContent = text;
+            label.style.marginLeft = "5px";
+
+            div.appendChild(checkbox);
+            div.appendChild(label);
+            subheadingsContainer.appendChild(div);
+        }
+
+        // Load everything on startup
+        window.onload = () => {
+            loadSubheadings();
+        };
     </script>
 
 </body>
