@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Numbering & Controls Inside</title>
+    <title>Editor.js with Persistent Data</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -39,14 +39,13 @@
         }
 
         .subheading-container {
-            position: relative;
+            display: flex;
+            align-items: center;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             background: #f9f9f9;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
         }
 
         .subheading-header {
@@ -57,7 +56,6 @@
             background: #ddd;
             border-radius: 5px;
             font-weight: bold;
-            position: relative;
             flex-grow: 1;
             margin-left: 10px;
         }
@@ -79,27 +77,21 @@
             background: white;
         }
 
-        .remove-btn, .add-subheading-btn {
-            background: red;
-            color: white;
+        .btn {
             border: none;
             padding: 3px 8px;
             cursor: pointer;
             border-radius: 5px;
             font-size: 14px;
+            color: white;
         }
 
-        .remove-btn:hover {
-            background: darkred;
-        }
-
-        .add-subheading-btn {
-            background: green;
-        }
-
-        .add-subheading-btn:hover {
-            background: darkgreen;
-        }
+        .remove-btn { background: red; }
+        .remove-btn:hover { background: darkred; }
+        .clear-btn { background: orange; }
+        .clear-btn:hover { background: darkorange; }
+        .add-btn { background: green; }
+        .add-btn:hover { background: darkgreen; }
 
         .editor-box {
             width: 100%;
@@ -111,44 +103,57 @@
             margin-top: 5px;
         }
 
-        .save-btn {
+        .save-btn, .clear-all-btn {
             display: block;
-            margin: 20px auto;
+            margin: 10px auto;
             padding: 10px 20px;
             font-size: 16px;
-            background: #007bff;
-            color: white;
             border: none;
             cursor: pointer;
             border-radius: 5px;
         }
 
+        .save-btn {
+            background: #007bff;
+            color: white;
+        }
+
         .save-btn:hover {
             background: #0056b3;
+        }
+
+        .clear-all-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .clear-all-btn:hover {
+            background: #a71d2a;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Numbering & Controls Inside</h1>
+        <h1>Editor.js with Persistent Data</h1>
 
         <div id="main-editor"></div>
 
         <button class="save-btn" onclick="saveAllData(true)">💾 Save Content</button>
+        <button class="clear-all-btn" onclick="clearAllData()">🗑 Clear All Data</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let subheadings = [
-                { title: "Name", number: 11, checked: false },
-                { title: "Age", number: 12, checked: false },
-                { title: "Address", number: 13, checked: false },
-                { title: "Phone Number", number: 14, checked: false }
+            let subheadings = JSON.parse(localStorage.getItem("subheadings")) || [
+                { title: "Name", number: 11, checked: false, data: null },
+                { title: "Age", number: 12, checked: false, data: null },
+                { title: "Address", number: 13, checked: false, data: null },
+                { title: "Phone Number", number: 14, checked: false, data: null }
             ];
 
             let innerEditors = {};
-            
+
             function createSubheadingBlock(subheading, index) {
                 return `
                     <div class="subheading-container" id="subheading-${index}">
@@ -156,10 +161,10 @@
                         <div class="subheading-header">
                             ${subheading.title}
                             <div class="subheading-controls">
-                                <input type="number" class="subheading-number" value="${subheading.number}" 
-                                    onchange="updateSubheadingOrder(${index}, this.value)">
-                                <button class="add-subheading-btn" onclick="addSubheading(${index})">➕</button>
-                                <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                                <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateSubheadingOrder(${index}, this.value)">
+                                <button class="btn add-btn" onclick="addSubheading(${index})">➕</button>
+                                <button class="btn clear-btn" onclick="clearSubheadingData(${index})">🧹</button>
+                                <button class="btn remove-btn" onclick="removeSubheading(${index})">❌</button>
                             </div>
                         </div>
                         <div id="editor-${index}" class="editor-box"></div>
@@ -175,24 +180,8 @@
                 subheadings.forEach((sub, index) => {
                     innerEditors[index] = new EditorJS({
                         holder: `editor-${index}`,
-                        autofocus: false,
-                        tools: { 
-                            header: { class: Header, inlineToolbar: true },
-                            paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } },
-                            marker: Marker,
-                            underline: Underline,
-                            table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
-                            image: {
-                                class: ImageTool,
-                                config: {
-                                    endpoints: {
-                                        byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY',
-                                        byUrl: 'https://your-image-url-endpoint.com'
-                                    }
-                                }
-                            }
-                        },
-                        data: { blocks: [] }
+                        data: sub.data || { blocks: [] },
+                        tools: { header: Header, paragraph: Paragraph, marker: Marker, underline: Underline, table: Table, image: ImageTool },
                     });
                 });
 
@@ -200,7 +189,7 @@
                     checkbox.addEventListener("change", function () {
                         let index = this.getAttribute("data-index");
                         subheadings[index].checked = this.checked;
-                        localStorage.setItem("subheadings", JSON.stringify(subheadings));
+                        saveAllData();
                     });
                 });
             }
@@ -210,16 +199,27 @@
                 if (!newSubheading) return;
 
                 let newNumber = subheadings[afterIndex].number + 1;
-                subheadings.splice(afterIndex + 1, 0, { title: newSubheading, number: newNumber, checked: false });
+                subheadings.splice(afterIndex + 1, 0, { title: newSubheading, number: newNumber, checked: false, data: null });
 
                 renderSubheadings();
             }
 
             function removeSubheading(index) {
-                let confirmDelete = confirm("Are you sure you want to remove this subheading?");
-                if (confirmDelete) {
+                if (confirm("Are you sure you want to remove this subheading?")) {
                     subheadings.splice(index, 1);
                     renderSubheadings();
+                }
+            }
+
+            function clearSubheadingData(index) {
+                subheadings[index].data = { blocks: [] };
+                renderSubheadings();
+            }
+
+            function clearAllData() {
+                if (confirm("This will clear all subheadings and their data. Continue?")) {
+                    localStorage.removeItem("subheadings");
+                    location.reload();
                 }
             }
 
@@ -231,10 +231,6 @@
             function saveAllData(manual = false) {
                 localStorage.setItem("subheadings", JSON.stringify(subheadings));
                 if (manual) alert("Content saved!");
-            }
-
-            if (localStorage.getItem("subheadings")) {
-                subheadings = JSON.parse(localStorage.getItem("subheadings"));
             }
 
             renderSubheadings();
