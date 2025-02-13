@@ -21,8 +21,19 @@
         <button id="save-btn" class="save-btn">Save Content</button>
     </div>
 
-    <!-- Link to external JS -->
-    <script src="editor.js"></script>
+ 
+
+
+
+
+
+    <div id="editorjs"></div>
+    <script>
+        const editor = new EditorJS({
+            holder: 'editorjs',
+            autofocus: true
+        });
+    </script>
 
 
 
