@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes Before Subheadings</title>
+    <title>Custom Editor.js with Checkboxes</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <style>
         body {
@@ -52,16 +52,27 @@
         .checkbox-label {
             display: flex;
             align-items: center;
+            font-size: 18px;
+            font-weight: bold;
         }
         .checkbox-label input {
             margin-right: 8px;
+            width: 20px;
+            height: 20px;
+        }
+        .subheading-input {
+            font-size: 18px;
+            border: none;
+            outline: none;
+            background: none;
+            width: 100%;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Checkboxes Before Subheadings</h1>
+        <h1>Custom Editor.js with Checkboxes</h1>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
@@ -95,8 +106,8 @@
                 this.input = document.createElement('input');
                 this.input.type = 'text';
                 this.input.value = this.data.text;
+                this.input.classList.add('subheading-input');
                 this.input.placeholder = 'Enter subheading...';
-                this.input.style.marginLeft = '8px';
                 this.input.addEventListener('input', () => {
                     this.data.text = this.input.value;
                 });
