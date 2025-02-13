@@ -15,6 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
 
     <style>
         body {
@@ -95,10 +96,13 @@
             static get sanitize() { return { span: true }; }
 
             constructor() {
+                this.colors = ["yellow", "pink", "blue", "green", "orange"];
+                this.currentColorIndex = 0;
+
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
                 this.button.style.cursor = "pointer";
-                this.button.onclick = () => this.selectColor();
+                this.button.addEventListener("click", () => this.toggleColor());
             }
 
             render() {
@@ -106,19 +110,14 @@
             }
 
             surround(range) {
-                if (!this.color) this.color = this.getRandomColor();
                 const span = document.createElement("span");
-                span.style.backgroundColor = this.color;
+                span.style.backgroundColor = this.colors[this.currentColorIndex];
                 range.surroundContents(span);
             }
 
-            selectColor() {
-                this.color = prompt("Enter highlight color (yellow, pink, blue, green, orange):");
-            }
-
-            getRandomColor() {
-                const colors = ["yellow", "pink", "blue", "green", "orange"];
-                return colors[Math.floor(Math.random() * colors.length)];
+            toggleColor() {
+                this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
+                this.button.style.backgroundColor = this.colors[this.currentColorIndex]; // Visual feedback
             }
         }
 
@@ -153,7 +152,8 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
-                        marker: MultiColorMarker,
+                        marker: MultiColorMarker, // Multi-color marker (no popup)
+                        inlineCode: InlineCode, // Add inline code tool
                         underline: Underline,
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
                         image: {
