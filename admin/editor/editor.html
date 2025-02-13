@@ -1,54 +1,21 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Create the outer Editor.js instance
-    const outerEditor = new EditorJS({
-        holder: 'outer-editor',
-        autofocus: true,
-        tools: {},
-        onReady: () => {
-            console.log("Outer Editor.js is ready!");
-        },
-        onChange: () => {
-            saveOuterEditorData();
-        }
-    });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor.js Nested Editors</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+</head>
+<body>
 
-    function saveOuterEditorData() {
-        outerEditor.save().then((outputData) => {
-            console.log("Outer Editor Data:", outputData);
-        }).catch((error) => {
-            console.error("Outer Editor saving failed:", error);
-        });
-    }
+    <div class="container">
+        <h1>Editor.js with Nested Editors</h1>
+        <div id="outer-editor" class="editor"></div>
+        <div id="inner-editor-container"></div>
+    </div>
 
-    // Function to initialize the inner Editor.js inside a specific div
-    function initializeInnerEditor(holderId) {
-        return new EditorJS({
-            holder: holderId,
-            autofocus: false,
-            tools: {},
-            onReady: () => {
-                console.log(`Inner Editor.js inside ${holderId} is ready!`);
-            },
-            onChange: () => {
-                saveInnerEditorData(holderId);
-            }
-        });
-    }
+    <script src="editor.js"></script>
 
-    function saveInnerEditorData(holderId) {
-        innerEditors[holderId].save().then((outputData) => {
-            console.log(`Inner Editor Data for ${holderId}:`, outputData);
-        }).catch((error) => {
-            console.error(`Inner Editor saving failed for ${holderId}:`, error);
-        });
-    }
-
-    // Creating an inner Editor.js instance dynamically
-    const innerEditorContainer = document.getElementById("inner-editor-container");
-    const innerEditorDiv = document.createElement("div");
-    innerEditorDiv.id = "inner-editor";
-    innerEditorContainer.appendChild(innerEditorDiv);
-
-    const innerEditors = {};
-    innerEditors["inner-editor"] = initializeInnerEditor("inner-editor");
-});
+</body>
+</html>
