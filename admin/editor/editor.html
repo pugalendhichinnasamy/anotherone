@@ -3,41 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Editor.js</title>
+    <title>Editor.js on GitHub Pages</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f4f4;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         .container {
-            width: 80%;
-            margin: auto;
+            width: 60%;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .subheading {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
+        h1 {
+            text-align: center;
+            color: #333;
         }
-        .subheading input {
-            margin-right: 10px;
-        }
-        .editor-container {
-            margin-left: 20px; /* One-tab indentation */
-            border: 1px solid #ccc;
+        #editorjs {
+            min-height: 300px;
             padding: 10px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            background: #f9f9f9;
-            min-height: 100px;
+            background: #fff;
         }
         .save-btn {
             display: block;
@@ -56,91 +52,29 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Main Editor.js</h1>
-        <div id="main-editor"></div>
 
-        <h2>Subheadings</h2>
-        <div id="subheadings"></div>
-        
-        <button class="save-btn" onclick="saveAllData()">Save All Content</button>
+    <div class="container">
+        <h1>Editor.js in GitHub Pages</h1>
+        <div id="editorjs"></div>
+        <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
-        const postID = "post" + Math.floor(Math.random() * 100000);
-        const subheadings = ["name", "books", "news", "things", "others"];
-        let editors = {};
-        let checkboxState = JSON.parse(localStorage.getItem(postID + "-checkbox-state")) || {};
-        let mainEditor;
-
-        document.addEventListener("DOMContentLoaded", function () {
-            mainEditor = new EditorJS({
-                holder: 'main-editor',
-                autofocus: true,
-                tools: { header: Header, list: List },
-                data: loadEditorData("main")
-            });
-
-            subheadings.forEach(id => createSubheading(id, id.charAt(0).toUpperCase() + id.slice(1)));
+        const editor = new EditorJS({
+            holder: 'editorjs',
+            autofocus: true,
+            tools: {}  // You can add plugins here
         });
 
-        function createSubheading(id, title) {
-            const container = document.createElement('div');
-            const subheadingDiv = document.createElement('div');
-            subheadingDiv.classList.add('subheading');
-            
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = checkboxState[id] || false;
-            checkbox.onchange = () => {
-                checkboxState[id] = checkbox.checked;
-                localStorage.setItem(postID + "-checkbox-state", JSON.stringify(checkboxState));
-            };
-            
-            const label = document.createElement('span');
-            label.textContent = title;
-            
-            subheadingDiv.appendChild(checkbox);
-            subheadingDiv.appendChild(label);
-
-            const editorContainer = document.createElement('div');
-            editorContainer.id = `${postID}-${id}-editor`;
-            editorContainer.classList.add('editor-container');
-            
-            container.appendChild(subheadingDiv);
-            container.appendChild(editorContainer);
-            document.getElementById('subheadings').appendChild(container);
-
-            editors[id] = new EditorJS({
-                holder: editorContainer.id,
-                autofocus: false,
-                tools: { header: Header, list: List },
-                data: loadEditorData(id)
+        function saveData() {
+            editor.save().then((outputData) => {
+                console.log("Saved Data: ", outputData);
+                alert("Content saved! Check the console for details.");
+            }).catch((error) => {
+                console.error("Saving failed: ", error);
             });
-        }
-
-        function loadEditorData(id) {
-            const savedData = localStorage.getItem(`${postID}-${id}-data`);
-            return savedData ? JSON.parse(savedData) : { blocks: [] };
-        }
-
-        function saveAllData() {
-            if (mainEditor) {
-                mainEditor.save().then((outputData) => {
-                    localStorage.setItem(`${postID}-main-data`, JSON.stringify(outputData));
-                });
-            }
-
-            subheadings.forEach(id => {
-                if (editors[id]) {
-                    editors[id].save().then((outputData) => {
-                        localStorage.setItem(`${postID}-${id}-data`, JSON.stringify(outputData));
-                    });
-                }
-            });
-
-            alert("All content saved!");
         }
     </script>
+
 </body>
 </html>
