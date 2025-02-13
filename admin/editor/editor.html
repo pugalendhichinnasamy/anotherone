@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js on GitHub Pages</title>
+    <title>Editor.js with Toggle Subheadings</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <style>
@@ -50,18 +50,48 @@
         .save-btn:hover {
             background: #0056b3;
         }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .toggle-container input {
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js in GitHub Pages</h1>
+        <h1>Editor.js with Toggle Subheadings</h1>
+
+        <div class="toggle-container">
+            <input type="checkbox" id="toggle-name" checked onclick="toggleVisibility('name')">
+            <label for="toggle-name">Name</label>
+        </div>
+        <div class="toggle-container">
+            <input type="checkbox" id="toggle-books" checked onclick="toggleVisibility('books')">
+            <label for="toggle-books">Books</label>
+        </div>
+        <div class="toggle-container">
+            <input type="checkbox" id="toggle-news" checked onclick="toggleVisibility('news')">
+            <label for="toggle-news">News</label>
+        </div>
+        <div class="toggle-container">
+            <input type="checkbox" id="toggle-things" checked onclick="toggleVisibility('things')">
+            <label for="toggle-things">Things</label>
+        </div>
+        <div class="toggle-container">
+            <input type="checkbox" id="toggle-others" checked onclick="toggleVisibility('others')">
+            <label for="toggle-others">Others</label>
+        </div>
+
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
-        const editor = new EditorJS({
+        let editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
@@ -76,18 +106,37 @@
             },
             data: {
                 blocks: [
-                    { type: "header", data: { text: "Name", level: 5 } },
-                    { type: "paragraph", data: { text: "<br>" } },  // Adds space
-                    { type: "header", data: { text: "Books", level: 5 } },
-                    { type: "paragraph", data: { text: "<br>" } },
-                    { type: "header", data: { text: "News", level: 5 } },
-                    { type: "paragraph", data: { text: "<br>" } },
-                    { type: "header", data: { text: "Things", level: 5 } },
-                    { type: "paragraph", data: { text: "<br>" } },
-                    { type: "header", data: { text: "Others", level: 5 } }
+                    { id: "name", type: "header", data: { text: "Name", level: 5 } },
+                    { id: "books", type: "header", data: { text: "Books", level: 5 } },
+                    { id: "news", type: "header", data: { text: "News", level: 5 } },
+                    { id: "things", type: "header", data: { text: "Things", level: 5 } },
+                    { id: "others", type: "header", data: { text: "Others", level: 5 } }
                 ]
+            },
+            onReady: () => {
+                updateVisibility(); // Ensure correct visibility on load
             }
         });
+
+        function toggleVisibility(id) {
+            let checkbox = document.getElementById(`toggle-${id}`);
+            let editorContainer = document.querySelector(`[data-id="${id}"]`);
+            
+            if (editorContainer) {
+                editorContainer.style.display = checkbox.checked ? "block" : "none";
+            }
+        }
+
+        function updateVisibility() {
+            let blocks = document.querySelectorAll("[data-id]");
+            blocks.forEach(block => {
+                let id = block.getAttribute("data-id");
+                let checkbox = document.getElementById(`toggle-${id}`);
+                if (checkbox) {
+                    block.style.display = checkbox.checked ? "block" : "none";
+                }
+            });
+        }
 
         function saveData() {
             editor.save().then((outputData) => {
