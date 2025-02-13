@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Dynamic Subheadings</title>
+    <title>Dynamic Subheadings with Editor.js</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -11,8 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
 
     <style>
         body {
@@ -53,10 +51,6 @@
             align-items: center;
         }
 
-        .checkbox-label input {
-            margin-right: 10px;
-        }
-
         .editor-box {
             min-height: 150px;
             padding: 10px;
@@ -85,16 +79,8 @@
             font-size: 14px;
         }
 
-        .remove-btn:hover {
-            background: darkred;
-        }
-
         .add-subheading-btn {
             background: green;
-        }
-
-        .add-subheading-btn:hover {
-            background: darkgreen;
         }
 
         .entry-box {
@@ -117,69 +103,51 @@
             border-radius: 5px;
         }
 
-        .save-btn:hover {
-            background: #0056b3;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Dynamic Editor.js with Entries & Subheadings</h1>
-
+        <h1>Editor.js with Dynamic Subheadings</h1>
         <div id="main-editor"></div>
-
         <button class="save-btn" onclick="saveAllData(true)">💾 Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let subheadings = ["Name", "Age", "Address", "Phone Number"];
+            let subheadings = [{ id: 11, title: "Name", entries: 1 }, { id: 12, title: "Age", entries: 1 }, { id: 13, title: "Address", entries: 1 }, { id: 14, title: "Phone Number", entries: 1 }];
             let innerEditors = {};
-            let subheadingCounter = subheadings.length;
-            let subheadingEntries = {}; // Store number of entries per subheading
 
-            function createSubheadingBlock(subheading, id, entries = 1) {
-                subheadingEntries[id] = entries; // Store the number of entries
+            function createSubheadingBlock(subheading) {
                 return `
-                    <div class="subheading-container" id="subheading-${id}">
+                    <div class="subheading-container" id="subheading-${subheading.id}">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="checkbox-${id}">
-                            ${subheading}
+                            <input type="checkbox" id="checkbox-${subheading.id}">
+                            ${subheading.title} (${subheading.id})
                         </label>
                         <div class="btn-container">
-                            <input type="number" class="entry-box" id="entries-${id}" value="${entries}" min="1" onblur="updateEntries(${id})">
-                            <button class="add-subheading-btn" onclick="addSubheading(${id})">➕</button>
-                            <button class="remove-btn" onclick="removeSubheading(${id})">❌</button>
+                            <input type="number" class="entry-box" id="entries-${subheading.id}" value="${subheading.entries}" min="1" onblur="updateEntries(${subheading.id})">
+                            <button class="add-subheading-btn" onclick="addSubheading(${subheading.id})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${subheading.id})">❌</button>
                         </div>
-                        <div id="editor-${id}" class="editor-box"></div>
+                        <div id="editor-${subheading.id}" class="editor-box"></div>
                     </div>
                 `;
             }
 
             function renderSubheadings() {
                 let mainEditorContainer = document.getElementById("main-editor");
-                mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+                mainEditorContainer.innerHTML = subheadings.map(sub => createSubheadingBlock(sub)).join('');
 
-                subheadings.forEach((sub, index) => {
-                    innerEditors[index] = new EditorJS({
-                        holder: `editor-${index}`,
+                subheadings.forEach(sub => {
+                    innerEditors[sub.id] = new EditorJS({
+                        holder: `editor-${sub.id}`,
                         autofocus: false,
                         tools: { 
                             header: { class: Header, inlineToolbar: true },
                             paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } },
                             marker: Marker,
-                            underline: Underline,
-                            table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
-                            image: {
-                                class: ImageTool,
-                                config: {
-                                    endpoints: {
-                                        byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY',
-                                        byUrl: 'https://your-image-url-endpoint.com'
-                                    }
-                                }
-                            }
+                            table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } }
                         },
                         data: { blocks: [] }
                     });
@@ -187,59 +155,48 @@
             }
 
             function updateEntries(id) {
-                let newEntries = parseInt(document.getElementById(`entries-${id}`).value);
+                let entryInput = document.getElementById(`entries-${id}`);
+                let newEntries = parseInt(entryInput.value);
                 if (isNaN(newEntries) || newEntries < 1) return;
-                subheadingEntries[id] = newEntries;
+
+                let index = subheadings.findIndex(s => s.id === id);
+                subheadings[index].entries = newEntries;
                 reorderSubheadings();
             }
 
             function reorderSubheadings() {
-                let mainEditorContainer = document.getElementById("main-editor");
-                mainEditorContainer.innerHTML = "";
-
-                let reorderedSubheadings = [];
-                Object.keys(subheadingEntries).forEach(id => {
-                    let entries = subheadingEntries[id];
-                    for (let i = 0; i < entries; i++) {
-                        reorderedSubheadings.push(subheadings[id]);
-                    }
-                });
-
-                subheadings = reorderedSubheadings;
+                subheadings.sort((a, b) => a.entries - b.entries);
                 renderSubheadings();
             }
 
             function addSubheading(afterId) {
-                let newSubheading = prompt("Enter subheading name:");
-                if (!newSubheading) return;
+                let newSubheadingTitle = prompt("Enter new subheading name:");
+                if (!newSubheadingTitle) return;
 
-                let id = subheadingCounter++;
-                subheadings.splice(afterId + 1, 0, newSubheading);
-                subheadingEntries[id] = 1; 
+                let newId = Math.max(...subheadings.map(s => s.id)) + 1;
+                subheadings.push({ id: newId, title: newSubheadingTitle, entries: 1 });
 
                 renderSubheadings();
             }
 
             function removeSubheading(id) {
-                document.getElementById(`subheading-${id}`).remove();
-                delete innerEditors[id];
-                subheadings = subheadings.filter((_, index) => index !== id);
-                delete subheadingEntries[id];
+                subheadings = subheadings.filter(s => s.id !== id);
+                renderSubheadings();
             }
 
             function saveAllData(manual = false) {
                 let allData = {};
-                let savePromises = subheadings.map((sub, index) => {
-                    if (innerEditors[index]) {
-                        return innerEditors[index].save().then(outputData => {
-                            allData[sub] = outputData;
-                        }).catch(error => console.error(`Saving failed for ${sub}:`, error));
+                let savePromises = subheadings.map(sub => {
+                    if (innerEditors[sub.id]) {
+                        return innerEditors[sub.id].save().then(outputData => {
+                            allData[sub.title] = outputData;
+                        }).catch(error => console.error(`Saving failed for ${sub.title}:`, error));
                     }
                 });
 
                 Promise.all(savePromises).then(() => {
-                    console.log("Auto-Saved Data:", allData);
-                    if (manual) alert("Content saved! Check the console for details.");
+                    console.log("Saved Data:", allData);
+                    if (manual) alert("Content saved! Check console for details.");
                 });
             }
 
