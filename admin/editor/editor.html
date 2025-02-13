@@ -3,27 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js - Add Headings and Type</title>
+    <title>Editor.js with Persistent Checkboxes</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f4f4;
             margin: 0;
-            padding: 20px;
-            text-align: center;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         .container {
             width: 60%;
-            margin: auto;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
         }
         #editorjs {
             min-height: 300px;
@@ -31,11 +37,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             background: #fff;
-            text-align: left;
         }
-        .btn {
-            margin-top: 10px;
-            padding: 10px 15px;
+        .save-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
             font-size: 16px;
             background: #007bff;
             color: white;
@@ -43,7 +49,7 @@
             cursor: pointer;
             border-radius: 5px;
         }
-        .btn:hover {
+        .save-btn:hover {
             background: #0056b3;
         }
     </style>
@@ -51,9 +57,9 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js - Add Headings and Type</h1>
+        <h1>Editor.js with Persistent Checkboxes</h1>
         <div id="editorjs"></div>
-        <button class="btn" onclick="addHeading()">➕ Add Heading</button>
+        <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
@@ -63,42 +69,61 @@
             tools: {
                 header: {
                     class: Header,
+                    inlineToolbar: true,
                     config: {
-                        placeholder: 'Enter heading...',
-                        levels: [1, 2, 3, 4],
+                        levels: [2, 3],
                         defaultLevel: 2
                     }
                 },
-                paragraph: {
-                    class: Paragraph,
+                checklist: {
+                    class: Checklist,
                     inlineToolbar: true
                 },
-                list: {
-                    class: List,
+                paragraph: {
+                    class: class {
+                        render(data) {
+                            const div = document.createElement('div');
+                            div.style.paddingLeft = '20px';
+                            div.innerHTML = data.text;
+                            return div;
+                        }
+                        save(blockContent) {
+                            return { text: blockContent.innerHTML };
+                        }
+                    },
                     inlineToolbar: true
                 }
             },
-            data: JSON.parse(localStorage.getItem('editorData')) || { blocks: [] },
-            onChange: async () => {
-                const savedData = await editor.save();
-                localStorage.setItem('editorData', JSON.stringify(savedData));
+            data: JSON.parse(localStorage.getItem("editorData")) || {
+                blocks: [
+                    {
+                        type: "header",
+                        data: { text: "Subheading Example", level: 2 }
+                    },
+                    {
+                        type: "checklist",
+                        data: { items: [
+                            { text: "Checkbox 1", checked: false },
+                            { text: "Checkbox 2", checked: false }
+                        ]}
+                    },
+                    {
+                        type: "paragraph",
+                        data: { text: "Indented text under subheading." }
+                    }
+                ]
             }
         });
 
-        function addHeading() {
-            editor.isReady.then(() => {
-                editor.blocks.insert('header', {
-                    text: 'New Heading',
-                    level: 2
-                });
-                editor.blocks.insert('paragraph', {
-                    text: 'Type here...'
-                });
+        function saveData() {
+            editor.save().then((outputData) => {
+                localStorage.setItem("editorData", JSON.stringify(outputData));
+                console.log("Saved Data: ", outputData);
+                alert("Content saved!");
             }).catch((error) => {
-                console.error('Editor.js is not ready:', error);
+                console.error("Saving failed: ", error);
             });
         }
     </script>
-
 </body>
 </html>
