@@ -53,10 +53,6 @@
             align-items: center;
         }
 
-        .checkbox-label input {
-            margin-right: 10px;
-        }
-
         .editor-box {
             min-height: 150px;
             padding: 10px;
@@ -95,32 +91,13 @@
         .add-subheading-btn:hover {
             background: darkgreen;
         }
-
-        .save-btn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .save-btn:hover {
-            background: #0056b3;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>Dynamic Editor.js with Nested Subheadings</h1>
-
         <div id="main-editor"></div>
-
-        <button class="save-btn" onclick="saveAllData(true)">💾 Save Content</button>
     </div>
 
     <script>
@@ -148,28 +125,18 @@
             function renderSubheadings() {
                 let mainEditorContainer = document.getElementById("main-editor");
                 mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
+                
                 subheadings.forEach((sub, index) => {
                     innerEditors[index] = new EditorJS({
                         holder: `editor-${index}`,
-                        autofocus: false,
                         tools: { 
                             header: { class: Header, inlineToolbar: true },
-                            paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } },
+                            paragraph: { class: Paragraph, inlineToolbar: true },
                             marker: Marker,
                             underline: Underline,
-                            table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
-                            image: {
-                                class: ImageTool,
-                                config: {
-                                    endpoints: {
-                                        byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY',
-                                        byUrl: 'https://your-image-url-endpoint.com'
-                                    }
-                                }
-                            }
-                        },
-                        data: { blocks: [] }
+                            table: { class: Table, inlineToolbar: true },
+                            image: ImageTool
+                        }
                     });
                 });
             }
@@ -177,74 +144,23 @@
             function addSubheading(afterId) {
                 let newSubheading = prompt("Enter subheading name:");
                 if (!newSubheading) return;
-
                 let id = subheadingCounter++;
                 subheadings.splice(afterId + 1, 0, newSubheading);
-
-                let newSubheadingElement = document.createElement("div");
-                newSubheadingElement.innerHTML = createSubheadingBlock(newSubheading, id);
-                let mainEditorContainer = document.getElementById("main-editor");
-
-                let referenceNode = document.getElementById(`subheading-${afterId}`);
-                if (referenceNode) {
-                    referenceNode.insertAdjacentElement("afterend", newSubheadingElement.firstElementChild);
-                } else {
-                    mainEditorContainer.appendChild(newSubheadingElement.firstElementChild);
-                }
-
-                innerEditors[id] = new EditorJS({
-                    holder: `editor-${id}`,
-                    autofocus: false,
-                    tools: { 
-                        header: { class: Header, inlineToolbar: true },
-                        paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } },
-                        marker: Marker,
-                        underline: Underline,
-                        table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
-                        image: {
-                            class: ImageTool,
-                            config: {
-                                endpoints: {
-                                    byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY',
-                                    byUrl: 'https://your-image-url-endpoint.com'
-                                }
-                            }
-                        }
-                    },
-                    data: { blocks: [] }
-                });
+                renderSubheadings();
             }
 
             function removeSubheading(id) {
-                document.getElementById(`subheading-${id}`).remove();
-                delete innerEditors[id];
-                subheadings = subheadings.filter((_, index) => index !== id);
+                let confirmDelete = confirm("Are you sure you want to delete this subheading?");
+                if (confirmDelete) {
+                    subheadings = subheadings.filter((_, index) => index !== id);
+                    renderSubheadings();
+                }
             }
-
-            function saveAllData(manual = false) {
-                let allData = {};
-                let savePromises = subheadings.map((sub, index) => {
-                    if (innerEditors[index]) {
-                        return innerEditors[index].save().then(outputData => {
-                            allData[sub] = outputData;
-                        }).catch(error => console.error(`Saving failed for ${sub}:`, error));
-                    }
-                });
-
-                Promise.all(savePromises).then(() => {
-                    console.log("Auto-Saved Data:", allData);
-                    if (manual) alert("Content saved! Check the console for details.");
-                });
-            }
-
-            setInterval(saveAllData, 10000);
 
             renderSubheadings();
             window.addSubheading = addSubheading;
             window.removeSubheading = removeSubheading;
-            window.saveAllData = saveAllData;
         });
     </script>
-
 </body>
 </html>
