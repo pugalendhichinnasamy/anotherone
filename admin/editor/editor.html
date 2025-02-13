@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Editable Subheading Numbers</title>
+    <title>Editor.js with Numbering & Controls Inside</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -39,15 +39,29 @@
         }
 
         .subheading-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
+            position: relative;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5px;
+            background: #ddd;
+            border-radius: 5px;
+            font-weight: bold;
             position: relative;
+        }
+
+        .subheading-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .subheading-number {
@@ -55,37 +69,10 @@
             text-align: center;
             font-weight: bold;
             border: none;
-            background: #fff;
             padding: 3px;
             border-radius: 5px;
             font-size: 14px;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            flex-grow: 1;
-            margin-left: 10px;
-        }
-
-        .checkbox-label input {
-            margin-right: 10px;
-        }
-
-        .editor-box {
-            width: 100%;
-            min-height: 150px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: #fff;
-            margin-top: 10px;
-        }
-
-        .btn-container {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            background: white;
         }
 
         .remove-btn, .add-subheading-btn {
@@ -110,6 +97,16 @@
             background: darkgreen;
         }
 
+        .editor-box {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+            margin-top: 5px;
+        }
+
         .save-btn {
             display: block;
             margin: 20px auto;
@@ -130,7 +127,7 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Editable Subheading Numbers</h1>
+        <h1>Editor.js with Numbering & Controls Inside</h1>
 
         <div id="main-editor"></div>
 
@@ -151,16 +148,15 @@
             function createSubheadingBlock(subheading, index) {
                 return `
                     <div class="subheading-container" id="subheading-${index}">
-                        <div class="btn-container">
-                            <input type="number" class="subheading-number" value="${subheading.number}" 
-                                onchange="updateSubheadingOrder(${index}, this.value)">
-                            <button class="add-subheading-btn" onclick="addSubheading(${index})">➕</button>
-                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                        </div>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="checkbox-${index}">
+                        <div class="subheading-header">
                             ${subheading.title}
-                        </label>
+                            <div class="subheading-controls">
+                                <input type="number" class="subheading-number" value="${subheading.number}" 
+                                    onchange="updateSubheadingOrder(${index}, this.value)">
+                                <button class="add-subheading-btn" onclick="addSubheading(${index})">➕</button>
+                                <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            </div>
+                        </div>
                         <div id="editor-${index}" class="editor-box"></div>
                     </div>
                 `;
