@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes Before Subheadings</title>
+    <title>Editor.js with Dynamic Subheadings and Checkboxes</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
@@ -63,37 +63,18 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Checkboxes Before Subheadings</h1>
-
+        <h1>Editor.js with Dynamic Subheadings and Checkboxes</h1>
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
-        const subheadings = ["name", "books", "news", "things", "others"];
-
         function loadCheckboxState() {
             return JSON.parse(localStorage.getItem("subheadingCheckboxState")) || {};
         }
 
         function saveCheckboxState(state) {
             localStorage.setItem("subheadingCheckboxState", JSON.stringify(state));
-        }
-
-        function getEditorData() {
-            const state = loadCheckboxState();
-            return {
-                blocks: subheadings.map(id => ({
-                    id,
-                    type: "paragraph",
-                    data: {
-                        text: `<label class="checkbox-label">
-                            <input type="checkbox" id="checkbox-${id}" ${state[id] ? 'checked' : ''} onchange="updateCheckboxState('${id}')">
-                            <strong>${id.charAt(0).toUpperCase() + id.slice(1)}</strong>
-                        </label>`
-                    }
-                }))
-            };
         }
 
         function updateCheckboxState(id) {
@@ -103,34 +84,50 @@
             saveCheckboxState(state);
         }
 
+        class CustomHeader {
+            static get toolbox() {
+                return { title: 'Heading', icon: 'H' };
+            }
+
+            constructor({ data }) {
+                this.data = data;
+                this.wrapper = document.createElement('div');
+            }
+
+            render() {
+                const state = loadCheckboxState();
+                this.wrapper.innerHTML = `
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="checkbox-${this.data.text}" ${state[this.data.text] ? 'checked' : ''}>
+                        <strong>${this.data.text || 'New Subheading'}</strong>
+                    </label>
+                `;
+                setTimeout(() => {
+                    const checkbox = document.getElementById(`checkbox-${this.data.text}`);
+                    if (checkbox) {
+                        checkbox.addEventListener("change", () => updateCheckboxState(this.data.text));
+                    }
+                }, 100);
+                return this.wrapper;
+            }
+
+            save() {
+                return { text: this.wrapper.innerText.trim() };
+            }
+        }
+
         let editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
-                paragraph: {
-                    class: class {
-                        render(data) {
-                            const div = document.createElement('div');
-                            div.innerHTML = data.text;
-                            return div;
-                        }
-                        save(blockContent) {
-                            return { text: blockContent.innerHTML };
-                        }
-                    },
+                header: {
+                    class: CustomHeader,
+                    inlineToolbar: true
+                },
+                list: {
+                    class: List,
                     inlineToolbar: true
                 }
-            },
-            data: getEditorData(),
-            onReady: () => {
-                setTimeout(() => {
-                    subheadings.forEach(id => {
-                        const checkbox = document.getElementById(`checkbox-${id}`);
-                        if (checkbox) {
-                            checkbox.addEventListener("change", () => updateCheckboxState(id));
-                        }
-                    });
-                }, 100);
             }
         });
 
