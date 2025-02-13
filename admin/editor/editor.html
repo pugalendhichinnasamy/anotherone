@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Multi-Color Marker</title>
+    <title>Editor.js with Inline Code & Multi-Color Marker</title>
     
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -76,7 +76,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Multi-Color Marker</h1>
+        <h1>Editor.js with Inline Code & Multi-Color Marker</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -89,36 +89,46 @@
         ];
         let innerEditors = {};
 
-        class MultiColorMarker {
+        class InlineCode {
             static get isInline() { return true; }
-            static get title() { return "Multi-Color Marker"; }
-            static get sanitize() { return { span: true }; }
-
-            constructor() {
-                this.button = document.createElement("button");
-                this.button.innerHTML = "🖍️";
-                this.button.style.cursor = "pointer";
-                this.button.onclick = () => this.selectColor();
-            }
+            static get title() { return "Inline Code"; }
+            static get sanitize() { return { code: true }; }
 
             render() {
-                return this.button;
+                const button = document.createElement("button");
+                button.innerHTML = "</>";
+                button.style.cursor = "pointer";
+                return button;
             }
 
             surround(range) {
-                if (!this.color) this.color = this.getRandomColor();
+                const code = document.createElement("code");
+                range.surroundContents(code);
+            }
+        }
+
+        class MultiColorMarker {
+            constructor(color) {
+                this.color = color;
+            }
+
+            static get isInline() { return true; }
+            static get sanitize() { return { span: true }; }
+
+            render() {
+                const button = document.createElement("button");
+                button.innerHTML = "🖍️";
+                button.style.backgroundColor = this.color;
+                button.style.border = "none";
+                button.style.padding = "5px";
+                button.style.cursor = "pointer";
+                return button;
+            }
+
+            surround(range) {
                 const span = document.createElement("span");
                 span.style.backgroundColor = this.color;
                 range.surroundContents(span);
-            }
-
-            selectColor() {
-                this.color = prompt("Enter highlight color (yellow, pink, blue, green, orange):");
-            }
-
-            getRandomColor() {
-                const colors = ["yellow", "pink", "blue", "green", "orange"];
-                return colors[Math.floor(Math.random() * colors.length)];
             }
         }
 
@@ -153,7 +163,12 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
-                        marker: MultiColorMarker,
+                        inlineCode: InlineCode,
+                        markerYellow: new MultiColorMarker("yellow"),
+                        markerPink: new MultiColorMarker("pink"),
+                        markerBlue: new MultiColorMarker("blue"),
+                        markerGreen: new MultiColorMarker("lightgreen"),
+                        markerOrange: new MultiColorMarker("orange"),
                         underline: Underline,
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
                         image: {
