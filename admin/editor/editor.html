@@ -39,33 +39,40 @@
         }
 
         .subheading-container {
-            display: flex;
-            align-items: center;
+            position: relative;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             background: #f9f9f9;
             margin-bottom: 10px;
-            position: relative;
-        }
-
-        .subheading-checkbox {
-            margin-right: 10px;
+            display: flex;
+            flex-direction: column;
         }
 
         .subheading-header {
-            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
             font-weight: bold;
-            font-size: 16px;
         }
 
-        .subheading-controls {
-            position: absolute;
-            top: 5px;
-            right: 5px;
+        .left-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .right-controls {
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+
+        .subheading-checkbox {
+            margin-right: 5px;
         }
 
         .subheading-number {
@@ -159,13 +166,17 @@
             function createSubheadingBlock(subheading, index) {
                 return `
                     <div class="subheading-container" id="subheading-${index}">
-                        <input type="checkbox" class="subheading-checkbox" data-index="${index}" ${subheading.checked ? "checked" : ""}>
-                        <div class="subheading-header">${subheading.title}</div>
-                        <div class="subheading-controls">
-                            <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateSubheadingOrder(${index}, this.value)">
-                            <button class="btn add-btn" onclick="addSubheading(${index})">➕</button>
-                            <button class="btn clear-btn" onclick="clearSubheadingData(${index})">🧹</button>
-                            <button class="btn remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        <div class="subheading-header">
+                            <div class="left-controls">
+                                <input type="checkbox" class="subheading-checkbox" data-index="${index}" ${subheading.checked ? "checked" : ""}>
+                                <span>${subheading.title}</span>
+                            </div>
+                            <div class="right-controls">
+                                <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateSubheadingOrder(${index}, this.value)">
+                                <button class="btn add-btn" onclick="addSubheading(${index})">➕</button>
+                                <button class="btn clear-btn" onclick="clearSubheadingData(${index})">🧹</button>
+                                <button class="btn remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            </div>
                         </div>
                         <div id="editor-${index}" class="editor-box"></div>
                     </div>
@@ -197,18 +208,13 @@
             function addSubheading(afterIndex) {
                 let newSubheading = prompt("Enter subheading name:");
                 if (!newSubheading) return;
-
-                let newNumber = subheadings[afterIndex].number + 1;
-                subheadings.splice(afterIndex + 1, 0, { title: newSubheading, number: newNumber, checked: false, data: null });
-
+                subheadings.splice(afterIndex + 1, 0, { title: newSubheading, number: subheadings[afterIndex].number + 1, checked: false, data: null });
                 renderSubheadings();
             }
 
             function removeSubheading(index) {
-                if (confirm("Are you sure you want to remove this subheading?")) {
-                    subheadings.splice(index, 1);
-                    renderSubheadings();
-                }
+                subheadings.splice(index, 1);
+                renderSubheadings();
             }
 
             function clearSubheadingData(index) {
@@ -217,10 +223,8 @@
             }
 
             function clearAllData() {
-                if (confirm("This will clear all subheadings and their data. Continue?")) {
-                    localStorage.removeItem("subheadings");
-                    location.reload();
-                }
+                localStorage.removeItem("subheadings");
+                location.reload();
             }
 
             function updateSubheadingOrder(index, newNumber) {
@@ -228,9 +232,8 @@
                 renderSubheadings();
             }
 
-            function saveAllData(manual = false) {
+            function saveAllData() {
                 localStorage.setItem("subheadings", JSON.stringify(subheadings));
-                if (manual) alert("Content saved!");
             }
 
             renderSubheadings();
