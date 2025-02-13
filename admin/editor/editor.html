@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes Before Subheadings</title>
+    <title>Editor.js with Unique Subheadings & Indentation</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,20 +57,23 @@
         .save-btn:hover {
             background: #0056b3;
         }
-        .checkbox-container {
+        .subheading-container {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
         }
-        .checkbox-container input {
+        .subheading-container input {
             margin-right: 8px;
+        }
+        .subheading-content {
+            margin-left: 20px; /* One-tab indentation */
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Checkboxes Before Subheadings</h1>
+        <h1>Editor.js with Unique Subheadings & Indentation</h1>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
@@ -78,14 +88,17 @@
                 };
             }
 
-            constructor({ data, api }) {
-                this.api = api;
-                this.data = data || { checked: false, text: '' };
+            constructor({ data }) {
+                this.data = data || { id: this.generateId(), checked: false, text: '', content: '' };
+            }
+
+            generateId() {
+                return 'subheading-' + Math.random().toString(36).substr(2, 9);
             }
 
             render() {
                 const container = document.createElement('div');
-                container.classList.add('checkbox-container');
+                container.classList.add('subheading-container');
 
                 this.checkbox = document.createElement('input');
                 this.checkbox.type = 'checkbox';
@@ -102,15 +115,26 @@
                     this.data.text = this.input.value;
                 });
 
+                this.content = document.createElement('textarea');
+                this.content.classList.add('subheading-content');
+                this.content.placeholder = 'Type content here...';
+                this.content.value = this.data.content;
+                this.content.addEventListener('input', () => {
+                    this.data.content = this.content.value;
+                });
+
                 container.appendChild(this.checkbox);
                 container.appendChild(this.input);
+                container.appendChild(this.content);
                 return container;
             }
 
             save() {
                 return {
+                    id: this.data.id,
                     checked: this.checkbox.checked,
-                    text: this.input.value
+                    text: this.input.value,
+                    content: this.content.value
                 };
             }
         }
@@ -119,15 +143,23 @@
             holder: 'editorjs',
             autofocus: true,
             tools: {
+                header: Header,
+                list: List,
+                paragraph: Paragraph,
+                checklist: Checklist,
+                quote: Quote,
+                table: Table,
+                delimiter: Delimiter,
+                image: ImageTool,
                 checkboxSubheading: CheckboxSubheading
             },
             data: {
                 blocks: [
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Name' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Books' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'News' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Things' } },
-                    { type: 'checkboxSubheading', data: { checked: false, text: 'Others' } }
+                    { type: 'checkboxSubheading', data: { id: 'name', checked: false, text: 'Name', content: '' } },
+                    { type: 'checkboxSubheading', data: { id: 'books', checked: false, text: 'Books', content: '' } },
+                    { type: 'checkboxSubheading', data: { id: 'news', checked: false, text: 'News', content: '' } },
+                    { type: 'checkboxSubheading', data: { id: 'things', checked: false, text: 'Things', content: '' } },
+                    { type: 'checkboxSubheading', data: { id: 'others', checked: false, text: 'Others', content: '' } }
                 ]
             }
         });
