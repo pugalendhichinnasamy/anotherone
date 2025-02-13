@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor.js on GitHub Pages</title>
+    
+    <!-- Load Editor.js & Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -87,26 +90,36 @@
         const savedData = localStorage.getItem("editorContent");
         const savedSubheadings = JSON.parse(localStorage.getItem("subheadings")) || [];
 
-        // Initialize Editor.js
-        const editor = new EditorJS({
-            holder: "editorjs",
-            autofocus: true,
-            tools: {
-                header: { class: Header, inlineToolbar: true },
-                list: { class: List, inlineToolbar: true },
-                checklist: { class: Checklist, inlineToolbar: true },
-                image: { class: ImageTool, inlineToolbar: true },
-                code: { class: CodeTool },
-            },
-            data: savedData ? JSON.parse(savedData) : {} // Load previous data
+        let editor; // Declare editor globally
+
+        // Ensure scripts are loaded before initializing EditorJS
+        document.addEventListener("DOMContentLoaded", function () {
+            editor = new EditorJS({
+                holder: "editorjs",
+                autofocus: true,
+                tools: {
+                    header: { class: Header, inlineToolbar: true },
+                    list: { class: List, inlineToolbar: true },
+                    checklist: { class: Checklist, inlineToolbar: true },
+                    image: { class: ImageTool, inlineToolbar: true },
+                    code: { class: CodeTool },
+                },
+                data: savedData ? JSON.parse(savedData) : {} // Load previous data
+            });
+
+            loadSubheadings();
         });
 
         // Auto-save every 5 seconds
         setInterval(() => {
-            saveData();
+            if (editor) saveData();
         }, 5000);
 
         function saveData() {
+            if (!editor) {
+                console.error("Editor is not initialized yet!");
+                return;
+            }
             editor.save().then((outputData) => {
                 localStorage.setItem("editorContent", JSON.stringify(outputData));
                 localStorage.setItem("subheadings", JSON.stringify(savedSubheadings));
@@ -159,11 +172,6 @@
             div.appendChild(label);
             subheadingsContainer.appendChild(div);
         }
-
-        // Load everything on startup
-        window.onload = () => {
-            loadSubheadings();
-        };
     </script>
 
 </body>
