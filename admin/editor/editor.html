@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nested Editor.js with Inline Tools & Auto-Save</title>
+    <title>Nested Editor.js with Auto-Save</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-tool@latest"></script">
 
     <style>
         body {
@@ -82,7 +81,7 @@
 <body>
 
     <div class="container">
-        <h1>Nested Editor.js with Inline Tools & Auto-Save</h1>
+        <h1>Nested Editor.js with Auto-Save</h1>
 
         <div id="main-editor"></div>
 
@@ -117,22 +116,7 @@
                     autofocus: false,
                     tools: { 
                         header: Header, 
-                        paragraph: Paragraph,
-                        bold: {
-                            class: InlineTool,
-                            shortcut: 'CMD+B',
-                            tag: 'B'
-                        },
-                        italic: {
-                            class: InlineTool,
-                            shortcut: 'CMD+I',
-                            tag: 'I'
-                        },
-                        inlineCode: {
-                            class: InlineTool,
-                            shortcut: 'CMD+E',
-                            tag: 'CODE'
-                        }
+                        paragraph: Paragraph 
                     },
                     data: { blocks: [] }
                 });
