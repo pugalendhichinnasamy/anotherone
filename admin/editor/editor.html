@@ -3,185 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes & Numbering</title>
-
-    <!-- Load Editor.js and Plugins -->
+    <title>Editor.js with Numbering & Controls</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
-
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            width: 60%;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-
-        .subheading-container {
-            position: relative;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-            margin-bottom: 10px;
-        }
-
-        .subheading-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 5px;
-            background: #ddd;
-            border-radius: 5px;
-            font-weight: bold;
-            position: relative;
-        }
-
-        .subheading-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .subheading-number {
-            width: 40px;
-            text-align: center;
-            font-weight: bold;
-            border: none;
-            padding: 3px;
-            border-radius: 5px;
-            font-size: 14px;
-            background: white;
-        }
-
-        .checkbox {
-            margin-right: 10px;
-            transform: scale(1.2);
-            cursor: pointer;
-        }
-
-        .remove-btn, .add-subheading-btn {
-            background: red;
-            color: white;
-            border: none;
-            padding: 3px 8px;
-            cursor: pointer;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .remove-btn:hover {
-            background: darkred;
-        }
-
-        .add-subheading-btn {
-            background: green;
-        }
-
-        .add-subheading-btn:hover {
-            background: darkgreen;
-        }
-
-        .editor-box {
-            width: 100%;
-            min-height: 150px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: #fff;
-            margin-top: 5px;
-        }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 60%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); }
+        .subheading-container { display: flex; flex-direction: column; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; margin-bottom: 10px; }
+        .subheading-header { display: flex; align-items: center; justify-content: space-between; background: #ddd; padding: 5px; border-radius: 5px; }
+        .subheading-controls { display: flex; align-items: center; gap: 5px; }
+        .editor-box { width: 100%; min-height: 150px; padding: 10px; border: 1px solid #ccc; background: #fff; margin-top: 5px; }
+        .checkbox { margin-right: 10px; }
+        .remove-btn, .clear-btn, .add-btn { padding: 3px 8px; border: none; cursor: pointer; border-radius: 5px; }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Editor.js with Checkboxes & Numbering</h1>
+        <h1>Editor.js with Numbering & Controls</h1>
+        <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
-
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let subheadings = [
-                { title: "Name", number: 11, checked: false },
-                { title: "Age", number: 12, checked: false },
-                { title: "Address", number: 13, checked: false },
-                { title: "Phone Number", number: 14, checked: false }
-            ];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+            { title: "Name", number: 11 },
+            { title: "Age", number: 12 },
+            { title: "Address", number: 13 }
+        ];
+        let innerEditors = {};
 
-            let innerEditors = {};
-
-            function createSubheadingBlock(subheading, index) {
-                return `
-                    <div class="subheading-container" id="subheading-${index}">
-                        <div class="subheading-header">
-                            <input type="checkbox" class="checkbox" id="checkbox-${index}" 
-                                ${subheading.checked ? 'checked' : ''} onchange="toggleCheckbox(${index})">
+        function createSubheadingBlock(subheading, index) {
+            return `
+                <div class="subheading-container" id="subheading-${index}">
+                    <div class="subheading-header">
+                        <div>
+                            <input type="checkbox" class="checkbox">
                             ${subheading.title}
-                            <div class="subheading-controls">
-                                <input type="number" class="subheading-number" value="${subheading.number}" 
-                                    onchange="updateSubheadingOrder(${index}, this.value)">
-                                <button class="add-subheading-btn" onclick="addSubheading(${index})">➕</button>
-                                <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                            </div>
                         </div>
-                        <div id="editor-${index}" class="editor-box"></div>
+                        <div class="subheading-controls">
+                            <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateOrder(${index}, this.value)">
+                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                        </div>
                     </div>
-                `;
-            }
+                    <div id="editor-${index}" class="editor-box"></div>
+                </div>`;
+        }
 
-            function renderSubheadings() {
-                let mainEditorContainer = document.getElementById("main-editor");
-                subheadings.sort((a, b) => a.number - b.number);
-                mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-                subheadings.forEach((sub, index) => {
-                    innerEditors[index] = new EditorJS({ holder: `editor-${index}`, tools: { header: Header, paragraph: Paragraph }});
+        function renderSubheadings() {
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            subheadings.forEach((sub, index) => {
+                innerEditors[index] = new EditorJS({
+                    holder: `editor-${index}`,
+                    tools: { header: Header, paragraph: Paragraph, marker: Marker, underline: Underline },
+                    data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
                 });
-            }
+            });
+        }
 
-            function toggleCheckbox(index) {
-                subheadings[index].checked = !subheadings[index].checked;
-                saveCheckboxState();
-            }
-
-            function saveCheckboxState() {
-                localStorage.setItem("checkboxState", JSON.stringify(subheadings.map(sub => sub.checked)));
-            }
-
-            function loadCheckboxState() {
-                let savedState = JSON.parse(localStorage.getItem("checkboxState"));
-                if (savedState) {
-                    subheadings.forEach((sub, index) => {
-                        sub.checked = savedState[index];
-                    });
-                }
-            }
-
-            loadCheckboxState();
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1 });
+            saveSubheadings();
             renderSubheadings();
-            window.toggleCheckbox = toggleCheckbox;
-        });
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure you want to remove this subheading?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
+
+        function clearEditor(index) {
+            innerEditors[index].clear();
+            localStorage.removeItem(`editor-${index}`);
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure you want to clear all data?")) {
+                localStorage.clear();
+                subheadings = [];
+                renderSubheadings();
+            }
+        }
+
+        function updateOrder(index, newNumber) {
+            subheadings[index].number = parseInt(newNumber);
+            subheadings.sort((a, b) => a.number - b.number);
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        window.addSubheading = addSubheading;
+        window.removeSubheading = removeSubheading;
+        window.clearEditor = clearEditor;
+        window.clearAllData = clearAllData;
+        window.updateOrder = updateOrder;
+        renderSubheadings();
     </script>
 </body>
 </html>
