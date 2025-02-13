@@ -8,7 +8,6 @@
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@latest"></script>
 
     <style>
         body {
@@ -41,13 +40,15 @@
             border-radius: 5px;
             background: #fff;
             margin-top: 20px;
+            position: relative;
         }
 
         .inner-editor-container {
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 10px;
             border: 1px dashed #999;
             border-radius: 5px;
+            background: #f9f9f9;
         }
 
         .save-btn {
@@ -80,44 +81,46 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Outer Editor
+            let innerEditorInstance = null; // Track inner editor instance
+
+            // Initialize Outer Editor
             const outerEditor = new EditorJS({
                 holder: 'outer-editor',
                 autofocus: true,
-                tools: {
-                    header: Header,
-                    nestedList: NestedList
-                },
-                onReady: () => {
-                    console.log("Outer Editor.js is ready!");
-                },
-                onChange: () => {
-                    saveOuterEditorData();
-                }
+                tools: { header: Header },
+                onReady: () => console.log("Outer Editor.js is ready!"),
+                onChange: () => saveOuterEditorData()
             });
 
             function saveOuterEditorData() {
-                outerEditor.save().then((outputData) => {
+                outerEditor.save().then(outputData => {
                     console.log("Outer Editor Data:", outputData);
-                }).catch((error) => {
-                    console.error("Outer Editor saving failed:", error);
-                });
+                }).catch(error => console.error("Outer Editor saving failed:", error));
             }
 
             function loadInnerEditor(containerId) {
-                return new EditorJS({
-                    holder: containerId,
-                    autofocus: false,
-                    tools: {
-                        header: Header
-                    },
-                    onReady: () => {
-                        console.log(`Inner Editor.js in ${containerId} is ready!`);
-                    }
-                });
+                if (!innerEditorInstance) { // Prevent multiple instances
+                    innerEditorInstance = new EditorJS({
+                        holder: containerId,
+                        autofocus: true,
+                        tools: { header: Header },
+                        onReady: () => console.log("Inner Editor.js is ready!"),
+                        onChange: () => saveInnerEditorData()
+                    });
+
+                    document.getElementById(containerId).focus(); // Keep focus inside
+                }
             }
 
-            // Add inner editor when clicking a block
+            function saveInnerEditorData() {
+                if (innerEditorInstance) {
+                    innerEditorInstance.save().then(outputData => {
+                        console.log("Inner Editor Data:", outputData);
+                    }).catch(error => console.error("Inner Editor saving failed:", error));
+                }
+            }
+
+            // Add Inner Editor Only on Click in Outer Editor
             document.getElementById("outer-editor").addEventListener("click", function (event) {
                 if (!document.getElementById("inner-editor")) {
                     let innerEditorContainer = document.createElement("div");
@@ -125,13 +128,21 @@
                     innerEditorContainer.innerHTML = `<h2>Inner Editor</h2><div id="inner-editor"></div>`;
                     event.target.appendChild(innerEditorContainer);
 
-                    // Load inner editor inside the new block
-                    loadInnerEditor("inner-editor");
+                    loadInnerEditor("inner-editor"); // Load inner editor inside block
+                }
+            });
+
+            // Prevent Losing Focus from Inner Editor
+            document.addEventListener("click", function (event) {
+                let innerEditor = document.getElementById("inner-editor");
+                if (innerEditor && !innerEditor.contains(event.target) && !event.target.closest(".inner-editor-container")) {
+                    event.stopPropagation();
                 }
             });
 
             function saveData() {
                 saveOuterEditorData();
+                saveInnerEditorData();
                 alert("Content saved! Check the console for details.");
             }
 
