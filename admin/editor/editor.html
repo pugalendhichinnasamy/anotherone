@@ -72,6 +72,7 @@
             right: 10px;
             display: flex;
             gap: 5px;
+            align-items: center;
         }
 
         .remove-btn, .add-subheading-btn {
@@ -96,6 +97,14 @@
             background: darkgreen;
         }
 
+        .entry-box {
+            width: 50px;
+            text-align: center;
+            padding: 2px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
         .save-btn {
             display: block;
             margin: 20px auto;
@@ -116,7 +125,7 @@
 <body>
 
     <div class="container">
-        <h1>Dynamic Editor.js with Nested Subheadings</h1>
+        <h1>Dynamic Editor.js with Entries & Subheadings</h1>
 
         <div id="main-editor"></div>
 
@@ -126,10 +135,12 @@
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let subheadings = ["Name", "Age", "Address", "Phone Number"];
-            let innerEditors = {}; 
-            let subheadingCounter = subheadings.length; 
+            let innerEditors = {};
+            let subheadingCounter = subheadings.length;
+            let subheadingEntries = {}; // Store number of entries per subheading
 
-            function createSubheadingBlock(subheading, id) {
+            function createSubheadingBlock(subheading, id, entries = 1) {
+                subheadingEntries[id] = entries; // Store the number of entries
                 return `
                     <div class="subheading-container" id="subheading-${id}">
                         <label class="checkbox-label">
@@ -137,6 +148,7 @@
                             ${subheading}
                         </label>
                         <div class="btn-container">
+                            <input type="number" class="entry-box" id="entries-${id}" value="${entries}" min="1" onblur="updateEntries(${id})">
                             <button class="add-subheading-btn" onclick="addSubheading(${id})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${id})">❌</button>
                         </div>
@@ -174,51 +186,45 @@
                 });
             }
 
+            function updateEntries(id) {
+                let newEntries = parseInt(document.getElementById(`entries-${id}`).value);
+                if (isNaN(newEntries) || newEntries < 1) return;
+                subheadingEntries[id] = newEntries;
+                reorderSubheadings();
+            }
+
+            function reorderSubheadings() {
+                let mainEditorContainer = document.getElementById("main-editor");
+                mainEditorContainer.innerHTML = "";
+
+                let reorderedSubheadings = [];
+                Object.keys(subheadingEntries).forEach(id => {
+                    let entries = subheadingEntries[id];
+                    for (let i = 0; i < entries; i++) {
+                        reorderedSubheadings.push(subheadings[id]);
+                    }
+                });
+
+                subheadings = reorderedSubheadings;
+                renderSubheadings();
+            }
+
             function addSubheading(afterId) {
                 let newSubheading = prompt("Enter subheading name:");
                 if (!newSubheading) return;
 
                 let id = subheadingCounter++;
                 subheadings.splice(afterId + 1, 0, newSubheading);
+                subheadingEntries[id] = 1; 
 
-                let newSubheadingElement = document.createElement("div");
-                newSubheadingElement.innerHTML = createSubheadingBlock(newSubheading, id);
-                let mainEditorContainer = document.getElementById("main-editor");
-
-                let referenceNode = document.getElementById(`subheading-${afterId}`);
-                if (referenceNode) {
-                    referenceNode.insertAdjacentElement("afterend", newSubheadingElement.firstElementChild);
-                } else {
-                    mainEditorContainer.appendChild(newSubheadingElement.firstElementChild);
-                }
-
-                innerEditors[id] = new EditorJS({
-                    holder: `editor-${id}`,
-                    autofocus: false,
-                    tools: { 
-                        header: { class: Header, inlineToolbar: true },
-                        paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } },
-                        marker: Marker,
-                        underline: Underline,
-                        table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
-                        image: {
-                            class: ImageTool,
-                            config: {
-                                endpoints: {
-                                    byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY',
-                                    byUrl: 'https://your-image-url-endpoint.com'
-                                }
-                            }
-                        }
-                    },
-                    data: { blocks: [] }
-                });
+                renderSubheadings();
             }
 
             function removeSubheading(id) {
                 document.getElementById(`subheading-${id}`).remove();
                 delete innerEditors[id];
                 subheadings = subheadings.filter((_, index) => index !== id);
+                delete subheadingEntries[id];
             }
 
             function saveAllData(manual = false) {
@@ -238,11 +244,7 @@
             }
 
             setInterval(saveAllData, 10000);
-
             renderSubheadings();
-            window.addSubheading = addSubheading;
-            window.removeSubheading = removeSubheading;
-            window.saveAllData = saveAllData;
         });
     </script>
 
