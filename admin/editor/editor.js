@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             console.log("✅ Editor.js is ready!");
         },
         onChange: () => {
-            console.log("✏️ Editor content changed!");
+            console.log("✏️ Editorjs content changed!");
         }
     });
 
