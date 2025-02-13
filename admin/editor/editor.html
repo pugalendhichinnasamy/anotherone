@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Dynamic Subheadings and Checkboxes</title>
+    <title>Editor.js with Checkboxes Before Subheadings</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -63,71 +64,66 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Dynamic Subheadings and Checkboxes</h1>
+        <h1>Editor.js with Checkboxes Before Subheadings</h1>
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
-        function loadCheckboxState() {
-            return JSON.parse(localStorage.getItem("subheadingCheckboxState")) || {};
-        }
-
-        function saveCheckboxState(state) {
-            localStorage.setItem("subheadingCheckboxState", JSON.stringify(state));
-        }
-
-        function updateCheckboxState(id) {
-            const checkbox = document.getElementById(`checkbox-${id}`);
-            const state = loadCheckboxState();
-            state[id] = checkbox.checked;
-            saveCheckboxState(state);
-        }
-
-        class CustomHeader {
+        class CheckboxSubheading {
             static get toolbox() {
-                return { title: 'Heading', icon: 'H' };
+                return {
+                    title: 'Checkbox Subheading',
+                    icon: '✓'
+                };
             }
 
             constructor({ data }) {
-                this.data = data;
-                this.wrapper = document.createElement('div');
+                this.data = data || { checked: false, text: '' };
             }
 
             render() {
-                const state = loadCheckboxState();
-                this.wrapper.innerHTML = `
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="checkbox-${this.data.text}" ${state[this.data.text] ? 'checked' : ''}>
-                        <strong>${this.data.text || 'New Subheading'}</strong>
-                    </label>
-                `;
-                setTimeout(() => {
-                    const checkbox = document.getElementById(`checkbox-${this.data.text}`);
-                    if (checkbox) {
-                        checkbox.addEventListener("change", () => updateCheckboxState(this.data.text));
-                    }
-                }, 100);
-                return this.wrapper;
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('checkbox-label');
+
+                this.checkbox = document.createElement('input');
+                this.checkbox.type = 'checkbox';
+                this.checkbox.checked = this.data.checked;
+                this.checkbox.onchange = () => this.data.checked = this.checkbox.checked;
+
+                this.input = document.createElement('input');
+                this.input.type = 'text';
+                this.input.value = this.data.text;
+                this.input.placeholder = 'Subheading...';
+                this.input.oninput = () => this.data.text = this.input.value;
+
+                wrapper.appendChild(this.checkbox);
+                wrapper.appendChild(this.input);
+                return wrapper;
             }
 
             save() {
-                return { text: this.wrapper.innerText.trim() };
+                return {
+                    checked: this.checkbox.checked,
+                    text: this.input.value
+                };
             }
         }
 
-        let editor = new EditorJS({
+        const editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
                 header: {
-                    class: CustomHeader,
+                    class: Header,
                     inlineToolbar: true
                 },
-                list: {
-                    class: List,
-                    inlineToolbar: true
-                }
+                checklist: CheckboxSubheading
+            },
+            data: JSON.parse(localStorage.getItem('editorData')) || {},
+            onChange: async () => {
+                const savedData = await editor.save();
+                localStorage.setItem('editorData', JSON.stringify(savedData));
             }
         });
 
@@ -135,6 +131,7 @@
             editor.save().then((outputData) => {
                 console.log("Saved Data: ", outputData);
                 alert("Content saved! Check the console for details.");
+                localStorage.setItem('editorData', JSON.stringify(outputData));
             }).catch((error) => {
                 console.error("Saving failed: ", error);
             });
