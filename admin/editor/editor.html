@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Dynamic Subheadings</title>
+    <title>Editor.js with Editable Subheading Numbers</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -39,6 +39,9 @@
         }
 
         .subheading-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #ddd;
@@ -48,21 +51,21 @@
         }
 
         .subheading-number {
+            width: 40px;
+            text-align: center;
             font-weight: bold;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: #007bff;
-            color: white;
-            padding: 3px 6px;
+            border: none;
+            background: #fff;
+            padding: 3px;
             border-radius: 5px;
+            font-size: 14px;
         }
 
         .checkbox-label {
-            font-weight: bold;
             display: flex;
             align-items: center;
-            margin-left: 40px;
+            flex-grow: 1;
+            margin-left: 10px;
         }
 
         .checkbox-label input {
@@ -70,6 +73,7 @@
         }
 
         .editor-box {
+            width: 100%;
             min-height: 150px;
             padding: 10px;
             border: 1px solid #ccc;
@@ -79,10 +83,8 @@
         }
 
         .btn-container {
-            position: absolute;
-            top: 10px;
-            right: 10px;
             display: flex;
+            align-items: center;
             gap: 5px;
         }
 
@@ -128,7 +130,7 @@
 <body>
 
     <div class="container">
-        <h1>Dynamic Editor.js with Nested Subheadings</h1>
+        <h1>Editor.js with Editable Subheading Numbers</h1>
 
         <div id="main-editor"></div>
 
@@ -137,24 +139,28 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let subheadings = ["Name", "Age", "Address", "Phone Number"];
-            let innerEditors = {}; 
-            let subheadingCounter = subheadings.length; 
-            let startingNumber = 11; 
+            let subheadings = [
+                { title: "Name", number: 11 },
+                { title: "Age", number: 12 },
+                { title: "Address", number: 13 },
+                { title: "Phone Number", number: 14 }
+            ];
 
+            let innerEditors = {};
+            
             function createSubheadingBlock(subheading, index) {
-                let number = startingNumber + index;
                 return `
                     <div class="subheading-container" id="subheading-${index}">
-                        <span class="subheading-number">${number}</span>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="checkbox-${index}">
-                            ${subheading}
-                        </label>
                         <div class="btn-container">
+                            <input type="number" class="subheading-number" value="${subheading.number}" 
+                                onchange="updateSubheadingOrder(${index}, this.value)">
                             <button class="add-subheading-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         </div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="checkbox-${index}">
+                            ${subheading.title}
+                        </label>
                         <div id="editor-${index}" class="editor-box"></div>
                     </div>
                 `;
@@ -162,6 +168,7 @@
 
             function renderSubheadings() {
                 let mainEditorContainer = document.getElementById("main-editor");
+                subheadings.sort((a, b) => a.number - b.number);
                 mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
                 subheadings.forEach((sub, index) => {
@@ -193,8 +200,9 @@
                 let newSubheading = prompt("Enter subheading name:");
                 if (!newSubheading) return;
 
-                subheadings.splice(afterIndex + 1, 0, newSubheading);
-                subheadingCounter++;
+                let newNumber = subheadings[afterIndex].number + 1;
+                subheadings.splice(afterIndex + 1, 0, { title: newSubheading, number: newNumber });
+
                 renderSubheadings();
             }
 
@@ -202,10 +210,16 @@
                 let confirmDelete = confirm("Are you sure you want to remove this subheading?");
                 if (confirmDelete) {
                     subheadings.splice(index, 1);
-                    delete innerEditors[index];
-                    subheadingCounter--;
                     renderSubheadings();
                 }
+            }
+
+            function updateSubheadingOrder(index, newNumber) {
+                newNumber = parseInt(newNumber);
+                if (isNaN(newNumber)) return;
+
+                subheadings[index].number = newNumber;
+                renderSubheadings();
             }
 
             function saveAllData(manual = false) {
@@ -213,8 +227,8 @@
                 let savePromises = subheadings.map((sub, index) => {
                     if (innerEditors[index]) {
                         return innerEditors[index].save().then(outputData => {
-                            allData[sub] = outputData;
-                        }).catch(error => console.error(`Saving failed for ${sub}:`, error));
+                            allData[sub.title] = outputData;
+                        }).catch(error => console.error(`Saving failed for ${sub.title}:`, error));
                     }
                 });
 
@@ -229,6 +243,7 @@
             renderSubheadings();
             window.addSubheading = addSubheading;
             window.removeSubheading = removeSubheading;
+            window.updateSubheadingOrder = updateSubheadingOrder;
             window.saveAllData = saveAllData;
         });
     </script>
