@@ -1,9 +1,11 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Create the outer Editor.js instance
+    // Initialize Outer Editor
     const outerEditor = new EditorJS({
         holder: 'outer-editor',
         autofocus: true,
-        tools: {},
+        tools: {
+            header: Header
+        },
         onReady: () => {
             console.log("Outer Editor.js is ready!");
         },
@@ -20,35 +22,35 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Function to initialize the inner Editor.js inside a specific div
-    function initializeInnerEditor(holderId) {
-        return new EditorJS({
-            holder: holderId,
-            autofocus: false,
-            tools: {},
-            onReady: () => {
-                console.log(`Inner Editor.js inside ${holderId} is ready!`);
-            },
-            onChange: () => {
-                saveInnerEditorData(holderId);
-            }
-        });
-    }
+    // Initialize Inner Editor inside outer
+    const innerEditor = new EditorJS({
+        holder: 'inner-editor',
+        autofocus: false,
+        tools: {
+            header: Header
+        },
+        onReady: () => {
+            console.log("Inner Editor.js is ready!");
+        },
+        onChange: () => {
+            saveInnerEditorData();
+        }
+    });
 
-    function saveInnerEditorData(holderId) {
-        innerEditors[holderId].save().then((outputData) => {
-            console.log(`Inner Editor Data for ${holderId}:`, outputData);
+    function saveInnerEditorData() {
+        innerEditor.save().then((outputData) => {
+            console.log("Inner Editor Data:", outputData);
         }).catch((error) => {
-            console.error(`Inner Editor saving failed for ${holderId}:`, error);
+            console.error("Inner Editor saving failed:", error);
         });
     }
 
-    // Creating an inner Editor.js instance dynamically
-    const innerEditorContainer = document.getElementById("inner-editor-container");
-    const innerEditorDiv = document.createElement("div");
-    innerEditorDiv.id = "inner-editor";
-    innerEditorContainer.appendChild(innerEditorDiv);
+    // Save both editors when button is clicked
+    function saveData() {
+        saveOuterEditorData();
+        saveInnerEditorData();
+        alert("Content saved! Check the console for details.");
+    }
 
-    const innerEditors = {};
-    innerEditors["inner-editor"] = initializeInnerEditor("inner-editor");
+    window.saveData = saveData; // Expose to global scope for button click
 });
