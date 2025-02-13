@@ -19,9 +19,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
 
-    <!-- ✅ Corrected Text Alignment Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/editorjs-text-alignment-blocktune@latest"></script>
-
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .container { width: 60%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); }
@@ -79,11 +76,7 @@
                     holder: `editor-${index}`,
                     tools: {
                         header: { class: Header, inlineToolbar: true },
-                        paragraph: { 
-                            class: Paragraph, 
-                            inlineToolbar: true, 
-                            tunes: ['textAlignment']  // ✅ Text Alignment Plugin Enabled
-                        },
+                        paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
                         marker: Marker,
@@ -93,21 +86,12 @@
                             class: ImageTool,
                             config: {
                                 endpoints: {
-                                    byFile: "https://your-backend.com/uploadFile", // Image upload URL
-                                    byUrl: "https://your-backend.com/fetchUrl"   // Fetch image from URL
+                                    byFile: "https://your-backend.com/uploadFile",
+                                    byUrl: "https://your-backend.com/fetchUrl"
                                 }
                             }
                         },
-                        code: CodeTool,
-
-                        // ✅ Fixed Text Alignment Tool
-                        textAlignment: {
-                            class: TextAlignmentBlockTune,
-                            config: {
-                                default: "left",
-                                availableAlignments: ["left", "center", "right", "justify"]
-                            }
-                        }
+                        code: CodeTool
                     },
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
                 });
