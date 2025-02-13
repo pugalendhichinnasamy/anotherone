@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nested Editor.js</title>
+    <title>Editor.js with Checkboxes</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -28,7 +28,7 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        h1, h2 {
+        h1 {
             text-align: center;
             color: #333;
         }
@@ -40,15 +40,6 @@
             border-radius: 5px;
             background: #fff;
             margin-top: 20px;
-            position: relative;
-        }
-
-        .inner-editor-container {
-            margin-top: 10px;
-            padding: 10px;
-            border: 1px dashed #999;
-            border-radius: 5px;
-            background: #f9f9f9;
         }
 
         .save-btn {
@@ -66,87 +57,70 @@
         .save-btn:hover {
             background: #0056b3;
         }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-container input {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Nested Editor</h1>
+        <h1>Editor.js with Default Checkboxes</h1>
 
-        <!-- Outer Editor -->
-        <div id="outer-editor" class="editor"></div>
+        <!-- Editor -->
+        <div id="editorjs" class="editor"></div>
 
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let innerEditorInstance = null; // Track inner editor instance
+            // Default subheadings with checkboxes
+            let defaultContent = [
+                { text: "Name", checked: false },
+                { text: "Age", checked: false },
+                { text: "Address", checked: false },
+                { text: "Phone Number", checked: false }
+            ];
 
-            // Initialize Outer Editor
-            const outerEditor = new EditorJS({
-                holder: 'outer-editor',
+            function createCheckboxBlock(subheading, checked) {
+                return {
+                    type: "paragraph",
+                    data: {
+                        text: `<label class="checkbox-container">
+                                  <input type="checkbox" ${checked ? "checked" : ""}>
+                                  <strong>${subheading}</strong>
+                               </label>`
+                    }
+                };
+            }
+
+            // Initialize Editor.js with default subheadings
+            const editor = new EditorJS({
+                holder: 'editorjs',
                 autofocus: true,
                 tools: { header: Header },
-                onReady: () => console.log("Outer Editor.js is ready!"),
-                onChange: () => saveOuterEditorData()
-            });
-
-            function saveOuterEditorData() {
-                outerEditor.save().then(outputData => {
-                    console.log("Outer Editor Data:", outputData);
-                }).catch(error => console.error("Outer Editor saving failed:", error));
-            }
-
-            function loadInnerEditor(containerId) {
-                if (!innerEditorInstance) { // Prevent multiple instances
-                    innerEditorInstance = new EditorJS({
-                        holder: containerId,
-                        autofocus: true,
-                        tools: { header: Header },
-                        onReady: () => console.log("Inner Editor.js is ready!"),
-                        onChange: () => saveInnerEditorData()
-                    });
-
-                    document.getElementById(containerId).focus(); // Keep focus inside
-                }
-            }
-
-            function saveInnerEditorData() {
-                if (innerEditorInstance) {
-                    innerEditorInstance.save().then(outputData => {
-                        console.log("Inner Editor Data:", outputData);
-                    }).catch(error => console.error("Inner Editor saving failed:", error));
-                }
-            }
-
-            // Add Inner Editor Only on Click in Outer Editor
-            document.getElementById("outer-editor").addEventListener("click", function (event) {
-                if (!document.getElementById("inner-editor")) {
-                    let innerEditorContainer = document.createElement("div");
-                    innerEditorContainer.className = "inner-editor-container";
-                    innerEditorContainer.innerHTML = `<h2>Inner Editor</h2><div id="inner-editor"></div>`;
-                    event.target.appendChild(innerEditorContainer);
-
-                    loadInnerEditor("inner-editor"); // Load inner editor inside block
-                }
-            });
-
-            // Prevent Losing Focus from Inner Editor
-            document.addEventListener("click", function (event) {
-                let innerEditor = document.getElementById("inner-editor");
-                if (innerEditor && !innerEditor.contains(event.target) && !event.target.closest(".inner-editor-container")) {
-                    event.stopPropagation();
-                }
+                data: {
+                    blocks: defaultContent.map(sub => createCheckboxBlock(sub.text, sub.checked))
+                },
+                onReady: () => console.log("Editor.js is ready!"),
+                onChange: () => saveData()
             });
 
             function saveData() {
-                saveOuterEditorData();
-                saveInnerEditorData();
-                alert("Content saved! Check the console for details.");
+                editor.save().then(outputData => {
+                    console.log("Saved Data:", outputData);
+                }).catch(error => console.error("Saving failed:", error));
             }
 
-            window.saveData = saveData; // Expose function globally
+            window.saveData = saveData; // Expose globally
         });
     </script>
 
