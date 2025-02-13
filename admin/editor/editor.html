@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Multi-Color Marker & Paste Formatting</title>
+    <title>Editor.js with Copy-Paste Formatting</title>
     
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -11,11 +11,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paste-handler@latest"></script> <!-- Paste Handler -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paste-handler@latest"></script> <!-- Handles copy-paste formatting -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script> <!-- Helps with text spacing -->
 
     <style>
         body {
@@ -45,45 +47,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Multi-Color Marker & Paste Formatting</h1>
+        <h1>Editor.js with Copy-Paste Formatting</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="editor"></div>
     </div>
 
     <script>
-        class MultiColorMarker {
-            static get isInline() { return true; }
-            static get title() { return "Multi-Color Marker"; }
-            static get sanitize() { return { span: true }; }
-
-            constructor() {
-                this.button = document.createElement("button");
-                this.button.innerHTML = "🖍️";
-                this.button.style.cursor = "pointer";
-                this.button.onclick = () => this.selectColor();
-            }
-
-            render() {
-                return this.button;
-            }
-
-            surround(range) {
-                if (!this.color) this.color = this.getRandomColor();
-                const span = document.createElement("span");
-                span.style.backgroundColor = this.color;
-                range.surroundContents(span);
-            }
-
-            selectColor() {
-                this.color = prompt("Enter highlight color (yellow, pink, blue, green, orange):");
-            }
-
-            getRandomColor() {
-                const colors = ["yellow", "pink", "blue", "green", "orange"];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-        }
-
         const editor = new EditorJS({
             holder: "editor",
             tools: {
@@ -93,10 +62,9 @@
                     config: { preserveBlank: true }
                 },
                 header: { class: Header, inlineToolbar: true },
+                list: { class: List, inlineToolbar: true }, // Supports bullet points & numbered lists
                 table: Table,
                 quote: { class: Quote, inlineToolbar: true },
-                marker: MultiColorMarker,
-                underline: Underline,
                 link: {
                     class: LinkTool,
                     config: { endpoint: "https://your-backend.com/fetchUrl" }
@@ -111,9 +79,10 @@
                     }
                 },
                 code: CodeTool,
+                delimiter: Delimiter, // Handles spacing between copied text sections
                 pasteHandler: {
                     class: PasteHandler,
-                    config: { convertPasteToMarkdown: false } // Keep rich text formatting
+                    config: { convertPasteToMarkdown: false } // Keeps original formatting
                 }
             },
             data: JSON.parse(localStorage.getItem("editor-data")) || { blocks: [] }
