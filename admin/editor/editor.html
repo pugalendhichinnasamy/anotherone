@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js - Add Headings Dynamically</title>
+    <title>Editor.js - Add Headings and Type</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
 
     <style>
@@ -30,6 +31,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             background: #fff;
+            text-align: left;
         }
         .btn {
             margin-top: 10px;
@@ -49,7 +51,7 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js - Add Headings Dynamically</h1>
+        <h1>Editor.js - Add Headings and Type</h1>
         <div id="editorjs"></div>
         <button class="btn" onclick="addHeading()">➕ Add Heading</button>
     </div>
@@ -67,12 +69,16 @@
                         defaultLevel: 2
                     }
                 },
+                paragraph: {
+                    class: Paragraph,
+                    inlineToolbar: true
+                },
                 list: {
                     class: List,
                     inlineToolbar: true
                 }
             },
-            data: JSON.parse(localStorage.getItem('editorData')) || {},
+            data: JSON.parse(localStorage.getItem('editorData')) || { blocks: [] },
             onChange: async () => {
                 const savedData = await editor.save();
                 localStorage.setItem('editorData', JSON.stringify(savedData));
@@ -84,6 +90,9 @@
                 editor.blocks.insert('header', {
                     text: 'New Heading',
                     level: 2
+                });
+                editor.blocks.insert('paragraph', {
+                    text: 'Type here...'
                 });
             }).catch((error) => {
                 console.error('Editor.js is not ready:', error);
