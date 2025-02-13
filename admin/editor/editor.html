@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Editor.js with Full Features</title>
+    <title>Enhanced Editor.js</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -11,7 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script> <!-- ✅ Fixed: Added List Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/text-alignment@latest"></script>
@@ -87,7 +86,7 @@
 <body>
 
     <div class="container">
-        <h1>Enhanced Editor.js with Full Features</h1>
+        <h1>Enhanced Editor.js</h1>
 
         <div id="main-editor"></div>
 
@@ -122,14 +121,10 @@
                     autofocus: false,
                     tools: { 
                         header: { class: Header, inlineToolbar: true },
-                        paragraph: { 
-                            class: Paragraph, 
-                            config: { preserveBlank: true, inlineToolbar: true } 
-                        },
+                        paragraph: { class: Paragraph, config: { preserveBlank: true, inlineToolbar: true } },
                         marker: Marker, // Highlight text
                         underline: Underline, // Underline text
                         table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
-                        list: { class: List, inlineToolbar: true }, // ✅ Fixed: Added List Plugin
                         image: {
                             class: ImageTool,
                             config: {
