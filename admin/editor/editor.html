@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nested Editor.js with Inline Tools & Auto-Save</title>
+    <title>Editor.js with Table Support</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script> <!-- Inline Marker Tool -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script> <!-- Table Plugin -->
 
     <style>
         body {
@@ -82,7 +83,7 @@
 <body>
 
     <div class="container">
-        <h1>Nested Editor.js with Inline Tools & Auto-Save</h1>
+        <h1>Editor.js with Table Support</h1>
 
         <div id="main-editor"></div>
 
@@ -118,7 +119,15 @@
                     tools: { 
                         header: Header, 
                         paragraph: Paragraph,
-                        marker: Marker // Adding inline Marker tool for highlighting text
+                        marker: Marker, // Inline Marker tool
+                        table: {
+                            class: Table,
+                            inlineToolbar: true,
+                            config: {
+                                rows: 2,
+                                cols: 3,
+                            }
+                        }
                     },
                     data: { blocks: [] }
                 });
