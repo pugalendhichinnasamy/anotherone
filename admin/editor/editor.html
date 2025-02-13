@@ -3,18 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Saving Editor.js with Inline Tools</title>
+    <title>Auto-Saving Editor.js</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script">
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -94,7 +89,7 @@
 <body>
 
     <div class="container">
-        <h1>Auto-Saving Editor.js with Inline Tools</h1>
+        <h1>Auto-Saving Editor.js</h1>
 
         <div id="main-editor"></div>
 
@@ -123,43 +118,12 @@
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = defaultSubheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
-            // Editor.js tools with inline formatting
-            let editorTools = {
-                header: {
-                    class: Header,
-                    inlineToolbar: true
-                },
-                paragraph: {
-                    class: Paragraph,
-                    inlineToolbar: true
-                },
-                list: {
-                    class: List,
-                    inlineToolbar: true
-                },
-                marker: {
-                    class: Marker,
-                    shortcut: 'CMD+SHIFT+M'
-                },
-                inlineCode: {
-                    class: InlineCode,
-                    shortcut: 'CMD+SHIFT+C'
-                },
-                link: {
-                    class: LinkTool,
-                    config: {
-                        endpoint: "https://your-backend.com/fetchUrl"
-                    }
-                },
-                underline: Underline
-            };
-
             // Initialize Inner Editors for Each Subheading
             defaultSubheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
                     autofocus: false,
-                    tools: editorTools,
+                    tools: { paragraph: Paragraph },
                     data: { blocks: [] }
                 });
             });
