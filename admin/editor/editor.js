@@ -1,57 +1,54 @@
-import EditorJS from '@editorjs/editorjs'; 
-import Header from '@editorjs/header'; 
-import List from '@editorjs/list'; 
-
-    // Initialize Editor.js
-    const editor = new EditorJS({
-        holder: "editor",
+document.addEventListener("DOMContentLoaded", function () {
+    // Create the outer Editor.js instance
+    const outerEditor = new EditorJS({
+        holder: 'outer-editor',
         autofocus: true,
-        tools: {
-            header: {
-                class: Header,
-                inlineToolbar: true
-            },
-            list: {
-                class: List,
-                inlineToolbar: true
-            },
-            paragraph: {
-                class: Paragraph,
-                inlineToolbar: true
-            }
-        },
-        data: {
-            blocks: [
-                {
-                    type: "header",
-                    data: {
-                        text: "Type Your Title Here...",
-                        level: 2
-                    }
-                },
-                {
-                    type: "paragraph",
-                    data: {
-                        text: "Start writing your content here..."
-                    }
-                }
-            ]
-        },
+        tools: {},
         onReady: () => {
-            console.log("✅ Editor.js is ready!");
+            console.log("Outer Editor.js is ready!");
         },
         onChange: () => {
-            console.log("✏️ Editor content changed!");
+            saveOuterEditorData();
         }
     });
 
-    document.getElementById("save-btn").addEventListener("click", async () => {
-        try {
-            const savedData = await editor.save();
-            localStorage.setItem("editorContent", JSON.stringify(savedData));
-            alert("✅ Content Saved!");
-        } catch (error) {
-            console.error("❌ Saving failed:", error);
-        }
-    });
-})
+    function saveOuterEditorData() {
+        outerEditor.save().then((outputData) => {
+            console.log("Outer Editor Data:", outputData);
+        }).catch((error) => {
+            console.error("Outer Editor saving failed:", error);
+        });
+    }
+
+    // Function to initialize the inner Editor.js inside a specific div
+    function initializeInnerEditor(holderId) {
+        return new EditorJS({
+            holder: holderId,
+            autofocus: false,
+            tools: {},
+            onReady: () => {
+                console.log(`Inner Editor.js inside ${holderId} is ready!`);
+            },
+            onChange: () => {
+                saveInnerEditorData(holderId);
+            }
+        });
+    }
+
+    function saveInnerEditorData(holderId) {
+        innerEditors[holderId].save().then((outputData) => {
+            console.log(`Inner Editor Data for ${holderId}:`, outputData);
+        }).catch((error) => {
+            console.error(`Inner Editor saving failed for ${holderId}:`, error);
+        });
+    }
+
+    // Creating an inner Editor.js instance dynamically
+    const innerEditorContainer = document.getElementById("inner-editor-container");
+    const innerEditorDiv = document.createElement("div");
+    innerEditorDiv.id = "inner-editor";
+    innerEditorContainer.appendChild(innerEditorDiv);
+
+    const innerEditors = {};
+    innerEditors["inner-editor"] = initializeInnerEditor("inner-editor");
+});
