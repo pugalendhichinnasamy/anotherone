@@ -15,7 +15,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paste-handler@latest"></script> 
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script> 
 
     <style>
@@ -55,11 +54,7 @@
         const editor = new EditorJS({
             holder: "editor",
             tools: {
-                paragraph: {
-                    class: Paragraph,
-                    inlineToolbar: true,
-                    config: { preserveBlank: true }
-                },
+                paragraph: { class: Paragraph, inlineToolbar: true },
                 header: { class: Header, inlineToolbar: true },
                 table: Table,
                 quote: { class: Quote, inlineToolbar: true },
@@ -77,13 +72,17 @@
                     }
                 },
                 code: CodeTool,
-                delimiter: Delimiter,
-                pasteHandler: {
-                    class: PasteHandler,
-                    config: { convertPasteToMarkdown: false } 
-                }
+                delimiter: Delimiter
             },
-            data: JSON.parse(localStorage.getItem("editor-data")) || { blocks: [] }
+            data: JSON.parse(localStorage.getItem("editor-data")) || { blocks: [] },
+            onReady: () => {
+                console.log("Editor.js is ready!");
+            },
+            onChange: () => {
+                editor.save().then((outputData) => {
+                    localStorage.setItem("editor-data", JSON.stringify(outputData));
+                });
+            }
         });
 
         function clearAllData() {
@@ -92,13 +91,6 @@
                 editor.clear();
             }
         }
-
-        window.addEventListener("beforeunload", () => {
-            editor.save().then((outputData) => {
-                localStorage.setItem("editor-data", JSON.stringify(outputData));
-            });
-        });
-
     </script>
 </body>
 </html>
