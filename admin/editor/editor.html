@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes Before Subheadings</title>
+    <title>Editor.js with Dynamic Heading Addition</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
@@ -38,9 +38,12 @@
             border-radius: 5px;
             background: #fff;
         }
-        .save-btn {
-            display: block;
-            margin: 20px auto;
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+        .btn {
             padding: 10px 20px;
             font-size: 16px;
             background: #007bff;
@@ -48,81 +51,44 @@
             border: none;
             cursor: pointer;
             border-radius: 5px;
+            margin: 5px;
         }
-        .save-btn:hover {
+        .btn:hover {
             background: #0056b3;
-        }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-        }
-        .checkbox-label input {
-            margin-right: 8px;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Checkboxes Before Subheadings</h1>
+        <h1>Editor.js with Dynamic Heading Addition</h1>
+        
         <div id="editorjs"></div>
-        <button class="save-btn" onclick="saveData()">Save Content</button>
+
+        <div class="btn-container">
+            <button class="btn" onclick="addDefaultHeading()">➕ Add Heading</button>
+            <button class="btn" onclick="saveData()">💾 Save Content</button>
+        </div>
     </div>
 
     <script>
-        class CheckboxSubheading {
-            static get toolbox() {
-                return {
-                    title: 'Checkbox Subheading',
-                    icon: '✓'
-                };
-            }
-
-            constructor({ data }) {
-                this.data = data || { checked: false, text: '' };
-            }
-
-            render() {
-                const wrapper = document.createElement('div');
-                wrapper.classList.add('checkbox-label');
-
-                this.checkbox = document.createElement('input');
-                this.checkbox.type = 'checkbox';
-                this.checkbox.checked = this.data.checked;
-                this.checkbox.onchange = () => this.data.checked = this.checkbox.checked;
-
-                this.input = document.createElement('input');
-                this.input.type = 'text';
-                this.input.value = this.data.text;
-                this.input.placeholder = 'Subheading...';
-                this.input.oninput = () => this.data.text = this.input.value;
-
-                wrapper.appendChild(this.checkbox);
-                wrapper.appendChild(this.input);
-                return wrapper;
-            }
-
-            save() {
-                return {
-                    checked: this.checkbox.checked,
-                    text: this.input.value
-                };
-            }
-        }
-
         const editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
                 header: {
                     class: Header,
+                    config: {
+                        placeholder: 'Enter a heading...',
+                        levels: [2, 3, 4],
+                        defaultLevel: 2
+                    },
                     inlineToolbar: true
                 },
                 list: {
                     class: List,
                     inlineToolbar: true
-                },
-                checklist: CheckboxSubheading
+                }
             },
             data: JSON.parse(localStorage.getItem('editorData')) || {},
             onChange: async () => {
@@ -130,6 +96,13 @@
                 localStorage.setItem('editorData', JSON.stringify(savedData));
             }
         });
+
+        function addDefaultHeading() {
+            editor.blocks.insert('header', {
+                text: 'New Heading',
+                level: 2
+            });
+        }
 
         function saveData() {
             editor.save().then((outputData) => {
