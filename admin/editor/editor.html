@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basic Inline Tools in Editor.js</title>
+    <title>Editor.js with Basic Inline Tools</title>
 
-    <!-- Load Editor.js and Plugins -->
+    <!-- Load Editor.js -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+    <!-- Load Inline Tools -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/editorjs-underline@latest"></script>
 
     <style>
         body {
@@ -36,7 +38,7 @@
             color: #333;
         }
 
-        #editor {
+        #editorjs {
             min-height: 300px;
             padding: 10px;
             border: 1px solid #ccc;
@@ -64,14 +66,15 @@
 <body>
 
     <div class="container">
-        <h1>Basic Inline Tools in Editor.js</h1>
-        <div id="editor"></div>
+        <h1>Editor.js - Inline Tools</h1>
+        <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
+        // Initialize Editor.js
         const editor = new EditorJS({
-            holder: 'editor',
+            holder: 'editorjs',
             autofocus: true,
             tools: {
                 header: {
@@ -85,14 +88,17 @@
                 inlineCode: {
                     class: InlineCode
                 },
-                underline: Underline
+                underline: {
+                    class: Underline
+                }
             }
         });
 
+        // Save Data Function
         function saveData() {
             editor.save().then((outputData) => {
                 console.log("Saved Data:", outputData);
-                alert("Content saved! Check the console for details.");
+                alert("Content saved! Check the console.");
             }).catch((error) => {
                 console.error("Saving failed:", error);
             });
