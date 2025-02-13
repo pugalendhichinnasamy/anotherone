@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Saving Editor.js</title>
+    <title>Basic Inline Tools in Editor.js</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
 
     <style>
         body {
@@ -34,31 +36,12 @@
             color: #333;
         }
 
-        .subheading-container {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-        }
-
-        .checkbox-label {
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-        }
-
-        .checkbox-label input {
-            margin-right: 10px;
-        }
-
-        .editor-box {
-            min-height: 150px;
+        #editor {
+            min-height: 300px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             background: #fff;
-            margin-top: 10px;
         }
 
         .save-btn {
@@ -76,82 +59,44 @@
         .save-btn:hover {
             background: #0056b3;
         }
-
-        .autosave-message {
-            text-align: center;
-            font-size: 14px;
-            color: green;
-            margin-top: 10px;
-            display: none;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Auto-Saving Editor.js</h1>
-
-        <div id="main-editor"></div>
-
-        <button class="save-btn" onclick="saveAllData()">Save Content</button>
-        <p id="autosave-message" class="autosave-message">Auto-saved!</p>
+        <h1>Basic Inline Tools in Editor.js</h1>
+        <div id="editor"></div>
+        <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let defaultSubheadings = ["Name", "Age", "Address", "Phone Number"];
-            let innerEditors = {}; // Store inner editors
-
-            function createSubheadingBlock(subheading, id) {
-                return `
-                    <div class="subheading-container">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="checkbox-${id}">
-                            ${subheading}
-                        </label>
-                        <div id="editor-${id}" class="editor-box"></div>
-                    </div>
-                `;
+        const editor = new EditorJS({
+            holder: 'editor',
+            autofocus: true,
+            tools: {
+                header: {
+                    class: Header,
+                    inlineToolbar: true
+                },
+                paragraph: {
+                    class: Paragraph,
+                    inlineToolbar: true
+                },
+                inlineCode: {
+                    class: InlineCode
+                },
+                underline: Underline
             }
-
-            // Render default subheadings
-            let mainEditorContainer = document.getElementById("main-editor");
-            mainEditorContainer.innerHTML = defaultSubheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
-            // Initialize Inner Editors for Each Subheading
-            defaultSubheadings.forEach((sub, index) => {
-                innerEditors[index] = new EditorJS({
-                    holder: `editor-${index}`,
-                    autofocus: false,
-                    tools: { paragraph: Paragraph },
-                    data: { blocks: [] }
-                });
-            });
-
-            function saveAllData() {
-                let allData = {};
-                let savePromises = defaultSubheadings.map((sub, index) => {
-                    return innerEditors[index].save().then(outputData => {
-                        allData[sub] = outputData;
-                    }).catch(error => console.error(`Saving failed for ${sub}:`, error));
-                });
-
-                Promise.all(savePromises).then(() => {
-                    console.log("All Saved Data:", allData);
-                    document.getElementById("autosave-message").style.display = "block";
-                    setTimeout(() => {
-                        document.getElementById("autosave-message").style.display = "none";
-                    }, 2000);
-                });
-            }
-
-            window.saveAllData = saveAllData; // Expose globally
-
-            // 🔴 Auto-Save Every 10 Seconds
-            setInterval(() => {
-                saveAllData();
-            }, 10000);
         });
+
+        function saveData() {
+            editor.save().then((outputData) => {
+                console.log("Saved Data:", outputData);
+                alert("Content saved! Check the console for details.");
+            }).catch((error) => {
+                console.error("Saving failed:", error);
+            });
+        }
     </script>
 
 </body>
