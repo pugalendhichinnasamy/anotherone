@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Persistent Toggles & Drag-and-Drop</title>
+    <title>Editor.js with Checkboxes Before Subheadings</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -51,16 +51,11 @@
         .save-btn:hover {
             background: #0056b3;
         }
-        .toggle-container {
+        .checkbox-label {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
-            cursor: grab;
-            background: #f9f9f9;
-            padding: 8px;
-            border-radius: 5px;
         }
-        .toggle-container input {
+        .checkbox-label input {
             margin-right: 8px;
         }
     </style>
@@ -68,106 +63,74 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Persistent Toggles & Drag-and-Drop</h1>
-
-        <div id="toggle-section"></div>
+        <h1>Editor.js with Checkboxes Before Subheadings</h1>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
-        let subheadings = JSON.parse(localStorage.getItem("subheadings")) || ["name", "books", "news", "things", "others"];
+        const subheadings = ["name", "books", "news", "things", "others"];
 
         function loadCheckboxState() {
-            return JSON.parse(localStorage.getItem("subheadingState")) || {};
+            return JSON.parse(localStorage.getItem("subheadingCheckboxState")) || {};
         }
 
         function saveCheckboxState(state) {
-            localStorage.setItem("subheadingState", JSON.stringify(state));
+            localStorage.setItem("subheadingCheckboxState", JSON.stringify(state));
         }
 
-        function saveSubheadingOrder() {
-            localStorage.setItem("subheadings", JSON.stringify(subheadings));
-        }
-
-        function createToggleControls() {
-            const toggleSection = document.getElementById("toggle-section");
-            toggleSection.innerHTML = "";
-
+        function getEditorData() {
             const state = loadCheckboxState();
-
-            subheadings.forEach(id => {
-                const container = document.createElement("div");
-                container.className = "toggle-container";
-                container.dataset.id = id;
-
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.id = `toggle-${id}`;
-                checkbox.checked = state[id] !== false; 
-                checkbox.onclick = () => toggleVisibility(id);
-
-                const label = document.createElement("label");
-                label.htmlFor = `toggle-${id}`;
-                label.textContent = id.charAt(0).toUpperCase() + id.slice(1);
-
-                container.appendChild(checkbox);
-                container.appendChild(label);
-                toggleSection.appendChild(container);
-            });
-
-            // Enable drag-and-drop sorting
-            new Sortable(toggleSection, {
-                animation: 150,
-                onEnd: function () {
-                    subheadings = [...toggleSection.children].map(div => div.dataset.id);
-                    saveSubheadingOrder();
-                }
-            });
+            return {
+                blocks: subheadings.map(id => ({
+                    id,
+                    type: "paragraph",
+                    data: {
+                        text: `<label class="checkbox-label">
+                            <input type="checkbox" id="checkbox-${id}" ${state[id] ? 'checked' : ''} onchange="updateCheckboxState('${id}')">
+                            <strong>${id.charAt(0).toUpperCase() + id.slice(1)}</strong>
+                        </label>`
+                    }
+                }))
+            };
         }
 
-        function toggleVisibility(id) {
-            const checkbox = document.getElementById(`toggle-${id}`);
+        function updateCheckboxState(id) {
+            const checkbox = document.getElementById(`checkbox-${id}`);
             const state = loadCheckboxState();
             state[id] = checkbox.checked;
             saveCheckboxState(state);
-            updateVisibility();
-        }
-
-        function updateVisibility() {
-            const state = loadCheckboxState();
-            subheadings.forEach(id => {
-                const editorContainer = document.querySelector(`[data-id="${id}"]`);
-                if (editorContainer) {
-                    editorContainer.style.display = state[id] !== false ? "block" : "none";
-                }
-            });
         }
 
         let editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
-                header: {
-                    class: Header,
-                    config: {
-                        placeholder: 'Enter a subheading',
-                        levels: [5],
-                        defaultLevel: 5
-                    }
+                paragraph: {
+                    class: class {
+                        render(data) {
+                            const div = document.createElement('div');
+                            div.innerHTML = data.text;
+                            return div;
+                        }
+                        save(blockContent) {
+                            return { text: blockContent.innerHTML };
+                        }
+                    },
+                    inlineToolbar: true
                 }
             },
-            data: {
-                blocks: subheadings.map(id => ({
-                    id,
-                    type: "header",
-                    data: { text: id.charAt(0).toUpperCase() + id.slice(1), level: 5 }
-                }))
-            },
+            data: getEditorData(),
             onReady: () => {
-                createToggleControls();
-                updateVisibility();
+                setTimeout(() => {
+                    subheadings.forEach(id => {
+                        const checkbox = document.getElementById(`checkbox-${id}`);
+                        if (checkbox) {
+                            checkbox.addEventListener("change", () => updateCheckboxState(id));
+                        }
+                    });
+                }, 100);
             }
         });
 
