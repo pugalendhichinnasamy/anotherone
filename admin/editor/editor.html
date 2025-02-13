@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js - Inline Code & Multi-Color Marker</title>
+    <title>Editor.js with Multi-Color Marker</title>
     
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script> <!-- Required -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
@@ -32,6 +32,28 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
+        .subheading-container {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .subheading-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         .editor-box {
             width: 100%;
             min-height: 150px;
@@ -40,127 +62,159 @@
             background: #fff;
             margin-top: 5px;
         }
+        .checkbox { margin-right: 10px; }
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 3px 8px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js - Inline Code & Multi-Color Marker</h1>
+        <h1>Editor.js with Multi-Color Marker</h1>
         <button onclick="clearAllData()">Clear All Data</button>
-        <div id="editor"></div>
+        <div id="main-editor"></div>
     </div>
 
     <script>
-        class InlineCode {
-            static get isInline() { return true; }
-            static get title() { return "Inline Code"; }
-            static get sanitize() { return { code: true }; }
-
-            render() {
-                const button = document.createElement("button");
-                button.innerHTML = "</>";
-                button.style.cursor = "pointer";
-                return button;
-            }
-
-            surround(range) {
-                const code = document.createElement("code");
-                range.surroundContents(code);
-            }
-        }
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+            { title: "Name", number: 11 },
+            { title: "Age", number: 12 },
+            { title: "Address", number: 13 }
+        ];
+        let innerEditors = {};
 
         class MultiColorMarker {
-            constructor({ api, config }) {
-                this.api = api;
-                this.color = config.color || "yellow";
+            static get isInline() { return true; }
+            static get title() { return "Multi-Color Marker"; }
+            static get sanitize() { return { span: true }; }
+
+            constructor() {
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
-                this.button.style.backgroundColor = this.color;
-                this.button.style.border = "none";
-                this.button.style.padding = "5px";
                 this.button.style.cursor = "pointer";
+                this.button.onclick = () => this.selectColor();
             }
-
-            static get isInline() { return true; }
-            static get sanitize() { return { span: true }; }
 
             render() {
                 return this.button;
             }
 
             surround(range) {
+                if (!this.color) this.color = this.getRandomColor();
                 const span = document.createElement("span");
                 span.style.backgroundColor = this.color;
                 range.surroundContents(span);
             }
-        }
 
-        const editor = new EditorJS({
-            holder: "editor",
-            tools: {
-                paragraph: {
-                    class: Paragraph,
-                    inlineToolbar: true
-                },
-                header: {
-                    class: Header,
-                    inlineToolbar: true
-                },
-                table: Table,
-                quote: {
-                    class: Quote,
-                    inlineToolbar: true
-                },
-                inlineCode: InlineCode,
-                markerYellow: {
-                    class: MultiColorMarker,
-                    inlineToolbar: true,
-                    config: { color: "yellow" }
-                },
-                markerPink: {
-                    class: MultiColorMarker,
-                    inlineToolbar: true,
-                    config: { color: "pink" }
-                },
-                markerBlue: {
-                    class: MultiColorMarker,
-                    inlineToolbar: true,
-                    config: { color: "blue" }
-                },
-                markerGreen: {
-                    class: MultiColorMarker,
-                    inlineToolbar: true,
-                    config: { color: "lightgreen" }
-                },
-                markerOrange: {
-                    class: MultiColorMarker,
-                    inlineToolbar: true,
-                    config: { color: "orange" }
-                },
-                underline: Underline,
-                link: {
-                    class: LinkTool,
-                    config: { endpoint: "https://your-backend.com/fetchUrl" }
-                },
-                image: {
-                    class: ImageTool,
-                    config: {
-                        endpoints: {
-                            byFile: "https://your-backend.com/uploadFile",
-                            byUrl: "https://your-backend.com/fetchUrl"
-                        }
-                    }
-                },
-                code: CodeTool
-            },
-            data: JSON.parse(localStorage.getItem("editor-data")) || { blocks: [] }
-        });
+            selectColor() {
+                this.color = prompt("Enter highlight color (yellow, pink, blue, green, orange):");
+            }
 
-        function clearAllData() {
-            if (confirm("Are you sure you want to clear all data?")) {
-                localStorage.removeItem("editor-data");
-                editor.clear();
+            getRandomColor() {
+                const colors = ["yellow", "pink", "blue", "green", "orange"];
+                return colors[Math.floor(Math.random() * colors.length)];
             }
         }
+
+        function createSubheadingBlock(subheading, index) {
+            return `
+                <div class="subheading-container" id="subheading-${index}">
+                    <div class="subheading-header">
+                        <div>
+                            <input type="checkbox" class="checkbox">
+                            ${subheading.title}
+                        </div>
+                        <div class="subheading-controls">
+                            <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateOrder(${index}, this.value)">
+                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                        </div>
+                    </div>
+                    <div id="editor-${index}" class="editor-box"></div>
+                </div>`;
+        }
+
+        function renderSubheadings() {
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            
+            subheadings.forEach((sub, index) => {
+                innerEditors[index] = new EditorJS({
+                    holder: `editor-${index}`,
+                    tools: {
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { class: Paragraph, inlineToolbar: true },
+                        table: Table,
+                        quote: { class: Quote, inlineToolbar: true },
+                        marker: MultiColorMarker,
+                        underline: Underline,
+                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        image: {
+                            class: ImageTool,
+                            config: {
+                                endpoints: {
+                                    byFile: "https://your-backend.com/uploadFile",
+                                    byUrl: "https://your-backend.com/fetchUrl"
+                                }
+                            }
+                        },
+                        code: CodeTool
+                    },
+                    data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
+                });
+            });
+        }
+
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1 });
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
+
+        function clearEditor(index) {
+            if (innerEditors[index]) {
+                innerEditors[index].clear();
+                localStorage.removeItem(`editor-${index}`);
+            }
+        }
+
+        function clearAllData() {
+            if (confirm("Clear all data?")) {
+                localStorage.clear();
+                subheadings = [];
+                renderSubheadings();
+            }
+        }
+
+        function updateOrder(index, newNumber) {
+            subheadings[index].number = parseInt(newNumber);
+            subheadings.sort((a, b) => a.number - b.number);
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        renderSubheadings();
     </script>
 </body>
 </html>
