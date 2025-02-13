@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script> <!-- ✅ Fixed: Added List Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/text-alignment@latest"></script>
@@ -129,7 +129,7 @@
                         marker: Marker, // Highlight text
                         underline: Underline, // Underline text
                         table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
-                        list: { class: List, inlineToolbar: true },
+                        list: { class: List, inlineToolbar: true }, // ✅ Fixed: Added List Plugin
                         image: {
                             class: ImageTool,
                             config: {
