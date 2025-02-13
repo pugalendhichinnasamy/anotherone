@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nested Editor.js with Inline Tools & Auto-Save</title>
+    <title>Editor.js with Rich Text Pasting & Auto-Save</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@latest"></script> <!-- For preserving formatting -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
@@ -36,26 +37,8 @@
             color: #333;
         }
 
-        .subheading-container {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-        }
-
-        .checkbox-label {
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-        }
-
-        .checkbox-label input {
-            margin-right: 10px;
-        }
-
         .editor-box {
-            min-height: 150px;
+            min-height: 200px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -83,67 +66,59 @@
 <body>
 
     <div class="container">
-        <h1>Nested Editor.js with Inline Tools & Auto-Save</h1>
+        <h1>Editor.js with Rich Text Pasting</h1>
 
-        <div id="main-editor"></div>
+        <div id="editorjs" class="editor-box"></div>
 
-        <button class="save-btn" onclick="saveAllData(true)">Save Content</button>
+        <button class="save-btn" onclick="saveData(true)">Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let defaultSubheadings = ["Name", "Age", "Address", "Phone Number"];
-            let innerEditors = {}; // Store inner editors
-
-            function createSubheadingBlock(subheading, id) {
-                return `
-                    <div class="subheading-container">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="checkbox-${id}">
-                            ${subheading}
-                        </label>
-                        <div id="editor-${id}" class="editor-box"></div>
-                    </div>
-                `;
-            }
-
-            // Render default subheadings
-            let mainEditorContainer = document.getElementById("main-editor");
-            mainEditorContainer.innerHTML = defaultSubheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
-            // Initialize Inner Editors for Each Subheading
-            defaultSubheadings.forEach((sub, index) => {
-                innerEditors[index] = new EditorJS({
-                    holder: `editor-${index}`,
-                    autofocus: false,
-                    tools: { 
-                        header: Header, 
-                        paragraph: Paragraph,
-                        inlineCode: InlineCode,  // Enables inline code formatting
-                        marker: Marker,  // Enables text highlighting
-                    },
-                    data: { blocks: [] }
-                });
+            const editor = new EditorJS({
+                holder: 'editorjs',
+                autofocus: true,
+                tools: { 
+                    header: Header, 
+                    paragraph: Paragraph,
+                    raw: RawTool,  // Allows pasting raw HTML with original styles
+                    inlineCode: InlineCode,
+                    marker: Marker,  
+                },
+                onReady: () => {
+                    console.log("Editor.js is ready!");
+                },
+                onChange: () => {
+                    autoSaveData();
+                }
             });
 
-            function saveAllData(manual = false) {
-                let allData = {};
-                let savePromises = defaultSubheadings.map((sub, index) => {
-                    return innerEditors[index].save().then(outputData => {
-                        allData[sub] = outputData;
-                    }).catch(error => console.error(`Saving failed for ${sub}:`, error));
-                });
-
-                Promise.all(savePromises).then(() => {
-                    console.log("Auto-Saved Data:", allData);
+            function saveData(manual = false) {
+                editor.save().then((outputData) => {
+                    console.log("Saved Data:", outputData);
+                    localStorage.setItem('editorData', JSON.stringify(outputData)); // Save to local storage
                     if (manual) alert("Content saved! Check the console for details.");
+                }).catch((error) => {
+                    console.error("Saving failed:", error);
                 });
+            }
+
+            function autoSaveData() {
+                saveData(false);
             }
 
             // Auto-save every 10 seconds
-            setInterval(saveAllData, 10000);
+            setInterval(autoSaveData, 10000);
 
-            window.saveAllData = saveAllData; // Expose globally
+            // Load saved data on page load
+            const savedData = localStorage.getItem('editorData');
+            if (savedData) {
+                editor.isReady.then(() => {
+                    editor.render(JSON.parse(savedData));
+                });
+            }
+
+            window.saveData = saveData; // Expose globally
         });
     </script>
 
