@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Persistent Checkboxes</title>
+    <title>Editor.js with Checkboxes Before Subheadings</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,38 +51,66 @@
         .save-btn:hover {
             background: #0056b3;
         }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-label input {
+            margin-right: 8px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Persistent Checkboxes</h1>
+        <h1>Editor.js with Checkboxes Before Subheadings</h1>
+
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
+        const subheadings = ["name", "books", "news", "things", "others"];
+
+        function loadCheckboxState() {
+            return JSON.parse(localStorage.getItem("subheadingCheckboxState")) || {};
+        }
+
+        function saveCheckboxState(state) {
+            localStorage.setItem("subheadingCheckboxState", JSON.stringify(state));
+        }
+
+        function getEditorData() {
+            const state = loadCheckboxState();
+            return {
+                blocks: subheadings.map(id => ({
+                    id,
+                    type: "paragraph",
+                    data: {
+                        text: <label class="checkbox-label">
+                            <input type="checkbox" id="checkbox-${id}" ${state[id] ? 'checked' : ''} onchange="updateCheckboxState('${id}')">
+                            <strong>${id.charAt(0).toUpperCase() + id.slice(1)}</strong>
+                        </label>
+                    }
+                }))
+            };
+        }
+
+        function updateCheckboxState(id) {
+            const checkbox = document.getElementById(checkbox-${id});
+            const state = loadCheckboxState();
+            state[id] = checkbox.checked;
+            saveCheckboxState(state);
+        }
+
         let editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
             tools: {
-                header: {
-                    class: Header,
-                    inlineToolbar: true,
-                    config: {
-                        levels: [2, 3],
-                        defaultLevel: 2
-                    }
-                },
-                checklist: {
-                    class: Checklist,
-                    inlineToolbar: true
-                },
                 paragraph: {
                     class: class {
                         render(data) {
                             const div = document.createElement('div');
-                            div.style.paddingLeft = '20px';
                             div.innerHTML = data.text;
                             return div;
                         }
@@ -94,36 +121,28 @@
                     inlineToolbar: true
                 }
             },
-            data: JSON.parse(localStorage.getItem("editorData")) || {
-                blocks: [
-                    {
-                        type: "header",
-                        data: { text: "Subheading Example", level: 2 }
-                    },
-                    {
-                        type: "checklist",
-                        data: { items: [
-                            { text: "Checkbox 1", checked: false },
-                            { text: "Checkbox 2", checked: false }
-                        ]}
-                    },
-                    {
-                        type: "paragraph",
-                        data: { text: "Indented text under subheading." }
-                    }
-                ]
+            data: getEditorData(),
+            onReady: () => {
+                setTimeout(() => {
+                    subheadings.forEach(id => {
+                        const checkbox = document.getElementById(checkbox-${id});
+                        if (checkbox) {
+                            checkbox.addEventListener("change", () => updateCheckboxState(id));
+                        }
+                    });
+                }, 100);
             }
         });
 
         function saveData() {
             editor.save().then((outputData) => {
-                localStorage.setItem("editorData", JSON.stringify(outputData));
                 console.log("Saved Data: ", outputData);
-                alert("Content saved!");
+                alert("Content saved! Check the console for details.");
             }).catch((error) => {
                 console.error("Saving failed: ", error);
             });
         }
     </script>
+
 </body>
 </html>
