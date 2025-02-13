@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nested Editor.js</title>
+    <title>Nested Editor.js with Inline Tools</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/editorjs-underline@latest"></script>
 
     <style>
         body {
@@ -81,7 +83,7 @@
 <body>
 
     <div class="container">
-        <h1>Nested Editor.js</h1>
+        <h1>Nested Editor.js - Inline Tools Inside</h1>
 
         <div id="main-editor"></div>
 
@@ -114,7 +116,22 @@
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
                     autofocus: false,
-                    tools: { paragraph: Paragraph },
+                    tools: {
+                        header: {
+                            class: Header,
+                            inlineToolbar: true
+                        },
+                        paragraph: {
+                            class: Paragraph,
+                            inlineToolbar: true
+                        },
+                        inlineCode: {
+                            class: InlineCode
+                        },
+                        underline: {
+                            class: Underline
+                        }
+                    },
                     data: { blocks: [] }
                 });
             });
