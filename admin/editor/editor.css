@@ -22,11 +22,11 @@ h1 {
 
 #editorjs {
     min-height: 300px;
-    padding: 10px;
-    border: 10px solid #ccc;
-    border-radius: 5px;
-    background: #fff;
+    display: block !important; /* Override hidden styles */
+    border: 1px solid red; /* Debugging border */
+    background: white;
 }
+
 
 .save-btn {
     display: block;
