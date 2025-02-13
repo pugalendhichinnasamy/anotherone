@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nested Editor.js with Checkboxes</title>
+    <title>Nested Editor.js</title>
 
-    <!-- Editor.js and Plugins -->
+    <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
@@ -34,15 +34,6 @@
             color: #333;
         }
 
-        .editor {
-            min-height: 300px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background: #fff;
-            margin-top: 20px;
-        }
-
         .subheading-container {
             margin-bottom: 15px;
             padding: 10px;
@@ -59,6 +50,15 @@
 
         .checkbox-label input {
             margin-right: 10px;
+        }
+
+        .editor-box {
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background: #fff;
+            margin-top: 10px;
         }
 
         .save-btn {
@@ -81,23 +81,16 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Nested Subheadings</h1>
+        <h1>Nested Editor.js</h1>
 
-        <div id="main-editor" class="editor"></div>
+        <div id="main-editor"></div>
 
         <button class="save-btn" onclick="saveAllData()">Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Default subheadings with checkboxes
-            let defaultSubheadings = [
-                "Name",
-                "Age",
-                "Address",
-                "Phone Number"
-            ];
-
+            let defaultSubheadings = ["Name", "Age", "Address", "Phone Number"];
             let innerEditors = {}; // Store inner editors
 
             function createSubheadingBlock(subheading, id) {
@@ -107,14 +100,14 @@
                             <input type="checkbox" id="checkbox-${id}">
                             ${subheading}
                         </label>
-                        <div id="editor-${id}" class="editor"></div>
+                        <div id="editor-${id}" class="editor-box"></div>
                     </div>
                 `;
             }
 
-            // Render default subheadings inside the main editor
-            let mainEditorContent = defaultSubheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-            document.getElementById("main-editor").innerHTML = mainEditorContent;
+            // Render default subheadings
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = defaultSubheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
             // Initialize Inner Editors for Each Subheading
             defaultSubheadings.forEach((sub, index) => {
@@ -122,13 +115,12 @@
                     holder: `editor-${index}`,
                     autofocus: false,
                     tools: { paragraph: Paragraph },
+                    data: { blocks: [] }
                 });
             });
 
             function saveAllData() {
                 let allData = {};
-
-                // Save Inner Editors
                 let savePromises = defaultSubheadings.map((sub, index) => {
                     return innerEditors[index].save().then(outputData => {
                         allData[sub] = outputData;
