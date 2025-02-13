@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor.js with Unique Subheadings & Indentation</title>
+    
+    <!-- Load Editor.js and required tools (excluding List) -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -144,7 +146,6 @@
             autofocus: true,
             tools: {
                 header: Header,
-                list: List,
                 paragraph: Paragraph,
                 checklist: Checklist,
                 quote: Quote,
