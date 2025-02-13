@@ -13,7 +13,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/text-alignment@latest"></script>
 
     <style>
         body {
@@ -121,7 +120,11 @@
                     autofocus: false,
                     tools: { 
                         header: { class: Header, inlineToolbar: true },
-                        paragraph: { class: Paragraph, config: { preserveBlank: true, inlineToolbar: true } },
+                        paragraph: { 
+                            class: Paragraph, 
+                            inlineToolbar: true, 
+                            config: { preserveBlank: true } 
+                        },
                         marker: Marker, // Highlight text
                         underline: Underline, // Underline text
                         table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
@@ -133,8 +136,7 @@
                                     byUrl: 'https://your-image-url-endpoint.com'
                                 }
                             }
-                        },
-                        textAlignment: { class: TextAlignment, config: { default: "left" } } // Align text left, center, right
+                        }
                     },
                     data: { blocks: [] },
                     onReady: () => {
