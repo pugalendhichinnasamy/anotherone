@@ -3,37 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Unique IDs & Indentation</title>
+    <title>Editor.js with Multiple Instances</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
             background: #f4f4f4;
             margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            padding: 20px;
         }
         .container {
-            width: 60%;
+            width: 80%;
+            margin: auto;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-        h1 {
-            text-align: center;
-            color: #333;
+        .subheading {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
         }
-        #editorjs {
-            min-height: 300px;
-            padding: 10px;
+        .subheading input {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+        }
+        .subheading input[type="text"] {
+            font-size: 18px;
+            border: none;
+            outline: none;
+            background: none;
+            width: 100%;
+            font-weight: bold;
+        }
+        .editor-container {
+            margin-left: 20px; /* One-tab indentation */
             border: 1px solid #ccc;
+            padding: 10px;
             border-radius: 5px;
-            background: #fff;
+            background: #f9f9f9;
+            min-height: 100px;
         }
         .save-btn {
             display: block;
@@ -49,144 +64,90 @@
         .save-btn:hover {
             background: #0056b3;
         }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .checkbox-label input {
-            margin-right: 8px;
-            width: 20px;
-            height: 20px;
-        }
-        .subheading-input {
-            font-size: 18px;
-            border: none;
-            outline: none;
-            background: none;
-            width: 100%;
-        }
-        .content-area {
-            margin-left: 20px; /* One-tab indentation */
-            font-size: 16px;
-            border: 1px solid #ccc;
-            padding: 8px;
-            border-radius: 5px;
-            min-height: 40px;
-            background: #f9f9f9;
-            outline: none;
-            width: 95%;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Unique Subheading IDs & Indentation</h1>
+        <h1>Editor.js with Multiple Instances</h1>
 
-        <div id="editorjs"></div>
-        <button class="save-btn" onclick="saveData()">Save Content</button>
+        <div id="subheadings"></div>
+        
+        <button class="save-btn" onclick="saveAllData()">Save All Content</button>
     </div>
 
     <script>
         const postID = "post" + Math.floor(Math.random() * 100000); // Unique post ID
-
-        class CheckboxSubheading {
-            static get toolbox() {
-                return {
-                    title: 'Subheading',
-                    icon: '🔲'
-                };
-            }
-
-            constructor({ data }) {
-                this.data = data || { id: '', checked: false, text: '', content: '' };
-                this.wrapper = null;
-            }
-
-            render() {
-                this.wrapper = document.createElement('div');
-                this.wrapper.classList.add('checkbox-label');
-
-                this.checkbox = document.createElement('input');
-                this.checkbox.type = 'checkbox';
-                this.checkbox.checked = this.data.checked;
-                this.checkbox.id = this.data.id;
-                this.checkbox.addEventListener('change', () => {
-                    this.data.checked = this.checkbox.checked;
-                });
-
-                this.input = document.createElement('input');
-                this.input.type = 'text';
-                this.input.value = this.data.text;
-                this.input.classList.add('subheading-input');
-                this.input.placeholder = 'Enter subheading...';
-                this.input.addEventListener('input', () => {
-                    this.data.text = this.input.value;
-                });
-
-                this.contentArea = document.createElement('div');
-                this.contentArea.contentEditable = true;
-                this.contentArea.classList.add('content-area');
-                this.contentArea.innerHTML = this.data.content;
-                this.contentArea.addEventListener('input', () => {
-                    this.data.content = this.contentArea.innerHTML;
-                });
-
-                this.wrapper.appendChild(this.checkbox);
-                this.wrapper.appendChild(this.input);
-                this.wrapper.appendChild(this.contentArea);
-
-                return this.wrapper;
-            }
-
-            save() {
-                return {
-                    id: this.checkbox.id,
-                    checked: this.checkbox.checked,
-                    text: this.input.value,
-                    content: this.contentArea.innerHTML
-                };
-            }
-        }
-
         const subheadings = ["Name", "Books", "News", "Things", "Others"];
+        let editors = {};
 
-        function getInitialEditorData() {
-            return {
-                blocks: subheadings.map(title => ({
-                    type: "checkboxSubheading",
-                    data: { 
-                        id: `${postID}-${title.toLowerCase()}`,
-                        checked: false,
-                        text: title,
-                        content: ""
-                    }
-                }))
-            };
-        }
+        function createSubheading(id, title) {
+            const container = document.createElement('div');
 
-        let editor = new EditorJS({
-            holder: 'editorjs',
-            autofocus: true,
-            tools: {
-                checkboxSubheading: CheckboxSubheading
-            },
-            data: localStorage.getItem(`editorContent-${postID}`)
-                ? JSON.parse(localStorage.getItem(`editorContent-${postID}`))
-                : getInitialEditorData()
-        });
+            // Checkbox & Title
+            const subheadingDiv = document.createElement('div');
+            subheadingDiv.classList.add('subheading');
 
-        function saveData() {
-            editor.save().then((outputData) => {
-                localStorage.setItem(`editorContent-${postID}`, JSON.stringify(outputData));
-                console.log("Saved Data: ", outputData);
-                alert("Content saved! Check the console for details.");
-            }).catch((error) => {
-                console.error("Saving failed: ", error);
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `${postID}-${id}-checkbox`;
+            checkbox.addEventListener('change', () => saveCheckboxState());
+
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.value = title;
+            titleInput.id = `${postID}-${id}-title`;
+
+            subheadingDiv.appendChild(checkbox);
+            subheadingDiv.appendChild(titleInput);
+
+            // Editor.js Container
+            const editorContainer = document.createElement('div');
+            editorContainer.id = `${postID}-${id}-editor`;
+            editorContainer.classList.add('editor-container');
+
+            container.appendChild(subheadingDiv);
+            container.appendChild(editorContainer);
+            document.getElementById('subheadings').appendChild(container);
+
+            // Initialize Editor.js for each subheading
+            editors[id] = new EditorJS({
+                holder: editorContainer.id,
+                autofocus: false,
+                tools: {
+                    header: Header,
+                    list: List
+                },
+                data: loadEditorData(id)
             });
         }
+
+        function loadEditorData(id) {
+            const savedData = localStorage.getItem(`${postID}-${id}-data`);
+            return savedData ? JSON.parse(savedData) : { blocks: [] };
+        }
+
+        function saveAllData() {
+            subheadings.forEach(id => {
+                editors[id].save().then((outputData) => {
+                    localStorage.setItem(`${postID}-${id}-data`, JSON.stringify(outputData));
+                });
+            });
+
+            saveCheckboxState();
+            alert("All content saved!");
+        }
+
+        function saveCheckboxState() {
+            let state = {};
+            subheadings.forEach(id => {
+                state[id] = document.getElementById(`${postID}-${id}-checkbox`).checked;
+            });
+            localStorage.setItem(`${postID}-checkboxState`, JSON.stringify(state));
+        }
+
+        // Load All Subheadings
+        subheadings.forEach(id => createSubheading(id.toLowerCase(), id));
     </script>
 
 </body>
