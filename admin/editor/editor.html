@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Multiple Instances</title>
+    <title>Editor.js with Nested Instances</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
@@ -23,24 +23,9 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
         .subheading {
-            display: flex;
-            align-items: center;
             font-size: 18px;
             font-weight: bold;
-            margin-top: 15px;
-        }
-        .subheading input {
-            margin-right: 10px;
-            width: 20px;
-            height: 20px;
-        }
-        .subheading input[type="text"] {
-            font-size: 18px;
-            border: none;
-            outline: none;
-            background: none;
-            width: 100%;
-            font-weight: bold;
+            margin-top: 20px;
         }
         .editor-container {
             margin-left: 20px; /* One-tab indentation */
@@ -69,8 +54,12 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Multiple Instances</h1>
+        <h1>Main Editor.js</h1>
 
+        <!-- Main Editor -->
+        <div id="main-editor"></div>
+
+        <h2>Subheadings</h2>
         <div id="subheadings"></div>
         
         <button class="save-btn" onclick="saveAllData()">Save All Content</button>
@@ -81,25 +70,24 @@
         const subheadings = ["Name", "Books", "News", "Things", "Others"];
         let editors = {};
 
+        // Initialize Main Editor.js
+        let mainEditor = new EditorJS({
+            holder: 'main-editor',
+            autofocus: true,
+            tools: {
+                header: Header,
+                list: List
+            },
+            data: loadEditorData("main")
+        });
+
         function createSubheading(id, title) {
             const container = document.createElement('div');
 
-            // Checkbox & Title
+            // Subheading Title
             const subheadingDiv = document.createElement('div');
             subheadingDiv.classList.add('subheading');
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.id = `${postID}-${id}-checkbox`;
-            checkbox.addEventListener('change', () => saveCheckboxState());
-
-            const titleInput = document.createElement('input');
-            titleInput.type = 'text';
-            titleInput.value = title;
-            titleInput.id = `${postID}-${id}-title`;
-
-            subheadingDiv.appendChild(checkbox);
-            subheadingDiv.appendChild(titleInput);
+            subheadingDiv.textContent = title;
 
             // Editor.js Container
             const editorContainer = document.createElement('div');
@@ -128,22 +116,17 @@
         }
 
         function saveAllData() {
+            mainEditor.save().then((outputData) => {
+                localStorage.setItem(`${postID}-main-data`, JSON.stringify(outputData));
+            });
+
             subheadings.forEach(id => {
                 editors[id].save().then((outputData) => {
                     localStorage.setItem(`${postID}-${id}-data`, JSON.stringify(outputData));
                 });
             });
 
-            saveCheckboxState();
             alert("All content saved!");
-        }
-
-        function saveCheckboxState() {
-            let state = {};
-            subheadings.forEach(id => {
-                state[id] = document.getElementById(`${postID}-${id}-checkbox`).checked;
-            });
-            localStorage.setItem(`${postID}-checkboxState`, JSON.stringify(state));
         }
 
         // Load All Subheadings
