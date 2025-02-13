@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -33,11 +33,46 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .color-picker {
-            margin-left: 10px;
+        .subheading-container {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .subheading-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .editor-box {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-top: 5px;
+        }
+        .checkbox { margin-right: 10px; }
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 3px 8px;
             border: none;
             cursor: pointer;
+            border-radius: 5px;
         }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
     </style>
 </head>
 <body>
@@ -48,58 +83,138 @@
     </div>
 
     <script>
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+            { title: "Name", number: 11 },
+            { title: "Age", number: 12 },
+            { title: "Address", number: 13 }
+        ];
+        let innerEditors = {};
+
         class MultiColorMarker {
             static get isInline() { return true; }
             static get title() { return "Multi-Color Marker"; }
             static get sanitize() { return { span: true }; }
 
             constructor() {
-                this.defaultColor = "yellow";
+                this.colors = ["yellow", "pink", "blue", "green", "orange"];
+                this.currentColorIndex = 0;
+
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
                 this.button.style.cursor = "pointer";
-                
-                this.colorPicker = document.createElement("input");
-                this.colorPicker.type = "color";
-                this.colorPicker.classList.add("color-picker");
-                this.colorPicker.value = "#FFFF00";
-                this.colorPicker.addEventListener("input", (event) => {
-                    this.defaultColor = event.target.value;
-                });
-                
-                this.buttonContainer = document.createElement("div");
-                this.buttonContainer.appendChild(this.button);
-                this.buttonContainer.appendChild(this.colorPicker);
+                this.button.addEventListener("click", () => this.toggleColor());
             }
 
             render() {
-                return this.buttonContainer;
+                return this.button;
             }
 
             surround(range) {
                 const span = document.createElement("span");
-                span.style.backgroundColor = this.defaultColor;
+                span.style.backgroundColor = this.colors[this.currentColorIndex];
                 range.surroundContents(span);
+            }
+
+            toggleColor() {
+                this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
+                this.button.style.backgroundColor = this.colors[this.currentColorIndex]; // Visual feedback
             }
         }
 
-        const editor = new EditorJS({
-            holder: "main-editor",
-            tools: {
-                header: { class: Header, inlineToolbar: true },
-                paragraph: { class: Paragraph, inlineToolbar: true },
-                marker: MultiColorMarker, 
-                underline: Underline,
-                inlineCode: InlineCode
+        function createSubheadingBlock(subheading, index) {
+            return `
+                <div class="subheading-container" id="subheading-${index}">
+                    <div class="subheading-header">
+                        <div>
+                            <input type="checkbox" class="checkbox">
+                            ${subheading.title}
+                        </div>
+                        <div class="subheading-controls">
+                            <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateOrder(${index}, this.value)">
+                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                        </div>
+                    </div>
+                    <div id="editor-${index}" class="editor-box"></div>
+                </div>`;
+        }
+
+        function renderSubheadings() {
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            
+            subheadings.forEach((sub, index) => {
+                innerEditors[index] = new EditorJS({
+                    holder: `editor-${index}`,
+                    tools: {
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { class: Paragraph, inlineToolbar: true },
+                        table: Table,
+                        quote: { class: Quote, inlineToolbar: true },
+                        marker: MultiColorMarker, // Multi-color marker (no popup)
+                        inlineCode: InlineCode, // Add inline code tool
+                        underline: Underline,
+                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        image: {
+                            class: ImageTool,
+                            config: {
+                                endpoints: {
+                                    byFile: "https://your-backend.com/uploadFile",
+                                    byUrl: "https://your-backend.com/fetchUrl"
+                                }
+                            }
+                        },
+                        code: CodeTool
+                    },
+                    data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
+                });
+            });
+        }
+
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1 });
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
             }
-        });
+        }
+
+        function clearEditor(index) {
+            if (innerEditors[index]) {
+                innerEditors[index].clear();
+                localStorage.removeItem(`editor-${index}`);
+            }
+        }
 
         function clearAllData() {
             if (confirm("Clear all data?")) {
                 localStorage.clear();
-                location.reload();
+                subheadings = [];
+                renderSubheadings();
             }
         }
+
+        function updateOrder(index, newNumber) {
+            subheadings[index].number = parseInt(newNumber);
+            subheadings.sort((a, b) => a.number - b.number);
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        renderSubheadings();
     </script>
 </body>
 </html>
