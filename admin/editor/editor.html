@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Table Support</title>
+    <title>Editor.js with Original Paste Formatting</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script> <!-- Table Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paste@latest"></script> <!-- Paste Plugin -->
 
     <style>
         body {
@@ -83,7 +84,7 @@
 <body>
 
     <div class="container">
-        <h1>Editor.js with Table Support</h1>
+        <h1>Editor.js with Original Paste Formatting</h1>
 
         <div id="main-editor"></div>
 
@@ -123,9 +124,13 @@
                         table: {
                             class: Table,
                             inlineToolbar: true,
+                            config: { rows: 2, cols: 3 }
+                        },
+                        paste: { // Paste tool for retaining formatting
+                            class: Paste,
                             config: {
-                                rows: 2,
-                                cols: 3,
+                                keepHTML: true, // Keep bold, italic, links, etc.
+                                forcePlainText: false // Don't strip styles
                             }
                         }
                     },
