@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Toggle Subheadings</title>
+    <title>Editor.js with Persistent Toggles & Delete Option</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <style>
@@ -58,39 +58,106 @@
         .toggle-container input {
             margin-right: 8px;
         }
+        .delete-btn {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background: red;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .delete-btn:hover {
+            background: darkred;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Toggle Subheadings</h1>
+        <h1>Editor.js with Persistent Toggles & Delete Option</h1>
 
-        <div class="toggle-container">
-            <input type="checkbox" id="toggle-name" checked onclick="toggleVisibility('name')">
-            <label for="toggle-name">Name</label>
-        </div>
-        <div class="toggle-container">
-            <input type="checkbox" id="toggle-books" checked onclick="toggleVisibility('books')">
-            <label for="toggle-books">Books</label>
-        </div>
-        <div class="toggle-container">
-            <input type="checkbox" id="toggle-news" checked onclick="toggleVisibility('news')">
-            <label for="toggle-news">News</label>
-        </div>
-        <div class="toggle-container">
-            <input type="checkbox" id="toggle-things" checked onclick="toggleVisibility('things')">
-            <label for="toggle-things">Things</label>
-        </div>
-        <div class="toggle-container">
-            <input type="checkbox" id="toggle-others" checked onclick="toggleVisibility('others')">
-            <label for="toggle-others">Others</label>
-        </div>
+        <div id="toggle-section"></div>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
+        const subheadings = ["name", "books", "news", "things", "others"];
+
+        function loadCheckboxState() {
+            return JSON.parse(localStorage.getItem("subheadingState")) || {};
+        }
+
+        function saveCheckboxState(state) {
+            localStorage.setItem("subheadingState", JSON.stringify(state));
+        }
+
+        function createToggleControls() {
+            const toggleSection = document.getElementById("toggle-section");
+            toggleSection.innerHTML = "";
+
+            const state = loadCheckboxState();
+
+            subheadings.forEach(id => {
+                const container = document.createElement("div");
+                container.className = "toggle-container";
+                container.id = `toggle-container-${id}`;
+
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.id = `toggle-${id}`;
+                checkbox.checked = state[id] !== false; // Default to true if not in storage
+                checkbox.onclick = () => toggleVisibility(id);
+
+                const label = document.createElement("label");
+                label.htmlFor = `toggle-${id}`;
+                label.textContent = id.charAt(0).toUpperCase() + id.slice(1); // Capitalize first letter
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "Delete";
+                deleteBtn.className = "delete-btn";
+                deleteBtn.onclick = () => deleteSubheading(id);
+
+                container.appendChild(checkbox);
+                container.appendChild(label);
+                container.appendChild(deleteBtn);
+                toggleSection.appendChild(container);
+            });
+        }
+
+        function toggleVisibility(id) {
+            const checkbox = document.getElementById(`toggle-${id}`);
+            const state = loadCheckboxState();
+            state[id] = checkbox.checked;
+            saveCheckboxState(state);
+            updateVisibility();
+        }
+
+        function updateVisibility() {
+            const state = loadCheckboxState();
+            subheadings.forEach(id => {
+                const editorContainer = document.querySelector(`[data-id="${id}"]`);
+                if (editorContainer) {
+                    editorContainer.style.display = state[id] !== false ? "block" : "none";
+                }
+            });
+        }
+
+        function deleteSubheading(id) {
+            const state = loadCheckboxState();
+            delete state[id];  // Remove from saved state
+            saveCheckboxState(state);
+
+            // Remove from UI
+            const toggleContainer = document.getElementById(`toggle-container-${id}`);
+            if (toggleContainer) toggleContainer.remove();
+
+            // Remove from Editor.js content
+            editor.blocks.delete(id);
+        }
+
         let editor = new EditorJS({
             holder: 'editorjs',
             autofocus: true,
@@ -105,38 +172,17 @@
                 }
             },
             data: {
-                blocks: [
-                    { id: "name", type: "header", data: { text: "Name", level: 5 } },
-                    { id: "books", type: "header", data: { text: "Books", level: 5 } },
-                    { id: "news", type: "header", data: { text: "News", level: 5 } },
-                    { id: "things", type: "header", data: { text: "Things", level: 5 } },
-                    { id: "others", type: "header", data: { text: "Others", level: 5 } }
-                ]
+                blocks: subheadings.map(id => ({
+                    id,
+                    type: "header",
+                    data: { text: id.charAt(0).toUpperCase() + id.slice(1), level: 5 }
+                }))
             },
             onReady: () => {
-                updateVisibility(); // Ensure correct visibility on load
+                createToggleControls();
+                updateVisibility();
             }
         });
-
-        function toggleVisibility(id) {
-            let checkbox = document.getElementById(`toggle-${id}`);
-            let editorContainer = document.querySelector(`[data-id="${id}"]`);
-            
-            if (editorContainer) {
-                editorContainer.style.display = checkbox.checked ? "block" : "none";
-            }
-        }
-
-        function updateVisibility() {
-            let blocks = document.querySelectorAll("[data-id]");
-            blocks.forEach(block => {
-                let id = block.getAttribute("data-id");
-                let checkbox = document.getElementById(`toggle-${id}`);
-                if (checkbox) {
-                    block.style.display = checkbox.checked ? "block" : "none";
-                }
-            });
-        }
 
         function saveData() {
             editor.save().then((outputData) => {
