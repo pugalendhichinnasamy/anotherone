@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Full Features (No List)</title>
-
-    <!-- Editor.js Core -->
+    <title>Editor.js with Multi-Color Marker</title>
+    
+    <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-
-    <!-- Editor.js Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
@@ -17,18 +15,60 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@calumk/editorjs-text-alignment-blocktune@latest"></script>
 
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 60%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); }
-        .subheading-container { display: flex; flex-direction: column; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; margin-bottom: 10px; }
-        .subheading-header { display: flex; align-items: center; justify-content: space-between; background: #ddd; padding: 5px; border-radius: 5px; }
-        .subheading-controls { display: flex; align-items: center; gap: 5px; }
-        .editor-box { width: 100%; min-height: 150px; padding: 10px; border: 1px solid #ccc; background: #fff; margin-top: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 60%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .subheading-container {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .subheading-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .editor-box {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-top: 5px;
+        }
         .checkbox { margin-right: 10px; }
-        .remove-btn, .clear-btn, .add-btn { padding: 3px 8px; border: none; cursor: pointer; border-radius: 5px; }
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 3px 8px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
@@ -36,47 +76,48 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Full Features (No List)</h1>
+        <h1>Editor.js with Multi-Color Marker</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, checked: false },
-            { title: "Age", number: 12, checked: false },
-            { title: "Address", number: 13, checked: false }
+            { title: "Name", number: 11 },
+            { title: "Age", number: 12 },
+            { title: "Address", number: 13 }
         ];
         let innerEditors = {};
 
         class MultiColorMarker {
-            static get isInline() {
-                return true;
-            }
+            static get isInline() { return true; }
+            static get title() { return "Multi-Color Marker"; }
+            static get sanitize() { return { span: true }; }
 
-            static get title() {
-                return "Highlight";
-            }
-
-            static get sanitize() {
-                return { span: true };
-            }
-
-            render() {
+            constructor() {
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
                 this.button.style.cursor = "pointer";
+                this.button.onclick = () => this.selectColor();
+            }
+
+            render() {
                 return this.button;
             }
 
             surround(range) {
+                if (!this.color) this.color = this.getRandomColor();
                 const span = document.createElement("span");
-                span.style.backgroundColor = this.getRandomColor();
+                span.style.backgroundColor = this.color;
                 range.surroundContents(span);
             }
 
+            selectColor() {
+                this.color = prompt("Enter highlight color (yellow, pink, blue, green, orange):");
+            }
+
             getRandomColor() {
-                const colors = ["yellow", "lightblue", "lightgreen", "pink", "orange"];
+                const colors = ["yellow", "pink", "blue", "green", "orange"];
                 return colors[Math.floor(Math.random() * colors.length)];
             }
         }
@@ -86,7 +127,7 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <div>
-                            <input type="checkbox" class="checkbox" ${subheading.checked ? "checked" : ""} onchange="toggleCheckbox(${index}, this.checked)">
+                            <input type="checkbox" class="checkbox">
                             ${subheading.title}
                         </div>
                         <div class="subheading-controls">
@@ -112,6 +153,7 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
+                        marker: MultiColorMarker,
                         underline: Underline,
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
                         image: {
@@ -123,15 +165,7 @@
                                 }
                             }
                         },
-                        code: CodeTool,
-                        marker: MultiColorMarker,
-                        textAlignment: {
-                            class: window['TextAlignmentBlockTune'],
-                            config: {
-                                default: "left",
-                                availableAlignments: ["left", "center", "right", "justify"]
-                            }
-                        }
+                        code: CodeTool
                     },
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
                 });
@@ -141,7 +175,7 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1, checked: false });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1 });
             saveSubheadings();
             renderSubheadings();
         }
@@ -174,11 +208,6 @@
             subheadings.sort((a, b) => a.number - b.number);
             saveSubheadings();
             renderSubheadings();
-        }
-
-        function toggleCheckbox(index, checked) {
-            subheadings[index].checked = checked;
-            saveSubheadings();
         }
 
         function saveSubheadings() {
