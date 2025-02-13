@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Editor.js with Checkboxes</title>
+    <title>Multi-Language Editor.js with Checkboxes</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <style>
         body {
@@ -72,7 +72,7 @@
 <body>
 
     <div class="container">
-        <h1>Custom Editor.js with Checkboxes</h1>
+        <h1>Multi-Language Editor.js with Checkboxes</h1>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
@@ -107,7 +107,7 @@
                 this.input.type = 'text';
                 this.input.value = this.data.text;
                 this.input.classList.add('subheading-input');
-                this.input.placeholder = 'Enter subheading...';
+                this.input.placeholder = 'Enter subheading in any language...';
                 this.input.addEventListener('input', () => {
                     this.data.text = this.input.value;
                 });
