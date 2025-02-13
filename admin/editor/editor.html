@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Language Editor.js with Checkboxes</title>
+    <title>Multi-Language Editor.js with Unique IDs</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <style>
         body {
@@ -72,13 +72,15 @@
 <body>
 
     <div class="container">
-        <h1>Multi-Language Editor.js with Checkboxes</h1>
+        <h1>Multi-Language Editor.js with Unique Subheading IDs</h1>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
     </div>
 
     <script>
+        const postID = "post" + Math.floor(Math.random() * 100000); // Unique post ID
+
         class CheckboxSubheading {
             static get toolbox() {
                 return {
@@ -88,7 +90,7 @@
             }
 
             constructor({ data }) {
-                this.data = data || { checked: false, text: '' };
+                this.data = data || { id: '', checked: false, text: '' };
                 this.wrapper = null;
             }
 
@@ -99,6 +101,7 @@
                 this.checkbox = document.createElement('input');
                 this.checkbox.type = 'checkbox';
                 this.checkbox.checked = this.data.checked;
+                this.checkbox.id = this.data.id;
                 this.checkbox.addEventListener('change', () => {
                     this.data.checked = this.checkbox.checked;
                 });
@@ -107,7 +110,7 @@
                 this.input.type = 'text';
                 this.input.value = this.data.text;
                 this.input.classList.add('subheading-input');
-                this.input.placeholder = 'Enter subheading in any language...';
+                this.input.placeholder = 'Enter subheading...';
                 this.input.addEventListener('input', () => {
                     this.data.text = this.input.value;
                 });
@@ -120,6 +123,7 @@
 
             save() {
                 return {
+                    id: this.checkbox.id,
                     checked: this.checkbox.checked,
                     text: this.input.value
                 };
@@ -132,7 +136,11 @@
             return {
                 blocks: subheadings.map(title => ({
                     type: "checkboxSubheading",
-                    data: { checked: false, text: title }
+                    data: { 
+                        id: `${postID}-${title.toLowerCase()}`,
+                        checked: false,
+                        text: title
+                    }
                 }))
             };
         }
@@ -143,14 +151,14 @@
             tools: {
                 checkboxSubheading: CheckboxSubheading
             },
-            data: localStorage.getItem('editorContent')
-                ? JSON.parse(localStorage.getItem('editorContent'))
+            data: localStorage.getItem(`editorContent-${postID}`)
+                ? JSON.parse(localStorage.getItem(`editorContent-${postID}`))
                 : getInitialEditorData()
         });
 
         function saveData() {
             editor.save().then((outputData) => {
-                localStorage.setItem('editorContent', JSON.stringify(outputData));
+                localStorage.setItem(`editorContent-${postID}`, JSON.stringify(outputData));
                 console.log("Saved Data: ", outputData);
                 alert("Content saved! Check the console for details.");
             }).catch((error) => {
