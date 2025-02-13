@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes & Numbering</title>
+    <title>Editor.js with Checkboxes & Table Layout</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-tool@latest"></script>
 
     <style>
         body {
@@ -22,7 +24,7 @@
         }
 
         .container {
-            width: 60%;
+            width: 70%;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -34,30 +36,25 @@
             color: #333;
         }
 
-        .subheading-container {
-            position: relative;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 10px;
         }
 
-        .subheading-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 5px;
-            background: #ddd;
-            border-radius: 5px;
-            font-weight: bold;
-            position: relative;
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
         }
 
-        .subheading-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        th {
+            background: #ddd;
+        }
+
+        .checkbox {
+            cursor: pointer;
+            transform: scale(1.2);
         }
 
         .subheading-number {
@@ -71,11 +68,11 @@
             background: white;
         }
 
-        .remove-btn, .add-subheading-btn {
+        .remove-btn, .add-btn {
             background: red;
             color: white;
             border: none;
-            padding: 3px 8px;
+            padding: 5px 10px;
             cursor: pointer;
             border-radius: 5px;
             font-size: 14px;
@@ -85,11 +82,11 @@
             background: darkred;
         }
 
-        .add-subheading-btn {
+        .add-btn {
             background: green;
         }
 
-        .add-subheading-btn:hover {
+        .add-btn:hover {
             background: darkgreen;
         }
 
@@ -118,20 +115,25 @@
         .save-btn:hover {
             background: #0056b3;
         }
-
-        .checkbox {
-            margin-right: 10px;
-            cursor: pointer;
-            transform: scale(1.2);
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Checkboxes & Numbering</h1>
+        <h1>Editor.js with Checkboxes & Table Layout</h1>
 
-        <div id="main-editor"></div>
+        <table id="subheading-table">
+            <thead>
+                <tr>
+                    <th>✔</th>
+                    <th>Number</th>
+                    <th>Subheading</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="subheading-body">
+            </tbody>
+        </table>
 
         <button class="save-btn" onclick="saveAllData(true)">💾 Save Content</button>
     </div>
@@ -147,29 +149,31 @@
 
             let innerEditors = {};
             
-            function createSubheadingBlock(subheading, index) {
+            function createSubheadingRow(subheading, index) {
                 return `
-                    <div class="subheading-container" id="subheading-${index}">
-                        <div class="subheading-header">
-                            <input type="checkbox" class="checkbox" id="checkbox-${index}" ${subheading.checked ? 'checked' : ''} 
-                                onchange="toggleCheckbox(${index})">
-                            ${subheading.title}
-                            <div class="subheading-controls">
-                                <input type="number" class="subheading-number" value="${subheading.number}" 
-                                    onchange="updateSubheadingOrder(${index}, this.value)">
-                                <button class="add-subheading-btn" onclick="addSubheading(${index})">➕</button>
-                                <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                            </div>
-                        </div>
-                        <div id="editor-${index}" class="editor-box"></div>
-                    </div>
+                    <tr id="row-${index}">
+                        <td><input type="checkbox" class="checkbox" id="checkbox-${index}" ${subheading.checked ? 'checked' : ''} 
+                                onchange="toggleCheckbox(${index})"></td>
+                        <td><input type="number" class="subheading-number" value="${subheading.number}" 
+                                    onchange="updateSubheadingOrder(${index}, this.value)"></td>
+                        <td>${subheading.title}</td>
+                        <td>
+                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <div id="editor-${index}" class="editor-box"></div>
+                        </td>
+                    </tr>
                 `;
             }
 
             function renderSubheadings() {
-                let mainEditorContainer = document.getElementById("main-editor");
+                let subheadingBody = document.getElementById("subheading-body");
                 subheadings.sort((a, b) => a.number - b.number);
-                mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+                subheadingBody.innerHTML = subheadings.map((sub, index) => createSubheadingRow(sub, index)).join('');
 
                 subheadings.forEach((sub, index) => {
                     innerEditors[index] = new EditorJS({
@@ -177,7 +181,8 @@
                         autofocus: false,
                         tools: { 
                             header: { class: Header, inlineToolbar: true },
-                            paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } }
+                            paragraph: { class: Paragraph, inlineToolbar: true },
+                            list: { class: List, inlineToolbar: true }
                         },
                         data: { blocks: [] }
                     });
