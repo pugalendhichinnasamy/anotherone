@@ -46,21 +46,23 @@
             border-radius: 5px;
             background: #f9f9f9;
             margin-bottom: 10px;
+            position: relative;
+        }
+
+        .subheading-checkbox {
+            margin-right: 10px;
         }
 
         .subheading-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 5px;
-            background: #ddd;
-            border-radius: 5px;
-            font-weight: bold;
             flex-grow: 1;
-            margin-left: 10px;
+            font-weight: bold;
+            font-size: 16px;
         }
 
         .subheading-controls {
+            position: absolute;
+            top: 5px;
+            right: 5px;
             display: flex;
             align-items: center;
             gap: 5px;
@@ -158,14 +160,12 @@
                 return `
                     <div class="subheading-container" id="subheading-${index}">
                         <input type="checkbox" class="subheading-checkbox" data-index="${index}" ${subheading.checked ? "checked" : ""}>
-                        <div class="subheading-header">
-                            ${subheading.title}
-                            <div class="subheading-controls">
-                                <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateSubheadingOrder(${index}, this.value)">
-                                <button class="btn add-btn" onclick="addSubheading(${index})">➕</button>
-                                <button class="btn clear-btn" onclick="clearSubheadingData(${index})">🧹</button>
-                                <button class="btn remove-btn" onclick="removeSubheading(${index})">❌</button>
-                            </div>
+                        <div class="subheading-header">${subheading.title}</div>
+                        <div class="subheading-controls">
+                            <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateSubheadingOrder(${index}, this.value)">
+                            <button class="btn add-btn" onclick="addSubheading(${index})">➕</button>
+                            <button class="btn clear-btn" onclick="clearSubheadingData(${index})">🧹</button>
+                            <button class="btn remove-btn" onclick="removeSubheading(${index})">❌</button>
                         </div>
                         <div id="editor-${index}" class="editor-box"></div>
                     </div>
