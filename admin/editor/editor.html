@@ -3,18 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Unique Subheadings & Indentation</title>
-    
-    <!-- Load Editor.js and required tools (excluding List) -->
+    <title>Editor.js with Checkboxes Before Subheadings</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -59,23 +50,20 @@
         .save-btn:hover {
             background: #0056b3;
         }
-        .subheading-container {
+        .checkbox-container {
             display: flex;
             align-items: center;
             margin-bottom: 10px;
         }
-        .subheading-container input {
+        .checkbox-container input {
             margin-right: 8px;
-        }
-        .subheading-content {
-            margin-left: 20px; /* One-tab indentation */
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Unique Subheadings & Indentation</h1>
+        <h1>Editor.js with Checkboxes Before Subheadings</h1>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
@@ -90,17 +78,14 @@
                 };
             }
 
-            constructor({ data }) {
-                this.data = data || { id: this.generateId(), checked: false, text: '', content: '' };
-            }
-
-            generateId() {
-                return 'subheading-' + Math.random().toString(36).substr(2, 9);
+            constructor({ data, api }) {
+                this.api = api;
+                this.data = data || { checked: false, text: '' };
             }
 
             render() {
                 const container = document.createElement('div');
-                container.classList.add('subheading-container');
+                container.classList.add('checkbox-container');
 
                 this.checkbox = document.createElement('input');
                 this.checkbox.type = 'checkbox';
@@ -117,26 +102,15 @@
                     this.data.text = this.input.value;
                 });
 
-                this.content = document.createElement('textarea');
-                this.content.classList.add('subheading-content');
-                this.content.placeholder = 'Type content here...';
-                this.content.value = this.data.content;
-                this.content.addEventListener('input', () => {
-                    this.data.content = this.content.value;
-                });
-
                 container.appendChild(this.checkbox);
                 container.appendChild(this.input);
-                container.appendChild(this.content);
                 return container;
             }
 
             save() {
                 return {
-                    id: this.data.id,
                     checked: this.checkbox.checked,
-                    text: this.input.value,
-                    content: this.content.value
+                    text: this.input.value
                 };
             }
         }
@@ -145,22 +119,15 @@
             holder: 'editorjs',
             autofocus: true,
             tools: {
-                header: Header,
-                paragraph: Paragraph,
-                checklist: Checklist,
-                quote: Quote,
-                table: Table,
-                delimiter: Delimiter,
-                image: ImageTool,
                 checkboxSubheading: CheckboxSubheading
             },
             data: {
                 blocks: [
-                    { type: 'checkboxSubheading', data: { id: 'name', checked: false, text: 'Name', content: '' } },
-                    { type: 'checkboxSubheading', data: { id: 'books', checked: false, text: 'Books', content: '' } },
-                    { type: 'checkboxSubheading', data: { id: 'news', checked: false, text: 'News', content: '' } },
-                    { type: 'checkboxSubheading', data: { id: 'things', checked: false, text: 'Things', content: '' } },
-                    { type: 'checkboxSubheading', data: { id: 'others', checked: false, text: 'Others', content: '' } }
+                    { type: 'checkboxSubheading', data: { checked: false, text: 'Name' } },
+                    { type: 'checkboxSubheading', data: { checked: false, text: 'Books' } },
+                    { type: 'checkboxSubheading', data: { checked: false, text: 'News' } },
+                    { type: 'checkboxSubheading', data: { checked: false, text: 'Things' } },
+                    { type: 'checkboxSubheading', data: { checked: false, text: 'Others' } }
                 ]
             }
         });
