@@ -1,19 +1,3 @@
- <!-- Load Editor.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-
-    <!-- Load Required Plugins -->
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-
-    <!-- Link to external CSS -->
-    <link rel="stylesheet" href="editor.css">
-
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("🚀 Editor.js script loaded!");
 
