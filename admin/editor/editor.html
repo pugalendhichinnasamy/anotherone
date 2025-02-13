@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Nested Instances</title>
+    <title>Advanced Editor.js</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
@@ -11,7 +11,6 @@
         body {
             font-family: Arial, sans-serif;
             background: #f4f4f4;
-            margin: 0;
             padding: 20px;
         }
         .container {
@@ -26,6 +25,11 @@
             font-size: 18px;
             font-weight: bold;
             margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .subheading input {
+            margin-right: 10px;
         }
         .editor-container {
             margin-left: 20px; /* One-tab indentation */
@@ -52,11 +56,8 @@
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Main Editor.js</h1>
-
-        <!-- Main Editor -->
         <div id="main-editor"></div>
 
         <h2>Subheadings</h2>
@@ -66,46 +67,54 @@
     </div>
 
     <script>
-        const postID = "post" + Math.floor(Math.random() * 100000); // Unique post ID
-        const subheadings = ["Name", "Books", "News", "Things", "Others"];
+        const postID = "post" + Math.floor(Math.random() * 100000);
+        const subheadings = ["name", "books", "news", "things", "others"];
         let editors = {};
+        let checkboxState = JSON.parse(localStorage.getItem(postID + "-checkbox-state")) || {};
+        let mainEditor;
 
-        // Initialize Main Editor.js
-        let mainEditor = new EditorJS({
-            holder: 'main-editor',
-            autofocus: true,
-            tools: {
-                header: Header,
-                list: List
-            },
-            data: loadEditorData("main")
+        document.addEventListener("DOMContentLoaded", function () {
+            mainEditor = new EditorJS({
+                holder: 'main-editor',
+                autofocus: true,
+                tools: { header: Header, list: List },
+                data: loadEditorData("main")
+            });
+
+            subheadings.forEach(id => createSubheading(id, id.charAt(0).toUpperCase() + id.slice(1)));
         });
 
         function createSubheading(id, title) {
             const container = document.createElement('div');
-
-            // Subheading Title
             const subheadingDiv = document.createElement('div');
             subheadingDiv.classList.add('subheading');
-            subheadingDiv.textContent = title;
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = checkboxState[id] || false;
+            checkbox.onchange = () => {
+                checkboxState[id] = checkbox.checked;
+                localStorage.setItem(postID + "-checkbox-state", JSON.stringify(checkboxState));
+            };
+            
+            const label = document.createElement('span');
+            label.textContent = title;
+            
+            subheadingDiv.appendChild(checkbox);
+            subheadingDiv.appendChild(label);
 
-            // Editor.js Container
             const editorContainer = document.createElement('div');
             editorContainer.id = `${postID}-${id}-editor`;
             editorContainer.classList.add('editor-container');
-
+            
             container.appendChild(subheadingDiv);
             container.appendChild(editorContainer);
             document.getElementById('subheadings').appendChild(container);
 
-            // Initialize Editor.js for each subheading
             editors[id] = new EditorJS({
                 holder: editorContainer.id,
                 autofocus: false,
-                tools: {
-                    header: Header,
-                    list: List
-                },
+                tools: { header: Header, list: List },
                 data: loadEditorData(id)
             });
         }
@@ -116,22 +125,22 @@
         }
 
         function saveAllData() {
-            mainEditor.save().then((outputData) => {
-                localStorage.setItem(`${postID}-main-data`, JSON.stringify(outputData));
-            });
+            if (mainEditor) {
+                mainEditor.save().then((outputData) => {
+                    localStorage.setItem(`${postID}-main-data`, JSON.stringify(outputData));
+                });
+            }
 
             subheadings.forEach(id => {
-                editors[id].save().then((outputData) => {
-                    localStorage.setItem(`${postID}-${id}-data`, JSON.stringify(outputData));
-                });
+                if (editors[id]) {
+                    editors[id].save().then((outputData) => {
+                        localStorage.setItem(`${postID}-${id}-data`, JSON.stringify(outputData));
+                    });
+                }
             });
 
             alert("All content saved!");
         }
-
-        // Load All Subheadings
-        subheadings.forEach(id => createSubheading(id.toLowerCase(), id));
     </script>
-
 </body>
 </html>
