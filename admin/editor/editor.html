@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Full Features (No List)</title>
+    <title>Editor.js with Full Features (No List, Custom Marker & Alignment)</title>
     
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -16,6 +16,9 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+
+    <!-- Text Alignment Tool -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/text-alignment-blocktune@latest"></script>
 
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; }
@@ -33,7 +36,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Full Features (No List)</h1>
+        <h1>Editor.js with Full Features (No List, Marker Colors & Alignment)</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -77,20 +80,35 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
-                        marker: Marker,
+                        marker: {
+                            class: Marker,
+                            shortcut: 'CMD+SHIFT+M',
+                            inlineToolbar: true,
+                            config: {
+                                colors: ['#FFBF00', '#FF3131', '#00FF00', '#0096FF', '#800080']
+                            }
+                        },
                         underline: Underline,
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
                         image: {
                             class: ImageTool,
                             config: {
                                 endpoints: {
-                                    byFile: "https://your-backend.com/uploadFile", // Image upload URL
-                                    byUrl: "https://your-backend.com/fetchUrl"   // Fetch image from URL
+                                    byFile: "https://your-backend.com/uploadFile",
+                                    byUrl: "https://your-backend.com/fetchUrl"
                                 }
                             }
                         },
-                        code: CodeTool
+                        code: CodeTool,
+                        textAlignment: {
+                            class: TextAlignmentBlockTune,
+                            config: {
+                                default: "left",
+                                availableAlignments: ["left", "center", "right", "justify"]
+                            }
+                        }
                     },
+                    tunes: ["textAlignment"],
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
                 });
             });
