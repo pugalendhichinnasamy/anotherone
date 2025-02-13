@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Initialize Editor.js
     const editor = new EditorJS({
-        holder: "editor",
+        holder: "editorjs",
         autofocus: true,
         tools: {
             header: {
