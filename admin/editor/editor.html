@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes</title>
+    <title>Nested Editor.js with Checkboxes</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
 
     <style>
         body {
@@ -42,6 +43,24 @@
             margin-top: 20px;
         }
 
+        .subheading-container {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+
+        .checkbox-label {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-label input {
+            margin-right: 10px;
+        }
+
         .save-btn {
             display: block;
             margin: 20px auto;
@@ -57,70 +76,72 @@
         .save-btn:hover {
             background: #0056b3;
         }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .checkbox-container input {
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Default Checkboxes</h1>
+        <h1>Editor.js with Nested Subheadings</h1>
 
-        <!-- Editor -->
-        <div id="editorjs" class="editor"></div>
+        <div id="main-editor" class="editor"></div>
 
-        <button class="save-btn" onclick="saveData()">Save Content</button>
+        <button class="save-btn" onclick="saveAllData()">Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Default subheadings with checkboxes
-            let defaultContent = [
-                { text: "Name", checked: false },
-                { text: "Age", checked: false },
-                { text: "Address", checked: false },
-                { text: "Phone Number", checked: false }
+            let defaultSubheadings = [
+                "Name",
+                "Age",
+                "Address",
+                "Phone Number"
             ];
 
-            function createCheckboxBlock(subheading, checked) {
-                return {
-                    type: "paragraph",
-                    data: {
-                        text: `<label class="checkbox-container">
-                                  <input type="checkbox" ${checked ? "checked" : ""}>
-                                  <strong>${subheading}</strong>
-                               </label>`
-                    }
-                };
+            let innerEditors = {}; // Store inner editors
+
+            function createSubheadingBlock(subheading, id) {
+                return `
+                    <div class="subheading-container">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="checkbox-${id}">
+                            ${subheading}
+                        </label>
+                        <div id="editor-${id}" class="editor"></div>
+                    </div>
+                `;
             }
 
-            // Initialize Editor.js with default subheadings
-            const editor = new EditorJS({
-                holder: 'editorjs',
-                autofocus: true,
-                tools: { header: Header },
-                data: {
-                    blocks: defaultContent.map(sub => createCheckboxBlock(sub.text, sub.checked))
-                },
-                onReady: () => console.log("Editor.js is ready!"),
-                onChange: () => saveData()
+            // Render default subheadings inside the main editor
+            let mainEditorContent = defaultSubheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            document.getElementById("main-editor").innerHTML = mainEditorContent;
+
+            // Initialize Inner Editors for Each Subheading
+            defaultSubheadings.forEach((sub, index) => {
+                innerEditors[index] = new EditorJS({
+                    holder: `editor-${index}`,
+                    autofocus: false,
+                    tools: { paragraph: Paragraph },
+                });
             });
 
-            function saveData() {
-                editor.save().then(outputData => {
-                    console.log("Saved Data:", outputData);
-                }).catch(error => console.error("Saving failed:", error));
+            function saveAllData() {
+                let allData = {};
+
+                // Save Inner Editors
+                let savePromises = defaultSubheadings.map((sub, index) => {
+                    return innerEditors[index].save().then(outputData => {
+                        allData[sub] = outputData;
+                    }).catch(error => console.error(`Saving failed for ${sub}:`, error));
+                });
+
+                Promise.all(savePromises).then(() => {
+                    console.log("All Saved Data:", allData);
+                    alert("Content saved! Check the console for details.");
+                });
             }
 
-            window.saveData = saveData; // Expose globally
+            window.saveAllData = saveAllData; // Expose globally
         });
     </script>
 
