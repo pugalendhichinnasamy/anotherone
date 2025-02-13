@@ -17,8 +17,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
 
-    <!-- Text Alignment Tool -->
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/text-alignment-blocktune@latest"></script>
+    <!-- Corrected Text Alignment Tool -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/text-alignment@latest"></script>
 
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; display: flex; flex-direction: column; align-items: center; }
@@ -101,14 +101,13 @@
                         },
                         code: CodeTool,
                         textAlignment: {
-                            class: TextAlignmentBlockTune,
+                            class: TextAlignment, // Corrected class reference
                             config: {
                                 default: "left",
                                 availableAlignments: ["left", "center", "right", "justify"]
                             }
                         }
                     },
-                    tunes: ["textAlignment"],
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
                 });
             });
