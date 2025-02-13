@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Persistent Data</title>
+    <title>Editor.js with Checkboxes & Numbering</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -45,34 +45,23 @@
             border-radius: 5px;
             background: #f9f9f9;
             margin-bottom: 10px;
-            display: flex;
-            flex-direction: column;
         }
 
         .subheading-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #ddd;
             padding: 5px;
+            background: #ddd;
             border-radius: 5px;
             font-weight: bold;
+            position: relative;
         }
 
-        .left-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .right-controls {
+        .subheading-controls {
             display: flex;
             align-items: center;
             gap: 5px;
-        }
-
-        .subheading-checkbox {
-            margin-right: 5px;
         }
 
         .subheading-number {
@@ -86,21 +75,33 @@
             background: white;
         }
 
-        .btn {
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .remove-btn, .add-subheading-btn {
+            background: red;
+            color: white;
             border: none;
             padding: 3px 8px;
             cursor: pointer;
             border-radius: 5px;
             font-size: 14px;
-            color: white;
         }
 
-        .remove-btn { background: red; }
-        .remove-btn:hover { background: darkred; }
-        .clear-btn { background: orange; }
-        .clear-btn:hover { background: darkorange; }
-        .add-btn { background: green; }
-        .add-btn:hover { background: darkgreen; }
+        .remove-btn:hover {
+            background: darkred;
+        }
+
+        .add-subheading-btn {
+            background: green;
+        }
+
+        .add-subheading-btn:hover {
+            background: darkgreen;
+        }
 
         .editor-box {
             width: 100%;
@@ -111,54 +112,22 @@
             background: #fff;
             margin-top: 5px;
         }
-
-        .save-btn, .clear-all-btn {
-            display: block;
-            margin: 10px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .save-btn {
-            background: #007bff;
-            color: white;
-        }
-
-        .save-btn:hover {
-            background: #0056b3;
-        }
-
-        .clear-all-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .clear-all-btn:hover {
-            background: #a71d2a;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Editor.js with Persistent Data</h1>
-
+        <h1>Editor.js with Checkboxes & Numbering</h1>
         <div id="main-editor"></div>
-
-        <button class="save-btn" onclick="saveAllData(true)">💾 Save Content</button>
-        <button class="clear-all-btn" onclick="clearAllData()">🗑 Clear All Data</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            let subheadings = JSON.parse(localStorage.getItem("subheadings")) || [
-                { title: "Name", number: 11, checked: false, data: null },
-                { title: "Age", number: 12, checked: false, data: null },
-                { title: "Address", number: 13, checked: false, data: null },
-                { title: "Phone Number", number: 14, checked: false, data: null }
+            let subheadings = [
+                { title: "Name", number: 11, checked: false },
+                { title: "Age", number: 12, checked: false },
+                { title: "Address", number: 13, checked: false },
+                { title: "Phone Number", number: 14, checked: false }
             ];
 
             let innerEditors = {};
@@ -167,15 +136,14 @@
                 return `
                     <div class="subheading-container" id="subheading-${index}">
                         <div class="subheading-header">
-                            <div class="left-controls">
-                                <input type="checkbox" class="subheading-checkbox" data-index="${index}" ${subheading.checked ? "checked" : ""}>
-                                <span>${subheading.title}</span>
-                            </div>
-                            <div class="right-controls">
-                                <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateSubheadingOrder(${index}, this.value)">
-                                <button class="btn add-btn" onclick="addSubheading(${index})">➕</button>
-                                <button class="btn clear-btn" onclick="clearSubheadingData(${index})">🧹</button>
-                                <button class="btn remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <input type="checkbox" class="checkbox" id="checkbox-${index}" 
+                                ${subheading.checked ? 'checked' : ''} onchange="toggleCheckbox(${index})">
+                            ${subheading.title}
+                            <div class="subheading-controls">
+                                <input type="number" class="subheading-number" value="${subheading.number}" 
+                                    onchange="updateSubheadingOrder(${index}, this.value)">
+                                <button class="add-subheading-btn" onclick="addSubheading(${index})">➕</button>
+                                <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                             </div>
                         </div>
                         <div id="editor-${index}" class="editor-box"></div>
@@ -187,58 +155,33 @@
                 let mainEditorContainer = document.getElementById("main-editor");
                 subheadings.sort((a, b) => a.number - b.number);
                 mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
                 subheadings.forEach((sub, index) => {
-                    innerEditors[index] = new EditorJS({
-                        holder: `editor-${index}`,
-                        data: sub.data || { blocks: [] },
-                        tools: { header: Header, paragraph: Paragraph, marker: Marker, underline: Underline, table: Table, image: ImageTool },
-                    });
-                });
-
-                document.querySelectorAll(".subheading-checkbox").forEach(checkbox => {
-                    checkbox.addEventListener("change", function () {
-                        let index = this.getAttribute("data-index");
-                        subheadings[index].checked = this.checked;
-                        saveAllData();
-                    });
+                    innerEditors[index] = new EditorJS({ holder: `editor-${index}`, tools: { header: Header, paragraph: Paragraph }});
                 });
             }
 
-            function addSubheading(afterIndex) {
-                let newSubheading = prompt("Enter subheading name:");
-                if (!newSubheading) return;
-                subheadings.splice(afterIndex + 1, 0, { title: newSubheading, number: subheadings[afterIndex].number + 1, checked: false, data: null });
-                renderSubheadings();
+            function toggleCheckbox(index) {
+                subheadings[index].checked = !subheadings[index].checked;
+                saveCheckboxState();
             }
 
-            function removeSubheading(index) {
-                subheadings.splice(index, 1);
-                renderSubheadings();
+            function saveCheckboxState() {
+                localStorage.setItem("checkboxState", JSON.stringify(subheadings.map(sub => sub.checked)));
             }
 
-            function clearSubheadingData(index) {
-                subheadings[index].data = { blocks: [] };
-                renderSubheadings();
+            function loadCheckboxState() {
+                let savedState = JSON.parse(localStorage.getItem("checkboxState"));
+                if (savedState) {
+                    subheadings.forEach((sub, index) => {
+                        sub.checked = savedState[index];
+                    });
+                }
             }
 
-            function clearAllData() {
-                localStorage.removeItem("subheadings");
-                location.reload();
-            }
-
-            function updateSubheadingOrder(index, newNumber) {
-                subheadings[index].number = parseInt(newNumber);
-                renderSubheadings();
-            }
-
-            function saveAllData() {
-                localStorage.setItem("subheadings", JSON.stringify(subheadings));
-            }
-
+            loadCheckboxState();
             renderSubheadings();
+            window.toggleCheckbox = toggleCheckbox;
         });
     </script>
-
 </body>
 </html>
