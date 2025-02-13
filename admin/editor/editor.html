@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Editor.js with Subheadings</title>
+    <title>Editor.js with Dynamic Subheadings</title>
 
     <!-- Load Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -39,7 +39,7 @@
         }
 
         .subheading-container {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -66,26 +66,15 @@
             margin-top: 10px;
         }
 
-        .save-btn, .add-subheading-btn {
-            display: block;
-            margin: 10px auto;
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .save-btn:hover, .add-subheading-btn:hover {
-            background: #0056b3;
-        }
-
-        .remove-btn {
+        .btn-container {
             position: absolute;
             top: 10px;
             right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .remove-btn, .add-subheading-btn {
             background: red;
             color: white;
             border: none;
@@ -98,24 +87,47 @@
         .remove-btn:hover {
             background: darkred;
         }
+
+        .add-subheading-btn {
+            background: green;
+        }
+
+        .add-subheading-btn:hover {
+            background: darkgreen;
+        }
+
+        .save-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .save-btn:hover {
+            background: #0056b3;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Dynamic Editor.js with Subheadings</h1>
+        <h1>Dynamic Editor.js with Nested Subheadings</h1>
 
         <div id="main-editor"></div>
 
-        <button class="add-subheading-btn" onclick="addSubheading()">➕ Add Subheading</button>
         <button class="save-btn" onclick="saveAllData(true)">💾 Save Content</button>
     </div>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             let subheadings = ["Name", "Age", "Address", "Phone Number"];
-            let innerEditors = {}; // Store inner editors
-            let subheadingCounter = subheadings.length; // Track new subheading IDs
+            let innerEditors = {}; 
+            let subheadingCounter = subheadings.length; 
 
             function createSubheadingBlock(subheading, id) {
                 return `
@@ -124,7 +136,10 @@
                             <input type="checkbox" id="checkbox-${id}">
                             ${subheading}
                         </label>
-                        <button class="remove-btn" onclick="removeSubheading(${id})">❌</button>
+                        <div class="btn-container">
+                            <button class="add-subheading-btn" onclick="addSubheading(${id})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${id})">❌</button>
+                        </div>
                         <div id="editor-${id}" class="editor-box"></div>
                     </div>
                 `;
@@ -134,18 +149,13 @@
                 let mainEditorContainer = document.getElementById("main-editor");
                 mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
-                // Initialize Editor.js for each subheading
                 subheadings.forEach((sub, index) => {
                     innerEditors[index] = new EditorJS({
                         holder: `editor-${index}`,
                         autofocus: false,
                         tools: { 
                             header: { class: Header, inlineToolbar: true },
-                            paragraph: { 
-                                class: Paragraph, 
-                                inlineToolbar: true, 
-                                config: { preserveBlank: true } 
-                            },
+                            paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } },
                             marker: Marker,
                             underline: Underline,
                             table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
@@ -153,7 +163,7 @@
                                 class: ImageTool,
                                 config: {
                                     endpoints: {
-                                        byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY', // Replace with your API key
+                                        byFile: 'https://api.imgbb.com/1/upload?key=YOUR_API_KEY',
                                         byUrl: 'https://your-image-url-endpoint.com'
                                     }
                                 }
@@ -164,27 +174,30 @@
                 });
             }
 
-            function addSubheading() {
+            function addSubheading(afterId) {
                 let newSubheading = prompt("Enter subheading name:");
                 if (!newSubheading) return;
 
-                subheadings.push(newSubheading);
                 let id = subheadingCounter++;
-                
-                let mainEditorContainer = document.getElementById("main-editor");
-                mainEditorContainer.innerHTML += createSubheadingBlock(newSubheading, id);
+                subheadings.splice(afterId + 1, 0, newSubheading);
 
-                // Initialize a new Editor.js instance
+                let newSubheadingElement = document.createElement("div");
+                newSubheadingElement.innerHTML = createSubheadingBlock(newSubheading, id);
+                let mainEditorContainer = document.getElementById("main-editor");
+
+                let referenceNode = document.getElementById(`subheading-${afterId}`);
+                if (referenceNode) {
+                    referenceNode.insertAdjacentElement("afterend", newSubheadingElement.firstElementChild);
+                } else {
+                    mainEditorContainer.appendChild(newSubheadingElement.firstElementChild);
+                }
+
                 innerEditors[id] = new EditorJS({
                     holder: `editor-${id}`,
                     autofocus: false,
                     tools: { 
                         header: { class: Header, inlineToolbar: true },
-                        paragraph: { 
-                            class: Paragraph, 
-                            inlineToolbar: true, 
-                            config: { preserveBlank: true } 
-                        },
+                        paragraph: { class: Paragraph, inlineToolbar: true, config: { preserveBlank: true } },
                         marker: Marker,
                         underline: Underline,
                         table: { class: Table, inlineToolbar: true, config: { rows: 2, cols: 3 } },
@@ -224,7 +237,6 @@
                 });
             }
 
-            // Auto-save every 10 seconds
             setInterval(saveAllData, 10000);
 
             renderSubheadings();
