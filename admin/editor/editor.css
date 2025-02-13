@@ -11,7 +11,7 @@ h1 {
 }
 
 #editor {
-    width: 80%;
+    width: 800%;
     margin: 20px auto;
     background: white;
     padding: 10px;
@@ -22,7 +22,7 @@ h1 {
 
 button {
     background: blue;
-    color: white;
+    color: red;
     border: none;
     padding: 10px 20px;
     cursor: pointer;
