@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Language Editor.js with Unique IDs</title>
+    <title>Editor.js with Unique IDs & Indentation</title>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <style>
         body {
@@ -51,13 +51,13 @@
         }
         .checkbox-label {
             display: flex;
-            align-items: left;
+            align-items: center;
             font-size: 18px;
             font-weight: bold;
         }
         .checkbox-label input {
             margin-right: 8px;
-            width: 50px;
+            width: 20px;
             height: 20px;
         }
         .subheading-input {
@@ -67,12 +67,23 @@
             background: none;
             width: 100%;
         }
+        .content-area {
+            margin-left: 20px; /* One-tab indentation */
+            font-size: 16px;
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 5px;
+            min-height: 40px;
+            background: #f9f9f9;
+            outline: none;
+            width: 95%;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Multi-Language Editor.js with Unique Subheading IDs</h1>
+        <h1>Editor.js with Unique Subheading IDs & Indentation</h1>
 
         <div id="editorjs"></div>
         <button class="save-btn" onclick="saveData()">Save Content</button>
@@ -90,7 +101,7 @@
             }
 
             constructor({ data }) {
-                this.data = data || { id: '', checked: false, text: '' };
+                this.data = data || { id: '', checked: false, text: '', content: '' };
                 this.wrapper = null;
             }
 
@@ -115,8 +126,17 @@
                     this.data.text = this.input.value;
                 });
 
+                this.contentArea = document.createElement('div');
+                this.contentArea.contentEditable = true;
+                this.contentArea.classList.add('content-area');
+                this.contentArea.innerHTML = this.data.content;
+                this.contentArea.addEventListener('input', () => {
+                    this.data.content = this.contentArea.innerHTML;
+                });
+
                 this.wrapper.appendChild(this.checkbox);
                 this.wrapper.appendChild(this.input);
+                this.wrapper.appendChild(this.contentArea);
 
                 return this.wrapper;
             }
@@ -125,7 +145,8 @@
                 return {
                     id: this.checkbox.id,
                     checked: this.checkbox.checked,
-                    text: this.input.value
+                    text: this.input.value,
+                    content: this.contentArea.innerHTML
                 };
             }
         }
@@ -139,7 +160,8 @@
                     data: { 
                         id: `${postID}-${title.toLowerCase()}`,
                         checked: false,
-                        text: title
+                        text: title,
+                        content: ""
                     }
                 }))
             };
