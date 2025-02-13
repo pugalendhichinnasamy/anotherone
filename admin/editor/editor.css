@@ -14,7 +14,7 @@ body {
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
         h1 {
-            text-align: left;
+            text-align: centre;
             color: #333;
         }
         #editorjs {
@@ -29,12 +29,12 @@ body {
             margin: 20px auto;
             padding: 10px 20px;
             font-size: 16px;
-            background: #007bff;
-            color: white;
+            background: #0728e3;
+            color: red;
             border: none;
             cursor: pointer;
             border-radius: 5px;
         }
         .save-btn:hover {
-            background: #0056b3;
+            background:#e30707;
         }
