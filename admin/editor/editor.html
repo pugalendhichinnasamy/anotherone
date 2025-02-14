@@ -168,11 +168,12 @@
         }
 
         function clearAllData() {
+             if (confirm("Clear all data?")){
             localStorage.clear();
             subheadings = [];
             renderSubheadings();
         }
-
+        }
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
