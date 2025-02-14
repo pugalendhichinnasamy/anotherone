@@ -158,22 +158,10 @@
             });
         }
 
-        function updateNumber(index, value) {
-            let newNumber = parseInt(value);
-            if (subheadings.some(s => s.number === newNumber)) {
-                alert("Number already in use!");
-                return;
-            }
-            subheadings[index].number = newNumber;
-            saveSubheadings();
-            renderSubheadings();
-        }
-
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            let nextNumber = 10;
-            while (subheadings.some(s => s.number === nextNumber)) nextNumber++;
+            let nextNumber = Math.max(...subheadings.map(s => s.number)) + 1;
             subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
@@ -183,6 +171,10 @@
             localStorage.clear();
             subheadings = [];
             renderSubheadings();
+        }
+
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
 
         renderSubheadings();
