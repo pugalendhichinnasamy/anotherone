@@ -135,7 +135,6 @@
                         </div>
                         <div class="subheading-right">
                             <input type="number" class="number-input" value="${subheading.number}" oninput="updateNumber(${index}, this)">
-                            <span class="error-message" id="error-${index}"></span>
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                             <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
@@ -168,20 +167,35 @@
             });
         }
 
-        function updateNumber(index, input) {
-            let newNumber = parseInt(input.value);
-            let errorMessage = document.getElementById(`error-${index}`);
-            if (isNaN(newNumber) || newNumber <= 0 || subheadings.some((sub, i) => sub.number === newNumber && i !== index)) {
-                errorMessage.innerText = "Duplicate or invalid number!";
-                input.style.border = "2px solid red";
-                return;
-            }
-            input.style.border = "1px solid black";
-            errorMessage.innerText = "";
-            subheadings[index].number = newNumber;
-            subheadings[index].id = generateSubheadingID(subheadings[index].title, newNumber);
+        function addSubheading(index) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            let nextNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
+            subheadings.push({ title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
+
+        function clearEditor(index) {
+            innerEditors[index].clear();
+            subheadings[index].content = JSON.stringify(defaultEditorContent());
+            saveSubheadings();
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure?")) {
+                localStorage.clear();
+                subheadings = [];
+                renderSubheadings();
+            }
         }
 
         function saveSubheadings() {
