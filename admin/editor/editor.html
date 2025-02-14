@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
 
     <style>
         body {
@@ -48,10 +49,6 @@
             padding: 5px;
             border-radius: 5px;
         }
-        .subheading-left {
-            display: flex;
-            align-items: center;
-        }
         .editor-box {
             width: 100%;
             min-height: 150px;
@@ -70,43 +67,25 @@
         .remove-btn { background: red; color: white; }
         .add-btn { background: green; color: white; }
         .clear-btn { background: orange; color: white; }
-        .checkbox {
-            margin-right: 10px;
-            transform: scale(1.2);
-        }
-        .number-input, .title-input {
-            width: 100px;
-            margin-right: 5px;
-            text-align: center;
-            border: 1px solid #aaa;
-            border-radius: 5px;
-            padding: 5px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Editor.js Subheading Manager</h1>
-        <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
+        <button class="add-btn" onclick="addSubheading()">➕ Add Subheading</button>
+        <button class="clear-btn" onclick="confirmClearAll()">🗑️ Clear All</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
         function getOuterEditorID() {
             const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            return `${year}${month}${day}`;
+            return `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
         }
 
         let outerEditorID = getOuterEditorID();
 
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, id: generateSubheadingID("Name", 11), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 12, id: generateSubheadingID("Age", 12), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 13, id: generateSubheadingID("Address", 13), checked: false, content: JSON.stringify(defaultEditorContent()) }
-        ];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
         let innerEditors = {};
 
         function generateSubheadingID(title, number) {
@@ -118,8 +97,8 @@
         function defaultEditorContent() {
             return {
                 blocks: [
-                    { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is sample content. You can edit or replace it." } }
+                    { type: "header", data: { text: "New Subheading", level: 2 } },
+                    { type: "paragraph", data: { text: "You can edit this content." } }
                 ]
             };
         }
@@ -128,16 +107,10 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <div class="subheading-left">
-                            <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
-                            <input type="text" class="title-input" value="${subheading.title}" oninput="updateSubheadingTitle(${index}, this.value)">
-                            <span>(ID: <span id="id-${index}">${subheading.id}</span>)</span>
-                        </div>
+                        <span>${subheading.title}</span>
                         <div>
-                            <input type="number" class="number-input" value="${subheading.number}" min="1" onchange="updateSubheadingNumber(${index}, this.value)">
-                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                            <button class="clear-btn" onclick="clearEditorContent(${index})">🗑️</button>
-                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <button class="clear-btn" onclick="confirmClear(${index})">🗑️ Clear</button>
+                            <button class="remove-btn" onclick="confirmRemove(${index})">❌ Remove</button>
                         </div>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
@@ -146,16 +119,44 @@
 
         function renderSubheadings() {
             let mainEditorContainer = document.getElementById("main-editor");
-            subheadings.sort((a, b) => a.number - b.number);
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: { header: Header, paragraph: Paragraph, table: Table, marker: Marker, code: CodeTool, quote: Quote, image: ImageTool, embed: Embed, link: LinkTool },
+                    tools: {
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { class: Paragraph, inlineToolbar: true },
+                        marker: Marker,
+                        inlineCode: InlineCode,
+                        table: Table,
+                        code: CodeTool,
+                        quote: Quote,
+                        image: ImageTool,
+                        embed: Embed,
+                        link: LinkTool
+                    },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
+        }
+
+        function confirmClear(index) {
+            if (confirm("Are you sure you want to clear this subheading?")) {
+                clearEditorContent(index);
+            }
+        }
+
+        function confirmRemove(index) {
+            if (confirm("Are you sure you want to remove this subheading?")) {
+                removeSubheading(index);
+            }
+        }
+
+        function confirmClearAll() {
+            if (confirm("⚠️ WARNING: This will remove all subheadings! Proceed?")) {
+                clearAllData();
+            }
         }
 
         function clearEditorContent(index) {
@@ -164,9 +165,32 @@
             renderSubheadings();
         }
 
+        function removeSubheading(index) {
+            subheadings.splice(index, 1);
+            saveSubheadings();
+            renderSubheadings();
+        }
+
         function clearAllData() {
             localStorage.removeItem('subheadings');
             subheadings = [];
+            renderSubheadings();
+        }
+
+        function addSubheading() {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+
+            let maxNumber = subheadings.length > 0 ? Math.max(...subheadings.map(s => s.number)) + 1 : 1;
+            let newSubheading = {
+                title: newTitle,
+                number: maxNumber,
+                id: generateSubheadingID(newTitle, maxNumber),
+                content: JSON.stringify(defaultEditorContent())
+            };
+
+            subheadings.push(newSubheading);
+            saveSubheadings();
             renderSubheadings();
         }
 
