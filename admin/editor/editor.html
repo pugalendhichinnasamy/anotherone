@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Sorted Numbering & Checkbox</title>
-    
+    <title>Editor.js with Auto-Sorting & Default Content</title>
+
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
@@ -69,48 +69,72 @@
         .add-btn { background: green; color: white; }
         .number-input {
             width: 50px;
-            margin-left: 10px;
-            padding: 5px;
             text-align: center;
-        }
-        .checkbox {
             margin-right: 10px;
-            transform: scale(1.5);
-        }
-        .subheading-title {
-            flex-grow: 1;
-            margin-left: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Sorted Numbering & Checkbox</h1>
+        <h1>Editor.js with Auto-Sorting & Default Content</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, checked: false, content: "" },
-            { title: "Age", number: 12, checked: false, content: "" },
-            { title: "Address", number: 13, checked: false, content: "" }
+            { title: "Name", number: 11 },
+            { title: "Age", number: 12 },
+            { title: "Address", number: 13 }
         ];
         let innerEditors = {};
+
+        function getDefaultContent(title) {
+            return {
+                blocks: [
+                    { type: "header", data: { text: title, level: 2 } },
+                    { type: "header", data: { text: "Subheading Example", level: 3 } },
+                    { type: "paragraph", data: { text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi. Fusce ac purus id odio consectetur scelerisque. Duis in quam eu metus bibendum ultrices. Etiam nec ultricies eros. Donec posuere leo nec tellus cursus, at ultrices est scelerisque." } },
+                    { 
+                        type: "table", 
+                        data: { content: [
+                            ["Header 1", "Header 2", "Header 3"],
+                            ["Row 1 Col 1", "Row 1 Col 2", "Row 1 Col 3"],
+                            ["Row 2 Col 1", "Row 2 Col 2", "Row 2 Col 3"]
+                        ]}
+                    }
+                ]
+            };
+        }
 
         function createSubheadingBlock(subheading, index) {
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
-                        <span class="subheading-title">${subheading.title}</span>
-                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                        <div>
+                            <input type="checkbox">
+                            <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
+                            ${subheading.title}
+                        </div>
+                        <div>
+                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                        </div>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
+        }
+
+        function updateNumber(index, newNumber) {
+            subheadings[index].number = parseInt(newNumber, 10);
+            sortSubheadings();
+            renderSubheadings();
+        }
+
+        function sortSubheadings() {
+            subheadings.sort((a, b) => a.number - b.number);
+            saveSubheadings();
         }
 
         function renderSubheadings() {
@@ -140,38 +164,18 @@
                         },
                         code: CodeTool
                     },
-                    data: sub.content ? { blocks: JSON.parse(sub.content).blocks } : { blocks: [] }
+                    data: sub.content ? { blocks: JSON.parse(sub.content).blocks } : getDefaultContent(sub.title)
                 });
             });
-        }
-
-        function toggleCheckbox(index) {
-            subheadings[index].checked = !subheadings[index].checked;
-            saveSubheadings();
-        }
-
-        function updateNumber(index, value) {
-            let newValue = parseInt(value) || 0;
-            subheadings[index].number = newValue;
-            sortSubheadings();
-            saveSubheadings();
-            renderSubheadings();
         }
 
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            let nextNumber = findNextNumber();
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: "" });
+            let newNumber = Math.max(...subheadings.map(s => s.number)) + 1;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: newNumber });
             saveSubheadings();
             renderSubheadings();
-        }
-
-        function findNextNumber() {
-            let numbers = subheadings.map(s => s.number);
-            let next = 11;
-            while (numbers.includes(next)) next++;
-            return next;
         }
 
         function removeSubheading(index) {
@@ -183,27 +187,17 @@
         }
 
         function clearEditor(index) {
-            if (innerEditors[index]) {
-                innerEditors[index].clear();
-                subheadings[index].content = "";
-                localStorage.removeItem(`editor-${index}`);
-            }
+            innerEditors[index].clear();
         }
 
         function clearAllData() {
-            if (confirm("Clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
+            localStorage.clear();
+            subheadings = [];
+            renderSubheadings();
         }
 
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
-        }
-
-        function sortSubheadings() {
-            subheadings.sort((a, b) => a.number - b.number);
         }
 
         renderSubheadings();
