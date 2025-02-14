@@ -88,31 +88,35 @@
 
         /* 🔹 Inline Toolbar Styling */
         .ce-inline-toolbar {
-            transform: scale(1.2);
-            transform-origin: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
         }
         .ce-inline-tool {
-            width: 30px !important;
-            height: 30px !important;
+            width: auto !important;
+            height: auto !important;
             padding: 6px !important;
             font-size: 16px !important;
         }
 
-        /* 🔹 Responsive Styles */
-        @media (max-width: 768px) {
-            .container {
-                width: 100%;
-                padding: 15px;
-            }
-            .ce-inline-toolbar {
-                transform: scale(1);
-            }
-            .ce-inline-tool {
-                width: 28px !important;
-                height: 28px !important;
-                padding: 5px !important;
-                font-size: 14px !important;
-            }
+        /* 🔹 Color Picker Popup */
+        .color-picker {
+            position: absolute;
+            display: none;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        .color-option {
+            width: 25px;
+            height: 25px;
+            display: inline-block;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 2px;
         }
     </style>
 </head>
@@ -131,27 +135,45 @@
 
             constructor() {
                 this.colors = ["yellow", "pink", "blue", "green", "orange"];
-                this.currentColorIndex = 0;
-
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
                 this.button.style.cursor = "pointer";
-                this.button.addEventListener("click", () => this.toggleColor());
+                this.button.onclick = (event) => this.showColorPicker(event);
+                this.colorPicker = this.createColorPicker();
+                document.body.appendChild(this.colorPicker);
             }
 
-            render() {
-                return this.button;
+            createColorPicker() {
+                let picker = document.createElement("div");
+                picker.classList.add("color-picker");
+
+                this.colors.forEach(color => {
+                    let colorOption = document.createElement("div");
+                    colorOption.classList.add("color-option");
+                    colorOption.style.backgroundColor = color;
+                    colorOption.onclick = () => this.selectColor(color);
+                    picker.appendChild(colorOption);
+                });
+
+                return picker;
+            }
+
+            showColorPicker(event) {
+                let rect = this.button.getBoundingClientRect();
+                this.colorPicker.style.left = `${rect.left}px`;
+                this.colorPicker.style.top = `${rect.bottom + window.scrollY}px`;
+                this.colorPicker.style.display = "block";
+            }
+
+            selectColor(color) {
+                this.selectedColor = color;
+                this.colorPicker.style.display = "none";
             }
 
             surround(range) {
                 const span = document.createElement("span");
-                span.style.backgroundColor = this.colors[this.currentColorIndex];
+                span.style.backgroundColor = this.selectedColor || "yellow";
                 range.surroundContents(span);
-            }
-
-            toggleColor() {
-                this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
-                this.button.style.backgroundColor = this.colors[this.currentColorIndex];
             }
         }
 
@@ -183,7 +205,7 @@
         function renderSubheadings() {
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-            
+
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
@@ -191,20 +213,12 @@
                         header: { class: Header, inlineToolbar: true },
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
-                        quote: { class: Quote, inlineToolbar: true },
+                        quote: Quote,
                         marker: { class: MultiColorMarker },
                         inlineCode: InlineCode,
                         underline: Underline,
-                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
-                        image: {
-                            class: ImageTool,
-                            config: {
-                                endpoints: {
-                                    byFile: "https://your-backend.com/uploadFile",
-                                    byUrl: "https://your-backend.com/fetchUrl"
-                                }
-                            }
-                        },
+                        link: LinkTool,
+                        image: ImageTool,
                         code: CodeTool
                     },
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
@@ -212,36 +226,7 @@
             });
         }
 
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle });
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-        function clearAllData() {
-            if (confirm("Clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
-        }
-
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
-        }
-
         renderSubheadings();
     </script>
 </body>
 </html>
-
