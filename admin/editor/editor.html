@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes</title>
+    <title>Editor.js with Checkboxes & Markers</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -56,44 +56,19 @@
             background: #fff;
             margin-top: 5px;
         }
-        .remove-btn, .clear-btn, .add-btn {
-            padding: 5px 10px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .remove-btn { background: red; color: white; }
-        .clear-btn { background: orange; color: white; }
-        .add-btn { background: green; color: white; }
-        .number-input {
-            width: 50px;
-            margin-left: 10px;
-            padding: 5px;
-            text-align: center;
-        }
-        .checkbox {
-            margin-right: 10px;
-            transform: scale(1.5);
-        }
-        .subheading-title {
-            flex-grow: 1;
-            margin-left: 10px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Checkboxes</h1>
+        <h1>Editor.js with Markers & Checkboxes</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
-        // Generate or get a unique main editor ID
         let mainEditorID = localStorage.getItem('mainEditorID') || Date.now().toString().slice(0, 4);
         localStorage.setItem('mainEditorID', mainEditorID);
 
-        // Subheading storage with unique IDs
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
             { title: "Name", number: 1, id: generateSubheadingID(1), checked: false, content: JSON.stringify(defaultEditorContent()) },
             { title: "Age", number: 2, id: generateSubheadingID(2), checked: false, content: JSON.stringify(defaultEditorContent()) },
@@ -121,10 +96,7 @@
                     <div class="subheading-header">
                         <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
                         <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
-                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
@@ -144,9 +116,15 @@
                         quote: { class: Quote, inlineToolbar: true },
                         inlineCode: InlineCode,
                         underline: Underline,
-                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        link: { class: LinkTool },
                         image: { class: ImageTool },
-                        code: { class: CodeTool }
+                        code: { class: CodeTool },
+
+                        // ✅ Marker tool with 5 colors
+                        marker: {
+                            class: CustomMarker,
+                            inlineToolbar: true
+                        }
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
@@ -158,15 +136,6 @@
             saveSubheadings();
         }
 
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            let nextNumber = findNextNumber();
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
-            saveSubheadings();
-            renderSubheadings();
-        }
-
         function removeSubheading(index) {
             if (confirm("Are you sure?")) {
                 subheadings.splice(index, 1);
@@ -175,15 +144,7 @@
             }
         }
 
-        function clearEditor(index) {
-            if (confirm("Are you sure?"))
-            innerEditors[index].clear();
-            subheadings[index].content = JSON.stringify(defaultEditorContent());
-            saveSubheadings();
-        }
-
         function clearAllData() {
-            if (confirm("Are you sure?"))
             localStorage.clear();
             subheadings = [];
             renderSubheadings();
@@ -191,6 +152,44 @@
 
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        // ✅ Custom Marker Plugin
+        class CustomMarker {
+            constructor({ api }) {
+                this.api = api;
+                this.button = null;
+                this.selectedColor = "#FFEB3B"; // Default yellow
+            }
+
+            static get isInline() {
+                return true;
+            }
+
+            static get sanitize() {
+                return { span: true };
+            }
+
+            render() {
+                this.button = document.createElement("button");
+                this.button.innerHTML = "🖍️";
+                this.button.classList.add("cdx-marker");
+
+                this.button.onclick = () => {
+                    this.selectedColor = prompt("Enter color (yellow, green, blue, pink, orange)", this.selectedColor);
+                };
+
+                return this.button;
+            }
+
+            surround(range) {
+                if (!range) return;
+                let span = document.createElement("span");
+                span.style.backgroundColor = this.selectedColor;
+                span.innerText = range.toString();
+                range.deleteContents();
+                range.insertNode(span);
+            }
         }
 
         renderSubheadings();
