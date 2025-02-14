@@ -137,7 +137,17 @@
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: { header: Header, paragraph: Paragraph, table: Table },
+                    tools: { 
+                        header: Header,
+                        paragraph: Paragraph,
+                        table: Table,
+                        quote: Quote,
+                        underline: Underline,
+                        linkTool: LinkTool,
+                        image: ImageTool,
+                        code: CodeTool,
+                        inlineCode: InlineCode
+                    },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
@@ -162,14 +172,6 @@
             subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
-        }
-
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
         }
 
         function saveSubheadings() {
