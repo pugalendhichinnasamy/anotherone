@@ -86,6 +86,7 @@
     <div class="container">
         <h1>Editor.js Without List Tool</h1>
         <button onclick="clearAllData()">Clear All Data</button>
+        <button class="add-btn" onclick="addSubheading()">➕ Add Subheading</button>
         <div id="main-editor"></div>
     </div>
 
@@ -93,11 +94,7 @@
         let mainEditorID = localStorage.getItem('mainEditorID') || Date.now().toString().slice(0, 4);
         localStorage.setItem('mainEditorID', mainEditorID);
 
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, checked: false, id: generateSubheadingID(11), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 12, checked: false, id: generateSubheadingID(12), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 13, checked: false, id: generateSubheadingID(13), content: JSON.stringify(defaultEditorContent()) }
-        ];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
         let innerEditors = {};
 
         function generateSubheadingID(number) {
@@ -121,7 +118,6 @@
                         <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
                         <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
                         <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
@@ -152,6 +148,23 @@
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
+
+            saveSubheadings();
+        }
+
+        function addSubheading() {
+            let newNumber = subheadings.length > 0 ? subheadings[subheadings.length - 1].number + 1 : 1;
+            let newSubheading = {
+                title: "New Subheading",
+                number: newNumber,
+                checked: false,
+                id: generateSubheadingID(newNumber),
+                content: JSON.stringify(defaultEditorContent())
+            };
+
+            subheadings.push(newSubheading);
+            saveSubheadings();
+            renderSubheadings();
         }
 
         function removeSubheading(index) {
