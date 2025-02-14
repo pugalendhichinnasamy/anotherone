@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Inline Tools & Buttons</title>
+    <title>Editor.js Without List Tool</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -16,7 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
@@ -85,7 +84,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Inline Tools & Buttons</h1>
+        <h1>Editor.js Without List Tool</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -148,7 +147,6 @@
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
                         image: { class: ImageTool },
                         code: { class: CodeTool },
-                        list: { class: List, inlineToolbar: true },
                         marker: { class: Marker, shortcut: 'CMD+SHIFT+M' }
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
