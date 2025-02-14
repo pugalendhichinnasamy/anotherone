@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Main and Subheadings</title>
+    <title>Editor.js - Nested Editors</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -33,18 +33,16 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
         }
         .subheading-container {
+            margin: 10px 0;
             padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 5px;
             background: #f9f9f9;
-            margin-bottom: 10px;
+            border-radius: 5px;
         }
         .subheading-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
             background: #ddd;
             padding: 5px;
@@ -58,8 +56,12 @@
             background: #fff;
             margin-top: 5px;
         }
-        .remove-btn, .clear-btn, .add-btn {
+        .button-group {
+            margin-top: 10px;
+        }
+        .btn {
             padding: 5px 10px;
+            margin-right: 5px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
@@ -67,141 +69,131 @@
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
-        .number-input {
-            width: 50px;
-            margin-left: 10px;
-            padding: 5px;
-            text-align: center;
-        }
-        .checkbox {
-            margin-right: 10px;
-            transform: scale(1.5);
-        }
-        .subheading-title {
-            flex-grow: 1;
-            margin-left: 10px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
 
-    <!-- Main Editor -->
     <div class="container">
-        <h1>Main Editor</h1>
-        <div id="outside-editor"></div>
-        <button onclick="saveOutsideEditor()">Save Main Editor</button>
-    </div>
-
-    <!-- Subheadings -->
-    <div class="container">
-        <h2>Subheadings</h2>
-        <button onclick="clearAllData()">Clear All Data</button>
+        <h1>Nested Editor.js</h1>
         <div id="main-editor"></div>
+        <div class="button-group">
+            <button class="btn add-btn" onclick="addSubheading()">➕ Add Subheading</button>
+            <button class="btn clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
+            <button class="btn" onclick="saveData()">💾 Save</button>
+        </div>
     </div>
 
     <script>
-        let outsideEditor; 
+        let mainEditor;
         let innerEditors = {};
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 12, checked: false, content: JSON.stringify(defaultEditorContent()) }
-        ];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
 
         function defaultEditorContent() {
             return {
                 blocks: [
-                    { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is a sample paragraph." } },
-                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
+                    { type: "paragraph", data: { text: "This is a paragraph inside a subheading." } }
                 ]
             };
         }
 
         function createSubheadingBlock(subheading, index) {
-            return `
-                <div class="subheading-container" id="subheading-${index}">
-                    <div class="subheading-header">
-                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
-                        <span class="subheading-title">${subheading.title} (#${subheading.number})</span>
-                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+            return {
+                type: "subheading",
+                data: {
+                    title: subheading.title,
+                    number: subheading.number,
+                    content: JSON.stringify(defaultEditorContent())
+                }
+            };
+        }
+
+        class SubheadingTool {
+            static get toolbox() {
+                return { title: "Subheading", icon: "📝" };
+            }
+
+            constructor({ data, api }) {
+                this.api = api;
+                this.data = data || { title: "", number: 1, content: JSON.stringify(defaultEditorContent()) };
+                this.innerEditor = null;
+                this.container = document.createElement("div");
+            }
+
+            render() {
+                this.container.innerHTML = `
+                    <div class="subheading-container">
+                        <div class="subheading-header">
+                            <input type="text" value="${this.data.title}" placeholder="Enter Subheading Title" class="subheading-title">
+                            <input type="number" value="${this.data.number}" class="subheading-number">
+                            <button class="remove-btn">❌</button>
+                        </div>
+                        <div class="editor-box" id="editor-${this.data.number}"></div>
                     </div>
-                    <div id="editor-${index}" class="editor-box"></div>
-                </div>`;
-        }
+                `;
 
-        function renderSubheadings() {
-            let mainEditorContainer = document.getElementById("main-editor");
-            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
-            subheadings.forEach((sub, index) => {
-                innerEditors[index] = new EditorJS({
-                    holder: `editor-${index}`,
-                    tools: {
-                        header: Header,
-                        paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"] },
-                        table: Table,
-                        quote: Quote,
-                        underline: Underline,
-                        linkTool: LinkTool,
-                        image: ImageTool,
-                        code: CodeTool,
-                        inlineCode: InlineCode,
-                        marker: Marker
-                    },
-                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                this.container.querySelector(".remove-btn").addEventListener("click", () => {
+                    this.api.blocks.delete(this.api.blocks.getCurrentBlockIndex());
                 });
+
+                setTimeout(() => {
+                    this.innerEditor = new EditorJS({
+                        holder: `editor-${this.data.number}`,
+                        tools: {
+                            header: Header,
+                            paragraph: Paragraph,
+                            table: Table,
+                            quote: Quote,
+                            underline: Underline,
+                            linkTool: LinkTool,
+                            image: ImageTool,
+                            code: CodeTool,
+                            inlineCode: InlineCode,
+                            marker: Marker
+                        },
+                        data: this.data.content ? JSON.parse(this.data.content) : defaultEditorContent()
+                    });
+                }, 100);
+
+                return this.container;
+            }
+
+            save() {
+                return {
+                    title: this.container.querySelector(".subheading-title").value,
+                    number: parseInt(this.container.querySelector(".subheading-number").value),
+                    content: JSON.stringify(this.innerEditor ? this.innerEditor.save() : {})
+                };
+            }
+        }
+
+        function addSubheading() {
+            mainEditor.blocks.insert("subheading", { title: "New Subheading", number: subheadings.length + 1 });
+        }
+
+        function saveData() {
+            mainEditor.save().then((output) => {
+                localStorage.setItem('subheadings', JSON.stringify(output.blocks));
+                alert("Data saved!");
             });
-        }
-
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            let nextNumber = Math.max(...subheadings.map(s => s.number)) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-        function clearEditor(index) {
-            if (confirm("Clear this editor?")) {
-                innerEditors[index].clear();
-                subheadings[index].content = "";
-            }
         }
 
         function clearAllData() {
-            if (confirm("Clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
+            if (confirm("Are you sure you want to clear all data?")) {
+                localStorage.removeItem("subheadings");
+                location.reload();
             }
         }
 
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
-        }
+        mainEditor = new EditorJS({
+            holder: "main-editor",
+            tools: {
+                header: Header,
+                paragraph: Paragraph,
+                subheading: SubheadingTool
+            },
+            data: { blocks: subheadings.length ? subheadings : [] }
+        });
 
-        function saveOutsideEditor() {
-            outsideEditor.save().then((output) => {
-                localStorage.setItem('outsideEditorData', JSON.stringify(output));
-            });
-        }
-
-        outsideEditor = new EditorJS({ holder: "outside-editor", tools: { header: Header, paragraph: Paragraph } });
-        renderSubheadings();
     </script>
 </body>
 </html>
