@@ -57,7 +57,7 @@
             background: #fff;
             margin-top: 5px;
         }
-        .remove-btn, .clear-btn, .add-btn, .save-btn {
+        .remove-btn, .clear-btn, .add-btn, .preview-btn {
             padding: 5px 10px;
             border: none;
             cursor: pointer;
@@ -66,7 +66,7 @@
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
-        .save-btn { background: blue; color: white; }
+        .preview-btn { background: blue; color: white; }
         .number-input {
             width: 50px;
             margin-left: 10px;
@@ -84,13 +84,33 @@
             border: 1px solid #ccc;
             border-radius: 3px;
         }
+        #preview-container {
+            display: none;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            width: 60%;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Editor.js with Inline Tools & Subheadings</h1>
-        <button onclick="clearAllData()">Clear All Data</button>
+        <button class="clear-btn" onclick="clearAllData()">Clear All Data</button>
+        <button class="preview-btn" onclick="previewData()">Preview</button>
+        
+        <h2>Main Content</h2>
+        <div id="outer-editor"></div>
+
+        <h2>Subheadings</h2>
         <div id="main-editor"></div>
+    </div>
+
+    <div id="preview-container">
+        <h2>Preview</h2>
+        <div id="preview-content"></div>
     </div>
 
     <script>
@@ -100,6 +120,13 @@
             { title: "Address", number: 12, content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
+
+        let outerEditor = new EditorJS({
+            holder: 'outer-editor',
+            tools: { header: Header, paragraph: Paragraph },
+            data: JSON.parse(localStorage.getItem('outerEditorData')) || defaultEditorContent(),
+            onChange: () => saveOuterData()
+        });
 
         function defaultEditorContent() {
             return {
@@ -119,7 +146,6 @@
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
-                        <button class="save-btn" onclick="saveSubheadings()">💾</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
@@ -132,7 +158,8 @@
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
                     tools: { header: Header, paragraph: Paragraph },
-                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent(),
+                    onChange: () => saveSubheadings()
                 });
             });
         }
@@ -161,31 +188,22 @@
             renderSubheadings();
         }
 
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            let nextNumber = Math.max(...subheadings.map(s => s.number)) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, content: JSON.stringify(defaultEditorContent()) });
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-        function clearAllData() {
-            localStorage.clear();
-            subheadings = [];
-            renderSubheadings();
+        function saveOuterData() {
+            outerEditor.save().then(output => localStorage.setItem('outerEditorData', JSON.stringify(output)));
         }
 
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        function previewData() {
+            document.getElementById("preview-container").style.display = "block";
+            document.getElementById("preview-content").innerText = JSON.stringify(subheadings, null, 2);
+        }
+
+        function clearAllData() {
+            localStorage.clear();
+            location.reload();
         }
 
         renderSubheadings();
