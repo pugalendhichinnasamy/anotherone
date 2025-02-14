@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes & Dynamic IDs</title>
+    <title>Editor.js with Dynamic IDs & Sorting</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -66,7 +66,7 @@
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
         .number-input {
-            width: 50px;
+            width: 60px;
             padding: 5px;
             text-align: center;
             margin-right: 5px;
@@ -83,24 +83,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Checkboxes & Dynamic IDs</h1>
+        <h1>Editor.js with Dynamic IDs & Sorting</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
-        let mainEditorID = localStorage.getItem('mainEditorID') || Date.now().toString().slice(0, 4);
-        localStorage.setItem('mainEditorID', mainEditorID);
-
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 1, id: generateSubheadingID(1), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 2, id: generateSubheadingID(2), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 3, id: generateSubheadingID(3), checked: false, content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", number: 12, id: generateSubheadingID("Name", 12), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 13, id: generateSubheadingID("Age", 13), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 14, id: generateSubheadingID("Address", 14), checked: false, content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
 
-        function generateSubheadingID(number) {
-            return `${mainEditorID}_${number}`;
+        function generateSubheadingID(title, number) {
+            let letters = title.replace(/[^a-zA-Z]/g, "").slice(0, 2).toLowerCase();
+            if (letters.length < 2) letters = "kk"; // Default if no letters found
+            return `${letters}${number}`;
         }
 
         function defaultEditorContent() {
@@ -120,7 +119,7 @@
                         <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
                         <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
 
-                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
+                        <input type="number" class="number-input" value="${subheading.number}" oninput="updateNumber(${index}, this.value)">
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
@@ -157,17 +156,18 @@
             if (isNaN(newNumber) || newNumber <= 0) return;
 
             subheadings[index].number = newNumber;
-            subheadings[index].id = generateSubheadingID(newNumber);  // Update unique ID
+            subheadings[index].id = generateSubheadingID(subheadings[index].title, newNumber);
 
+            subheadings.sort((a, b) => a.number - b.number);
             saveSubheadings();
-            renderSubheadings();  // Re-render to reflect the updated ID
+            renderSubheadings();
         }
 
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            let nextNumber = subheadings.length + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
+            let nextNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
@@ -179,13 +179,6 @@
                 renderSubheadings();
             }
         }
-        function clearEditor(index) {
-            if (confirm("Are you sure?"))
-            innerEditors[index].clear();
-            subheadings[index].content = JSON.stringify(defaultEditorContent());
-            saveSubheadings();
-        }       
-
 
         function clearAllData() {
             if (confirm("Are you sure?")) {
