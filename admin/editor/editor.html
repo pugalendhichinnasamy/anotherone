@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor.js Responsive</title>
-    
+
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
@@ -88,35 +88,31 @@
 
         /* 🔹 Inline Toolbar Styling */
         .ce-inline-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
+            transform: scale(1.2);
+            transform-origin: center;
         }
         .ce-inline-tool {
-            width: auto !important;
-            height: auto !important;
+            width: 30px !important;
+            height: 30px !important;
             padding: 6px !important;
             font-size: 16px !important;
         }
 
-        /* 🔹 Color Picker Popup */
-        .color-picker {
-            position: absolute;
-            display: none;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 5px;
-            border-radius: 5px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-        .color-option {
-            width: 25px;
-            height: 25px;
-            display: inline-block;
-            cursor: pointer;
-            border-radius: 5px;
-            margin: 2px;
+        /* 🔹 Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                width: 100%;
+                padding: 15px;
+            }
+            .ce-inline-toolbar {
+                transform: scale(1);
+            }
+            .ce-inline-tool {
+                width: 28px !important;
+                height: 28px !important;
+                padding: 5px !important;
+                font-size: 14px !important;
+            }
         }
     </style>
 </head>
@@ -138,42 +134,45 @@
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
                 this.button.style.cursor = "pointer";
-                this.button.onclick = (event) => this.showColorPicker(event);
-                this.colorPicker = this.createColorPicker();
-                document.body.appendChild(this.colorPicker);
+
+                this.button.addEventListener("click", () => this.showColorPopup());
             }
 
-            createColorPicker() {
-                let picker = document.createElement("div");
-                picker.classList.add("color-picker");
+            showColorPopup() {
+                let colorPicker = document.createElement("div");
+                colorPicker.style.position = "absolute";
+                colorPicker.style.background = "white";
+                colorPicker.style.border = "1px solid #ccc";
+                colorPicker.style.padding = "5px";
+                colorPicker.style.display = "flex";
+                colorPicker.style.gap = "5px";
 
                 this.colors.forEach(color => {
-                    let colorOption = document.createElement("div");
-                    colorOption.classList.add("color-option");
-                    colorOption.style.backgroundColor = color;
-                    colorOption.onclick = () => this.selectColor(color);
-                    picker.appendChild(colorOption);
+                    let colorBtn = document.createElement("button");
+                    colorBtn.style.background = color;
+                    colorBtn.style.width = "20px";
+                    colorBtn.style.height = "20px";
+                    colorBtn.style.border = "none";
+                    colorBtn.style.cursor = "pointer";
+                    colorBtn.addEventListener("click", () => {
+                        this.selectedColor = color;
+                        document.body.removeChild(colorPicker);
+                    });
+                    colorPicker.appendChild(colorBtn);
                 });
 
-                return picker;
-            }
-
-            showColorPicker(event) {
-                let rect = this.button.getBoundingClientRect();
-                this.colorPicker.style.left = `${rect.left}px`;
-                this.colorPicker.style.top = `${rect.bottom + window.scrollY}px`;
-                this.colorPicker.style.display = "block";
-            }
-
-            selectColor(color) {
-                this.selectedColor = color;
-                this.colorPicker.style.display = "none";
+                document.body.appendChild(colorPicker);
             }
 
             surround(range) {
+                if (!this.selectedColor) return;
                 const span = document.createElement("span");
-                span.style.backgroundColor = this.selectedColor || "yellow";
+                span.style.backgroundColor = this.selectedColor;
                 range.surroundContents(span);
+            }
+
+            render() {
+                return this.button;
             }
         }
 
@@ -205,7 +204,7 @@
         function renderSubheadings() {
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
+            
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
@@ -213,17 +212,23 @@
                         header: { class: Header, inlineToolbar: true },
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
-                        quote: Quote,
+                        quote: { class: Quote, inlineToolbar: true },
                         marker: { class: MultiColorMarker },
                         inlineCode: InlineCode,
                         underline: Underline,
-                        link: LinkTool,
-                        image: ImageTool,
+                        link: { class: LinkTool },
+                        image: { class: ImageTool },
                         code: CodeTool
                     },
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
                 });
             });
+        }
+
+        function clearAllData() {
+            localStorage.clear();
+            subheadings = [];
+            renderSubheadings();
         }
 
         renderSubheadings();
