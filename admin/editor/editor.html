@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkbox & Number Input</title>
+    <title>Editor.js with Sorted Numbering & Checkbox</title>
     
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -71,6 +71,7 @@
             width: 50px;
             margin-left: 10px;
             padding: 5px;
+            text-align: center;
         }
         .checkbox {
             margin-right: 10px;
@@ -80,7 +81,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Checkbox & Number Input</h1>
+        <h1>Editor.js with Sorted Numbering & Checkbox</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -111,6 +112,7 @@
         }
 
         function renderSubheadings() {
+            sortSubheadings();
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
             
@@ -147,14 +149,15 @@
         }
 
         function updateNumber(index, value) {
-            subheadings[index].number = value;
+            subheadings[index].number = parseInt(value) || 0;
             saveSubheadings();
+            renderSubheadings();
         }
 
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1, checked: false });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 11, checked: false });
             saveSubheadings();
             renderSubheadings();
         }
@@ -184,6 +187,10 @@
 
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        function sortSubheadings() {
+            subheadings.sort((a, b) => a.number - b.number);
         }
 
         renderSubheadings();
