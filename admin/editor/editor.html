@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js - Nested Editors</title>
+    <title>Nested Editor.js</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -74,7 +74,7 @@
 <body>
 
     <div class="container">
-        <h1>Nested Editor.js</h1>
+        <h1>Main Editor with Nested Subheadings</h1>
         <div id="main-editor"></div>
         <div class="button-group">
             <button class="btn add-btn" onclick="addSubheading()">➕ Add Subheading</button>
@@ -86,24 +86,13 @@
     <script>
         let mainEditor;
         let innerEditors = {};
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
+        let uniqueID = `main-${Date.now()}`;  // Generate unique ID for main editor
 
         function defaultEditorContent() {
             return {
                 blocks: [
                     { type: "paragraph", data: { text: "This is a paragraph inside a subheading." } }
                 ]
-            };
-        }
-
-        function createSubheadingBlock(subheading, index) {
-            return {
-                type: "subheading",
-                data: {
-                    title: subheading.title,
-                    number: subheading.number,
-                    content: JSON.stringify(defaultEditorContent())
-                }
             };
         }
 
@@ -114,7 +103,7 @@
 
             constructor({ data, api }) {
                 this.api = api;
-                this.data = data || { title: "", number: 1, content: JSON.stringify(defaultEditorContent()) };
+                this.data = data || { title: "", id: `sub-${Date.now()}`, content: JSON.stringify(defaultEditorContent()) };
                 this.innerEditor = null;
                 this.container = document.createElement("div");
             }
@@ -124,10 +113,9 @@
                     <div class="subheading-container">
                         <div class="subheading-header">
                             <input type="text" value="${this.data.title}" placeholder="Enter Subheading Title" class="subheading-title">
-                            <input type="number" value="${this.data.number}" class="subheading-number">
                             <button class="remove-btn">❌</button>
                         </div>
-                        <div class="editor-box" id="editor-${this.data.number}"></div>
+                        <div class="editor-box" id="${this.data.id}"></div>
                     </div>
                 `;
 
@@ -137,7 +125,7 @@
 
                 setTimeout(() => {
                     this.innerEditor = new EditorJS({
-                        holder: `editor-${this.data.number}`,
+                        holder: this.data.id,
                         tools: {
                             header: Header,
                             paragraph: Paragraph,
@@ -152,6 +140,8 @@
                         },
                         data: this.data.content ? JSON.parse(this.data.content) : defaultEditorContent()
                     });
+
+                    innerEditors[this.data.id] = this.innerEditor;
                 }, 100);
 
                 return this.container;
@@ -160,38 +150,55 @@
             save() {
                 return {
                     title: this.container.querySelector(".subheading-title").value,
-                    number: parseInt(this.container.querySelector(".subheading-number").value),
+                    id: this.data.id,
                     content: JSON.stringify(this.innerEditor ? this.innerEditor.save() : {})
                 };
             }
         }
 
         function addSubheading() {
-            mainEditor.blocks.insert("subheading", { title: "New Subheading", number: subheadings.length + 1 });
+            mainEditor.blocks.insert("subheading", { title: "New Subheading" });
         }
 
         function saveData() {
-            mainEditor.save().then((output) => {
-                localStorage.setItem('subheadings', JSON.stringify(output.blocks));
+            mainEditor.save().then(async (output) => {
+                let savedData = output.blocks;
+
+                // Fetch and save inner editor content
+                for (let block of savedData) {
+                    if (block.type === "subheading" && innerEditors[block.data.id]) {
+                        block.data.content = JSON.stringify(await innerEditors[block.data.id].save());
+                    }
+                }
+
+                let fullData = { mainEditorID: uniqueID, subheadings: savedData };
+                localStorage.setItem("editorData", JSON.stringify(fullData));
                 alert("Data saved!");
             });
         }
 
         function clearAllData() {
             if (confirm("Are you sure you want to clear all data?")) {
-                localStorage.removeItem("subheadings");
+                localStorage.removeItem("editorData");
                 location.reload();
             }
+        }
+
+        function loadSavedData() {
+            let savedData = JSON.parse(localStorage.getItem("editorData"));
+            if (savedData) {
+                uniqueID = savedData.mainEditorID;
+                return { blocks: savedData.subheadings };
+            }
+            return { blocks: [] };
         }
 
         mainEditor = new EditorJS({
             holder: "main-editor",
             tools: {
-                header: Header,
-                paragraph: Paragraph,
                 subheading: SubheadingTool
             },
-            data: { blocks: subheadings.length ? subheadings : [] }
+            data: loadSavedData()
         });
 
     </script>
