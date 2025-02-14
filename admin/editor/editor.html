@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes, Marker, and Controls</title>
+    <title>Editor.js with Checkboxes</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -33,137 +33,167 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
+        .subheading-container {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
         .editor-box {
-            position: relative;
             width: 100%;
             min-height: 150px;
             padding: 10px;
             border: 1px solid #ccc;
             background: #fff;
             margin-top: 5px;
-            border-radius: 5px;
         }
-        /* Top-right buttons inside editor */
-        .editor-controls {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            display: flex;
-            gap: 5px;
-        }
-        .remove-btn, .clear-btn {
-            padding: 5px 8px;
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 5px 10px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
-            font-size: 14px;
         }
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
-
-        /* Number input */
-        .number-box {
-            position: absolute;
-            top: 5px;
-            left: 5px;
+        .add-btn { background: green; color: white; }
+        .number-input {
             width: 50px;
+            margin-left: 10px;
             padding: 5px;
             text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
+        }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Controls</h1>
+        <h1>Editor.js with Checkboxes</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
-        let editorInstances = [];
+        // Generate or get a unique main editor ID
+        let mainEditorID = localStorage.getItem('mainEditorID') || Date.now().toString().slice(0, 4);
+        localStorage.setItem('mainEditorID', mainEditorID);
 
-        function createEditor(holderId, numberValue) {
-            const editorContainer = document.createElement("div");
-            editorContainer.classList.add("editor-box");
+        // Subheading storage with unique IDs
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+            { title: "Name", number: 1, id: generateSubheadingID(1), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 2, id: generateSubheadingID(2), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 3, id: generateSubheadingID(3), checked: false, content: JSON.stringify(defaultEditorContent()) }
+        ];
+        let innerEditors = {};
 
-            // Number input
-            const numberInput = document.createElement("input");
-            numberInput.type = "number";
-            numberInput.classList.add("number-box");
-            numberInput.value = numberValue;
-            numberInput.addEventListener("change", function() {
-                console.log("Updated number:", numberInput.value);
-            });
-
-            // Buttons container
-            const controlsDiv = document.createElement("div");
-            controlsDiv.classList.add("editor-controls");
-
-            // Remove Button
-            const removeBtn = document.createElement("button");
-            removeBtn.classList.add("remove-btn");
-            removeBtn.innerHTML = "❌";
-            removeBtn.onclick = function () {
-                editorContainer.remove();
-                editorInstances = editorInstances.filter(e => e.holder !== holderId);
-            };
-
-            // Clear Button
-            const clearBtn = document.createElement("button");
-            clearBtn.classList.add("clear-btn");
-            clearBtn.innerHTML = "🗑️";
-            clearBtn.onclick = function () {
-                if (confirm("Clear content?")) {
-                    editorInstances.find(e => e.holder === holderId).editor.clear();
-                }
-            };
-
-            controlsDiv.appendChild(removeBtn);
-            controlsDiv.appendChild(clearBtn);
-
-            // Editor holder
-            const editorHolder = document.createElement("div");
-            editorHolder.id = holderId;
-
-            // Append elements
-            editorContainer.appendChild(numberInput);
-            editorContainer.appendChild(controlsDiv);
-            editorContainer.appendChild(editorHolder);
-            document.getElementById("main-editor").appendChild(editorContainer);
-
-            // Initialize Editor.js
-            let editor = new EditorJS({
-                holder: holderId,
-                tools: {
-                    header: { class: Header, inlineToolbar: true },
-                    paragraph: { class: Paragraph, inlineToolbar: true },
-                    table: Table,
-                    quote: { class: Quote, inlineToolbar: true },
-                    inlineCode: InlineCode,
-                    underline: Underline,
-                    link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
-                    image: { class: ImageTool },
-                    code: { class: CodeTool }
-                }
-            });
-
-            editorInstances.push({ holder: holderId, editor });
+        function generateSubheadingID(number) {
+            return `${mainEditorID}_${number}`;
         }
 
-        function clearAllData() {
-            if (confirm("Clear all data?")) {
-                document.getElementById("main-editor").innerHTML = "";
-                editorInstances = [];
+        function defaultEditorContent() {
+            return {
+                blocks: [
+                    { type: "header", data: { text: "Default Heading", level: 2 } },
+                    { type: "paragraph", data: { text: "This is sample content. You can edit or replace it." } },
+                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
+                ]
+            };
+        }
+
+        function createSubheadingBlock(subheading, index) {
+            return `
+                <div class="subheading-container" id="subheading-${index}">
+                    <div class="subheading-header">
+                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
+                        <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
+                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
+                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                    </div>
+                    <div id="editor-${index}" class="editor-box"></div>
+                </div>`;
+        }
+
+        function renderSubheadings() {
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+
+            subheadings.forEach((sub, index) => {
+                innerEditors[index] = new EditorJS({
+                    holder: `editor-${index}`,
+                    tools: {
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { class: Paragraph, inlineToolbar: true },
+                        table: Table,
+                        quote: { class: Quote, inlineToolbar: true },
+                        inlineCode: InlineCode,
+                        underline: Underline,
+                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        image: { class: ImageTool },
+                        code: { class: CodeTool }
+                    },
+                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                });
+            });
+        }
+
+        function toggleCheckbox(index) {
+            subheadings[index].checked = !subheadings[index].checked;
+            saveSubheadings();
+        }
+
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            let nextNumber = findNextNumber();
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
             }
         }
 
-        // Create initial editor instances
-        createEditor("editor-1", 1);
-        createEditor("editor-2", 2);
-        createEditor("editor-3", 3);
+        function clearEditor(index) {
+            if (confirm("Are you sure?"))
+            innerEditors[index].clear();
+            subheadings[index].content = JSON.stringify(defaultEditorContent());
+            saveSubheadings();
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure?"))
+            localStorage.clear();
+            subheadings = [];
+            renderSubheadings();
+        }
+
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        renderSubheadings();
     </script>
 </body>
 </html>
