@@ -156,9 +156,17 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 11, checked: false, content: "" });
+            let nextNumber = findNextNumber();
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: "" });
             saveSubheadings();
             renderSubheadings();
+        }
+
+        function findNextNumber() {
+            let numbers = subheadings.map(s => s.number);
+            let next = 11;
+            while (numbers.includes(next)) next++;
+            return next;
         }
 
         function removeSubheading(index) {
@@ -186,11 +194,6 @@
         }
 
         function saveSubheadings() {
-            subheadings.forEach((sub, index) => {
-                innerEditors[index].save().then((outputData) => {
-                    sub.content = JSON.stringify(outputData);
-                });
-            });
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
 
