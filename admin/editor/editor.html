@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Inline Tools & Subheadings</title>
+    <title>Editor.js with Unique IDs & Preview</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -16,88 +16,24 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            width: 60%;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        .subheading-container {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-            margin-bottom: 10px;
-        }
-        .subheading-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #ddd;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .editor-box {
-            width: 100%;
-            min-height: 150px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background: #fff;
-            margin-top: 5px;
-        }
-        .remove-btn, .clear-btn, .add-btn, .preview-btn {
-            padding: 5px 10px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .remove-btn { background: red; color: white; }
-        .clear-btn { background: orange; color: white; }
-        .add-btn { background: green; color: white; }
-        .preview-btn { background: blue; color: white; }
-        .number-input {
-            width: 50px;
-            margin-left: 10px;
-            padding: 5px;
-            text-align: center;
-        }
-        .subheading-title {
-            flex-grow: 1;
-            margin-left: 10px;
-            font-weight: bold;
-        }
-        .subheading-title[contenteditable="true"] {
-            background: #fff;
-            padding: 2px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-        #preview-container {
-            display: none;
-            padding: 10px;
-            background: #fff;
-            border: 1px solid #ccc;
-            margin-top: 20px;
-            width: 60%;
-            border-radius: 8px;
-        }
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; text-align: center; }
+        .container { width: 60%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); text-align: left; }
+        .subheading-container { padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; margin-bottom: 10px; }
+        .subheading-header { display: flex; align-items: center; justify-content: space-between; background: #ddd; padding: 5px; border-radius: 5px; }
+        .editor-box { width: 100%; min-height: 150px; padding: 10px; border: 1px solid #ccc; background: #fff; margin-top: 5px; }
+        .remove-btn, .clear-btn, .add-btn, .preview-btn { padding: 5px 10px; border: none; cursor: pointer; border-radius: 5px; }
+        .remove-btn { background: red; color: white; } .clear-btn { background: orange; color: white; } .add-btn { background: green; color: white; } .preview-btn { background: blue; color: white; }
+        .number-input { width: 50px; margin-left: 10px; padding: 5px; text-align: center; }
+        .subheading-title { flex-grow: 1; margin-left: 10px; font-weight: bold; }
+        .subheading-title[contenteditable="true"] { background: #fff; padding: 2px; border: 1px solid #ccc; border-radius: 3px; }
+        #preview-container { display: none; padding: 10px; background: #fff; border: 1px solid #ccc; margin-top: 20px; width: 60%; border-radius: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Inline Tools & Subheadings</h1>
+        <h1>Editor.js with Unique IDs & Preview</h1>
         <button class="clear-btn" onclick="clearAllData()">Clear All Data</button>
         <button class="preview-btn" onclick="previewData()">Preview</button>
         
@@ -110,14 +46,14 @@
 
     <div id="preview-container">
         <h2>Preview</h2>
-        <div id="preview-content"></div>
+        <pre id="preview-content"></pre>
     </div>
 
     <script>
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 10, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 11, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 12, content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", number: 10, uniqueID: generateUniqueID("Name", 10), content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 11, uniqueID: generateUniqueID("Age", 11), content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 12, uniqueID: generateUniqueID("Address", 12), content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
 
@@ -129,12 +65,14 @@
         });
 
         function defaultEditorContent() {
-            return {
-                blocks: [
-                    { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } }
-                ]
-            };
+            return { blocks: [{ type: "header", data: { text: "Default Heading", level: 2 } }, { type: "paragraph", data: { text: "Sample paragraph." } }] };
+        }
+
+        function generateUniqueID(title, number) {
+            let date = new Date();
+            let datePart = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
+            let initials = title.substring(0, 2).toLowerCase();
+            return `${datePart}${initials}${number}`;
         }
 
         function createSubheadingBlock(subheading, index) {
@@ -142,6 +80,7 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <span class="subheading-title" contenteditable="true" onblur="updateTitle(${index}, this)">${subheading.title}</span>
+                        <span>(ID: ${subheading.uniqueID})</span>
                         <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this)">
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
@@ -153,7 +92,6 @@
 
         function renderSubheadings() {
             document.getElementById("main-editor").innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
@@ -166,45 +104,27 @@
 
         function updateTitle(index, element) {
             let newTitle = element.innerText.trim();
-            if (!newTitle) {
-                alert("Title cannot be empty!");
-                element.innerText = subheadings[index].title;
-                return;
-            }
+            if (!newTitle) { alert("Title cannot be empty!"); element.innerText = subheadings[index].title; return; }
             subheadings[index].title = newTitle;
+            subheadings[index].uniqueID = generateUniqueID(newTitle, subheadings[index].number);
             saveSubheadings();
+            renderSubheadings();
         }
 
         function updateNumber(index, input) {
             let newNumber = parseInt(input.value);
-            if (subheadings.some((s, i) => s.number === newNumber && i !== index)) {
-                alert("Number already in use!");
-                input.value = subheadings[index].number;
-                return;
-            }
+            if (subheadings.some((s, i) => s.number === newNumber && i !== index)) { alert("Number already in use!"); input.value = subheadings[index].number; return; }
             subheadings[index].number = newNumber;
+            subheadings[index].uniqueID = generateUniqueID(subheadings[index].title, newNumber);
             subheadings.sort((a, b) => a.number - b.number);
             saveSubheadings();
             renderSubheadings();
         }
 
-        function saveOuterData() {
-            outerEditor.save().then(output => localStorage.setItem('outerEditorData', JSON.stringify(output)));
-        }
-
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
-        }
-
-        function previewData() {
-            document.getElementById("preview-container").style.display = "block";
-            document.getElementById("preview-content").innerText = JSON.stringify(subheadings, null, 2);
-        }
-
-        function clearAllData() {
-            localStorage.clear();
-            location.reload();
-        }
+        function saveOuterData() { outerEditor.save().then(output => localStorage.setItem('outerEditorData', JSON.stringify(output))); }
+        function saveSubheadings() { localStorage.setItem('subheadings', JSON.stringify(subheadings)); }
+        function previewData() { document.getElementById("preview-container").style.display = "block"; document.getElementById("preview-content").innerText = JSON.stringify(subheadings, null, 2); }
+        function clearAllData() { localStorage.clear(); location.reload(); }
 
         renderSubheadings();
     </script>
