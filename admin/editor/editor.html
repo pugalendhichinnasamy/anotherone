@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Unique IDs & Preview</title>
+    <title>Editor.js with Inline Tools & Features</title>
 
-    <!-- Editor.js and Plugins -->
+    <!-- Editor.js Core -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+    
+    <!-- Standard Tools -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script>
+    
+    <!-- Inline Tools -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
 
     <style>
@@ -33,7 +41,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Unique IDs & Preview</h1>
+        <h1>Editor.js with Inline Tools & Features</h1>
         <button class="clear-btn" onclick="clearAllData()">Clear All Data</button>
         <button class="preview-btn" onclick="previewData()">Preview</button>
         
@@ -50,29 +58,36 @@
     </div>
 
     <script>
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 10, uniqueID: generateUniqueID("Name", 10), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 11, uniqueID: generateUniqueID("Age", 11), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 12, uniqueID: generateUniqueID("Address", 12), content: JSON.stringify(defaultEditorContent()) }
-        ];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
         let innerEditors = {};
 
         let outerEditor = new EditorJS({
             holder: 'outer-editor',
-            tools: { header: Header, paragraph: Paragraph },
+            tools: getEditorTools(),
             data: JSON.parse(localStorage.getItem('outerEditorData')) || defaultEditorContent(),
             onChange: () => saveOuterData()
         });
 
-        function defaultEditorContent() {
-            return { blocks: [{ type: "header", data: { text: "Default Heading", level: 2 } }, { type: "paragraph", data: { text: "Sample paragraph." } }] };
+        function getEditorTools() {
+            return {
+                header: Header,
+                paragraph: { class: Paragraph, inlineToolbar: true },
+                list: { class: List, inlineToolbar: true },
+                checklist: Checklist,
+                table: Table,
+                quote: Quote,
+                delimiter: Delimiter,
+                code: CodeTool,
+                warning: Warning,
+                underline: Underline,
+                link: LinkTool,
+                marker: Marker,
+                inlineCode: InlineCode
+            };
         }
 
-        function generateUniqueID(title, number) {
-            let date = new Date();
-            let datePart = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`;
-            let initials = title.substring(0, 2).toLowerCase();
-            return `${datePart}${initials}${number}`;
+        function defaultEditorContent() {
+            return { blocks: [{ type: "header", data: { text: "Default Heading", level: 2 } }, { type: "paragraph", data: { text: "Sample paragraph." } }] };
         }
 
         function createSubheadingBlock(subheading, index) {
@@ -80,7 +95,6 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <span class="subheading-title" contenteditable="true" onblur="updateTitle(${index}, this)">${subheading.title}</span>
-                        <span>(ID: ${subheading.uniqueID})</span>
                         <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this)">
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
@@ -95,7 +109,7 @@
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: { header: Header, paragraph: Paragraph },
+                    tools: getEditorTools(),
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent(),
                     onChange: () => saveSubheadings()
                 });
@@ -106,7 +120,6 @@
             let newTitle = element.innerText.trim();
             if (!newTitle) { alert("Title cannot be empty!"); element.innerText = subheadings[index].title; return; }
             subheadings[index].title = newTitle;
-            subheadings[index].uniqueID = generateUniqueID(newTitle, subheadings[index].number);
             saveSubheadings();
             renderSubheadings();
         }
@@ -115,8 +128,6 @@
             let newNumber = parseInt(input.value);
             if (subheadings.some((s, i) => s.number === newNumber && i !== index)) { alert("Number already in use!"); input.value = subheadings[index].number; return; }
             subheadings[index].number = newNumber;
-            subheadings[index].uniqueID = generateUniqueID(subheadings[index].title, newNumber);
-            subheadings.sort((a, b) => a.number - b.number);
             saveSubheadings();
             renderSubheadings();
         }
