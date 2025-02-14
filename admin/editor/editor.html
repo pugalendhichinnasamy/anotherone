@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes & Marker</title>
+    <title>Editor.js with Checkboxes & Add Button Fix</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -33,8 +33,6 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-
-        /* Subheading styling */
         .subheading-container {
             padding: 10px;
             border: 1px solid #ddd;
@@ -58,8 +56,6 @@
             background: #fff;
             margin-top: 5px;
         }
-
-        /* Buttons styling */
         .remove-btn, .clear-btn, .add-btn {
             padding: 5px 10px;
             border: none;
@@ -69,15 +65,12 @@
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
-        
-        /* Number input styling */
         .number-input {
             width: 50px;
             padding: 5px;
             text-align: center;
             margin-right: 5px;
         }
-
         .checkbox {
             margin-right: 10px;
             transform: scale(1.5);
@@ -90,7 +83,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Checkboxes & Marker</h1>
+        <h1>Editor.js with Checkboxes & Add Button Fix</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -167,7 +160,7 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            let nextNumber = findNextNumber();
+            let nextNumber = subheadings.length + 1;  // Proper sequence
             subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
@@ -178,14 +171,6 @@
                 subheadings.splice(index, 1);
                 saveSubheadings();
                 renderSubheadings();
-            }
-        }
-
-        function clearEditor(index) {
-            if (confirm("Are you sure?")) {
-                innerEditors[index].clear();
-                subheadings[index].content = JSON.stringify(defaultEditorContent());
-                saveSubheadings();
             }
         }
 
