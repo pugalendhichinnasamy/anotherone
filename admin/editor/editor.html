@@ -75,6 +75,14 @@
             margin-right: 10px;
             transform: scale(1.2);
         }
+        .number-input {
+            width: 50px;
+            margin-right: 5px;
+            text-align: center;
+            border: 1px solid #aaa;
+            border-radius: 5px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
@@ -89,9 +97,9 @@
         localStorage.setItem('outerEditorID', outerEditorID);
 
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", id: generateSubheadingID("Name"), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", id: generateSubheadingID("Age"), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", id: generateSubheadingID("Address"), checked: false, content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", number: 11, id: generateSubheadingID("Name"), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 12, id: generateSubheadingID("Age"), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 13, id: generateSubheadingID("Address"), checked: false, content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
 
@@ -119,6 +127,7 @@
                             <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
                         </div>
                         <div>
+                            <input type="number" class="number-input" value="${subheading.number}" min="11" onchange="updateSubheadingOrder(${index}, this.value)">
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                             <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
@@ -130,30 +139,22 @@
 
         function renderSubheadings() {
             let mainEditorContainer = document.getElementById("main-editor");
+            subheadings.sort((a, b) => a.number - b.number);
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: {
-                        header: { class: Header, inlineToolbar: true },
-                        paragraph: { class: Paragraph, inlineToolbar: true },
-                        table: Table,
-                        marker: { class: Marker, shortcut: 'CMD+SHIFT+M' },
-                        code: { class: CodeTool, shortcut: 'CMD+SHIFT+C' },
-                        quote: { class: Quote, inlineToolbar: true },
-                        image: {
-                            class: ImageTool,
-                            config: {
-                                endpoints: { byFile: 'YOUR_FILE_UPLOAD_URL', byUrl: 'YOUR_IMAGE_URL_HANDLER' }
-                            }
-                        },
-                        embed: { class: Embed, inlineToolbar: true },
-                        link: { class: LinkTool, inlineToolbar: true },
-                    },
+                    tools: { header: Header, paragraph: Paragraph, table: Table, marker: Marker, code: CodeTool, quote: Quote, image: ImageTool, embed: Embed, link: LinkTool },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
+        }
+
+        function updateSubheadingOrder(index, newNumber) {
+            subheadings[index].number = parseInt(newNumber);
+            saveSubheadings();
+            renderSubheadings();
         }
 
         function toggleCheckbox(index) {
@@ -164,7 +165,8 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, id: generateSubheadingID(newTitle), checked: false, content: JSON.stringify(defaultEditorContent()) });
+            let maxNumber = Math.max(...subheadings.map(s => s.number)) + 1;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: maxNumber, id: generateSubheadingID(newTitle), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
@@ -177,22 +179,6 @@
             }
         }
 
-        function clearEditor(index) {
-            if (confirm("Clear this subheading content?")) {
-                innerEditors[index].clear();
-                subheadings[index].content = JSON.stringify(defaultEditorContent());
-                saveSubheadings();
-            }
-        }
-
-        function clearAllData() {
-            if (confirm("⚠️ Warning: This will erase ALL data! Continue?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
-        }
-
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
@@ -201,4 +187,3 @@
     </script>
 </body>
 </html>
-
