@@ -89,17 +89,19 @@
     </div>
 
     <script>
+        const MAIN_EDITOR_ID = "20025"; // 🔥 Fixed main editor ID
+
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 12, id: generateSubheadingID("Name", 12), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 13, id: generateSubheadingID("Age", 13), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 14, id: generateSubheadingID("Address", 14), checked: false, content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", number: 12, id: generateSubheadingID("Name", 12), content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 13, id: generateSubheadingID("Age", 13), content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 14, id: generateSubheadingID("Address", 14), content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
 
         function generateSubheadingID(title, number) {
             let letters = title.replace(/[^a-zA-Z]/g, "").slice(0, 2).toLowerCase();
             if (letters.length < 2) letters = "kk"; // Default if no letters found
-            return `${letters}${number}`;
+            return `${MAIN_EDITOR_ID}${letters}${number}`; // 🔥 Combined ID
         }
 
         function defaultEditorContent() {
@@ -116,9 +118,7 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
                         <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
-
                         <input type="number" class="number-input" value="${subheading.number}" oninput="updateNumber(${index}, this.value)">
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
