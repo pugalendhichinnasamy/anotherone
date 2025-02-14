@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Inline Tools & Features</title>
+    <title>Editor.js Without List Tool</title>
 
     <!-- Editor.js Core -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-    
-    <!-- Standard Tools -->
+
+    <!-- Standard Tools (excluding List) -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script>
-    
+
     <!-- Inline Tools -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
@@ -41,7 +39,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Inline Tools & Features</h1>
+        <h1>Editor.js Without List Tool</h1>
         <button class="clear-btn" onclick="clearAllData()">Clear All Data</button>
         <button class="preview-btn" onclick="previewData()">Preview</button>
         
@@ -72,8 +70,6 @@
             return {
                 header: Header,
                 paragraph: { class: Paragraph, inlineToolbar: true },
-                list: { class: List, inlineToolbar: true },
-                checklist: Checklist,
                 table: Table,
                 quote: Quote,
                 delimiter: Delimiter,
