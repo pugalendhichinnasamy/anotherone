@@ -89,7 +89,6 @@
     </div>
 
     <script>
-        // Generate or retrieve the main editor's unique ID
         let mainEditorID = localStorage.getItem('mainEditorID') || Date.now().toString().slice(0, 4);
         localStorage.setItem('mainEditorID', mainEditorID);
 
@@ -108,7 +107,7 @@
             return {
                 blocks: [
                     { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is a default paragraph with at least 100 words for formatting and readability. You can edit or replace this content as needed." } },
+                    { type: "paragraph", data: { text: "This is sample content. You can edit or replace it." } },
                     { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
                 ]
             };
@@ -133,18 +132,29 @@
             sortSubheadings();
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
+            
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
                     tools: {
-                        header: { class: Header, inlineToolbar: true },
-                        paragraph: { class: Paragraph, inlineToolbar: true },
-                        table: Table
+                        header: Header,
+                        paragraph: Paragraph,
+                        table: Table,
+                        quote: Quote,
+                        inlineCode: InlineCode,
+                        underline: Underline,
+                        linkTool: LinkTool,
+                        image: ImageTool,
+                        code: CodeTool
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
+        }
+
+        function toggleCheckbox(index) {
+            subheadings[index].checked = !subheadings[index].checked;
+            saveSubheadings();
         }
 
         function updateNumber(index, value) {
@@ -159,16 +169,27 @@
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
             let nextNumber = findNextNumber();
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, id: generateSubheadingID(nextNumber), content: JSON.stringify(defaultEditorContent()) });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
 
-        function findNextNumber() {
-            let numbers = subheadings.map(s => s.number);
-            let next = 11;
-            while (numbers.includes(next)) next++;
-            return next;
+        function removeSubheading(index) {
+            subheadings.splice(index, 1);
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function clearEditor(index) {
+            innerEditors[index].clear();
+            subheadings[index].content = JSON.stringify(defaultEditorContent());
+            saveSubheadings();
+        }
+
+        function clearAllData() {
+            localStorage.clear();
+            subheadings = [];
+            renderSubheadings();
         }
 
         function saveSubheadings() {
