@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Unique Subheading IDs</title>
+    <title>Editor.js with Full Features</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
         body {
@@ -84,7 +85,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Unique Subheading IDs</h1>
+        <h1>Editor.js with Full Features</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -138,44 +139,22 @@
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
                     tools: { 
-                        header: Header,
-                        paragraph: Paragraph,
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"] },
                         table: Table,
                         quote: Quote,
-                        underline: Underline,
+                        underline: { class: Underline, shortcut: "CMD+U" },
                         linkTool: LinkTool,
                         image: ImageTool,
                         code: CodeTool,
-                        inlineCode: InlineCode
+                        inlineCode: { class: InlineCode, shortcut: "CMD+SHIFT+I" },
+                        marker: { class: Marker, shortcut: "CMD+SHIFT+M" },
+                        bold: { class: window.BoldInlineTool, shortcut: "CMD+B" },
+                        italic: { class: window.ItalicInlineTool, shortcut: "CMD+I" }
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
-        }
-
-        function updateNumber(index, value) {
-            let newNumber = parseInt(value);
-            if (subheadings.some(s => s.number === newNumber)) {
-                alert("Number already in use!");
-                return;
-            }
-            subheadings[index].number = newNumber;
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            let nextNumber = 10;
-            while (subheadings.some(s => s.number === nextNumber)) nextNumber++;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
 
         function clearAllData() {
