@@ -112,6 +112,29 @@
             };
         }
 
+        function sanitizeText(text) {
+            return text
+                .replace(/\.\s+/g, '.')  // Remove spaces after a dot (.)
+                .replace(/\s+$/, '');    // Remove trailing spaces and line breaks
+        }
+
+        function saveEditorData(index) {
+            if (innerEditors[index]) {
+                innerEditors[index].save().then((outputData) => {
+                    outputData.blocks.forEach(block => {
+                        if (block.type === "paragraph" || block.type === "header" || block.type === "quote") {
+                            block.data.text = sanitizeText(block.data.text);
+                        }
+                    });
+
+                    subheadings[index].content = JSON.stringify(outputData);
+                    saveSubheadings();
+                }).catch((error) => {
+                    console.error("Saving failed: ", error);
+                });
+            }
+        }
+
         function generateUniqueID(title, number) {
             let initials = title.substring(0, 2).toLowerCase();
             return `${datePart}${initials}${number}`;
@@ -137,7 +160,7 @@
             subheadings.sort((a, b) => a.number - b.number);
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-            
+
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
@@ -156,66 +179,10 @@
                         inlineCode: InlineCode,
                         marker: Marker
                     },
-                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent(),
+                    onChange: () => saveEditorData(index)
                 });
             });
-        }
-
-        function getNextAvailableNumber() {
-            let existingNumbers = subheadings.map(sub => sub.number);
-            let newNumber = 10;
-            while (existingNumbers.includes(newNumber)) {
-                newNumber++;
-            }
-            return newNumber;
-        }
-
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-
-            let nextNumber = getNextAvailableNumber();
-
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
-
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function updateNumber(index, newValue) {
-            newValue = parseInt(newValue, 10);
-            if (subheadings.some(sub => sub.number === newValue)) {
-                alert("This number is already taken. Please choose another.");
-                renderSubheadings();
-                return;
-            }
-            subheadings[index].number = newValue;
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-        function clearEditor(index) {
-            if (confirm("Clear all data?")) {
-                if (innerEditors[index]) innerEditors[index].clear();
-                subheadings[index].content = "";
-                localStorage.removeItem(`editor-${index}`);
-            }
-        }
-
-        function clearAllData() {
-            if (confirm("Clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
         }
 
         function saveSubheadings() {
