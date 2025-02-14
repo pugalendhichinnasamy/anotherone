@@ -86,32 +86,11 @@
             margin-right: 10px;
         }
 
-        /* 🔹 Inline Toolbar Styling */
-        .ce-inline-toolbar {
-            transform: scale(1.2);
-            transform-origin: center;
-        }
-        .ce-inline-tool {
-            width: 30px !important;
-            height: 30px !important;
-            padding: 6px !important;
-            font-size: 16px !important;
-        }
-
         /* 🔹 Responsive Styles */
         @media (max-width: 768px) {
             .container {
                 width: 100%;
                 padding: 15px;
-            }
-            .ce-inline-toolbar {
-                transform: scale(1);
-            }
-            .ce-inline-tool {
-                width: 28px !important;
-                height: 28px !important;
-                padding: 5px !important;
-                font-size: 14px !important;
             }
         }
     </style>
@@ -131,6 +110,7 @@
 
             constructor() {
                 this.colors = ["yellow", "pink", "blue", "green", "orange"];
+                this.selectedColor = "yellow";
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
                 this.button.style.cursor = "pointer";
@@ -194,7 +174,6 @@
                         <div>
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                         </div>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
@@ -211,8 +190,6 @@
                     tools: {
                         header: { class: Header, inlineToolbar: true },
                         paragraph: { class: Paragraph, inlineToolbar: true },
-                        table: Table,
-                        quote: { class: Quote, inlineToolbar: true },
                         marker: { class: MultiColorMarker },
                         inlineCode: InlineCode,
                         underline: Underline,
@@ -223,6 +200,20 @@
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
                 });
             });
+        }
+
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle });
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+            renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            subheadings.splice(index, 1);
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+            renderSubheadings();
         }
 
         function clearAllData() {
