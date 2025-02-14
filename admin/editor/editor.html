@@ -124,6 +124,37 @@
     </div>
 
     <script>
+        class MultiColorMarker {
+            static get isInline() { return true; }
+            static get title() { return "Multi-Color Marker"; }
+            static get sanitize() { return { span: true }; }
+
+            constructor() {
+                this.colors = ["yellow", "pink", "blue", "green", "orange"];
+                this.currentColorIndex = 0;
+
+                this.button = document.createElement("button");
+                this.button.innerHTML = "🖍️";
+                this.button.style.cursor = "pointer";
+                this.button.addEventListener("click", () => this.toggleColor());
+            }
+
+            render() {
+                return this.button;
+            }
+
+            surround(range) {
+                const span = document.createElement("span");
+                span.style.backgroundColor = this.colors[this.currentColorIndex];
+                range.surroundContents(span);
+            }
+
+            toggleColor() {
+                this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
+                this.button.style.backgroundColor = this.colors[this.currentColorIndex];
+            }
+        }
+
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
             { title: "Name", number: 1 },
             { title: "Age", number: 2 },
@@ -197,13 +228,6 @@
             }
         }
 
-        function clearEditor(index) {
-            if (innerEditors[index]) {
-                innerEditors[index].clear();
-                localStorage.removeItem(`editor-${index}`);
-            }
-        }
-
         function clearAllData() {
             if (confirm("Clear all data?")) {
                 localStorage.clear();
@@ -220,3 +244,4 @@
     </script>
 </body>
 </html>
+
