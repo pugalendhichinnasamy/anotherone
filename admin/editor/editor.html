@@ -102,11 +102,8 @@
 
     <script>
         let outerEditorID = "2025";
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, id: generateSubheadingID("Name", 11), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 12, id: generateSubheadingID("Age", 12), checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 13, id: generateSubheadingID("Address", 13), checked: false, content: JSON.stringify(defaultEditorContent()) }
-        ];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
+
         let innerEditors = {};
 
         function generateSubheadingID(title, number) {
@@ -167,17 +164,26 @@
             });
         }
 
-        function updateNumber(index, input) {
-            let newNumber = parseInt(input.value);
-            if (isNaN(newNumber) || newNumber <= 0) return;
-            if (subheadings.some((sub, i) => sub.number === newNumber && i !== index)) {
-                document.getElementById(`error-${index}`).style.display = "inline";
-                return;
-            }
-            document.getElementById(`error-${index}`).style.display = "none";
-            subheadings[index].number = newNumber;
-            subheadings[index].id = generateSubheadingID(subheadings[index].title, newNumber);
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            let nextNumber = Math.max(...subheadings.map(sub => sub.number), 10) + 1;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                renderSubheadings();
+            }
+        }
+
+        function clearEditor(index) {
+            if (confirm("Are you sure?")) {
+                innerEditors[index].clear();
+                subheadings[index].content = JSON.stringify(defaultEditorContent());
+            }
         }
 
         function clearAllData() {
