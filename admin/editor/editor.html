@@ -153,6 +153,7 @@
         function updateNumber(index, value) {
             let newValue = parseInt(value) || 0;
             subheadings[index].number = newValue;
+            sortSubheadings();
             saveSubheadings();
             renderSubheadings();
         }
