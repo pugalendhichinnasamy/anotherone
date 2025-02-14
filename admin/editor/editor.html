@@ -78,6 +78,11 @@
         .subheading-title {
             flex-grow: 1;
             margin-left: 10px;
+            cursor: pointer;
+            border-bottom: 1px dashed transparent;
+        }
+        .subheading-title:hover {
+            border-bottom: 1px dashed black;
         }
         .error {
             color: red;
@@ -110,9 +115,9 @@
         }
 
         function generateUniqueID(title, number) {
-            let initials = title.substring(0, 2).toLowerCase();
-            let id = `${datePart}${initials}${number}`;
-            return id;
+            let initials = title.trim().substring(0, 2).toLowerCase().replace(/[^a-z]/g, ''); 
+            initials = initials.padEnd(2, 'x'); 
+            return `${datePart}${initials}${number}`;
         }
 
         function createSubheadingBlock(subheading, index) {
@@ -121,7 +126,8 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
-                        <span class="subheading-title">${subheading.title} (${uniqueID})</span>
+                        <span class="subheading-title" contenteditable="true" onblur="updateTitle(${index}, this.textContent)">${subheading.title}</span>
+                        <span>(${uniqueID})</span>
                         <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
@@ -134,7 +140,7 @@
         function renderSubheadings() {
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-            
+
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
@@ -155,15 +161,22 @@
             });
         }
 
+        function updateTitle(index, value) {
+            subheadings[index].title = value.trim();
+            saveSubheadings();
+            renderSubheadings();
+        }
+
         function updateNumber(index, value) {
             let newNumber = parseInt(value);
             let usedNumbers = subheadings.map(s => s.number);
 
-            if (usedNumbers.includes(newNumber)) {
+            if (usedNumbers.includes(newNumber) && subheadings[index].number !== newNumber) {
                 document.getElementById("error-message").textContent = "Error: Number already in use!";
+                document.querySelectorAll(".number-input")[index].value = subheadings[index].number;
                 return;
             }
-            
+
             subheadings[index].number = newNumber;
             saveSubheadings();
             renderSubheadings();
@@ -172,34 +185,15 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-
-            let usedNumbers = subheadings.map(s => s.number);
-            let nextNumber = 10;
-            while (usedNumbers.includes(nextNumber)) nextNumber++;
-
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
 
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
-        }
-
         function clearAllData() {
-            if (confirm("Clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
+            localStorage.clear();
+            subheadings = [];
+            renderSubheadings();
         }
 
         renderSubheadings();
