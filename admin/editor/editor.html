@@ -16,8 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
 
-    <!-- ✅ New Advanced Table Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/editorjs-tabletune@latest"></script>
+    <!-- ✅ Correct Table Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
 
     <style>
         body {
@@ -62,7 +62,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Advanced Table</h1>
+        <h1>Editor.js with Table</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -87,7 +87,7 @@
                 blocks: [
                     { type: "header", data: { text: "Default Heading", level: 2 } },
                     { type: "paragraph", data: { text: "This is sample content. You can edit or replace it." } },
-                    { type: "tabletune", data: { rows: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
+                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
                 ]
             };
         }
@@ -121,9 +121,10 @@
                         image: { class: ImageTool },
                         code: { class: CodeTool },
 
-                        // ✅ Advanced Table Plugin
-                        tabletune: {
-                            class: TableTune,
+                        // ✅ Correct Table Plugin
+                        table: {
+                            class: Table,
+                            inlineToolbar: true,
                             config: {
                                 rows: 3,
                                 cols: 3,
