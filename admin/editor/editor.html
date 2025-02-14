@@ -115,6 +115,10 @@
             return `${datePart}${initials}${number}`;
         }
 
+        function checkDuplicateNumber(number) {
+            return subheadings.some(sub => sub.number == number);
+        }
+
         function createSubheadingBlock(subheading, index) {
             let uniqueID = generateUniqueID(subheading.title, subheading.number);
             return `
@@ -132,30 +136,25 @@
         }
 
         function renderSubheadings() {
-            let mainEditorContainer = document.getElementById("main-editor");
-            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            document.getElementById("main-editor").innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
             
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: {
-                        header: Header,
-                        paragraph: {
-                            class: Paragraph,
-                            inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
-                        },
-                        table: Table,
-                        quote: Quote,
-                        underline: Underline,
-                        linkTool: LinkTool,
-                        image: ImageTool,
-                        code: CodeTool,
-                        inlineCode: InlineCode,
-                        marker: Marker
-                    },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
+        }
+
+        function updateNumber(index, newValue) {
+            newValue = parseInt(newValue);
+            if (checkDuplicateNumber(newValue)) {
+                alert("Error: This number is already in use. Choose a different number.");
+                return;
+            }
+            subheadings[index].number = newValue;
+            saveSubheadings();
+            renderSubheadings();
         }
 
         function addSubheading(afterIndex) {
@@ -167,27 +166,22 @@
             renderSubheadings();
         }
 
-         function removeSubheading(index) {
+        function removeSubheading(index) {
             if (confirm("Are you sure?")) {
                 subheadings.splice(index, 1);
                 saveSubheadings();
                 renderSubheadings();
             }
         }
-        function clearEditor(index) {
-              if (confirm("Clear all data?")){
-                innerEditors[index].clear();
-                subheadings[index].content = "";
+
+        function clearAllData() {
+            if (confirm("Clear all data?")) {
+                localStorage.clear();
+                subheadings = [];
+                renderSubheadings();
             }
         }
 
-        function clearAllData() {
-             if (confirm("Clear all data?")){
-            localStorage.clear();
-            subheadings = [];
-            renderSubheadings();
-        }
-        }
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
