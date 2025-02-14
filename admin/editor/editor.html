@@ -34,23 +34,57 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        /* Marker Popup Styling */
-        .marker-popup {
-            position: absolute;
-            display: none;
-            background: white;
+        /* Subheading styling */
+        .subheading-container {
+            padding: 10px;
             border: 1px solid #ddd;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
             padding: 5px;
             border-radius: 5px;
         }
-        .marker-option {
-            width: 20px;
-            height: 20px;
-            margin: 5px;
-            display: inline-block;
+        .editor-box {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-top: 5px;
+        }
+
+        /* Buttons styling */
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 5px 10px;
+            border: none;
             cursor: pointer;
-            border-radius: 3px;
+            border-radius: 5px;
+        }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
+        
+        /* Number input styling */
+        .number-input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+            margin-right: 5px;
+        }
+
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -59,15 +93,6 @@
         <h1>Editor.js with Checkboxes & Marker</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
-    </div>
-
-    <!-- Marker Popup -->
-    <div id="marker-popup" class="marker-popup">
-        <div class="marker-option" style="background: yellow;" onclick="setMarkerColor('yellow')"></div>
-        <div class="marker-option" style="background: lightgreen;" onclick="setMarkerColor('lightgreen')"></div>
-        <div class="marker-option" style="background: lightblue;" onclick="setMarkerColor('lightblue')"></div>
-        <div class="marker-option" style="background: pink;" onclick="setMarkerColor('pink')"></div>
-        <div class="marker-option" style="background: orange;" onclick="setMarkerColor('orange')"></div>
     </div>
 
     <script>
@@ -95,74 +120,25 @@
             };
         }
 
-        class Marker {
-            constructor({ api }) {
-                this.api = api;
-                this.button = null;
-                this.color = 'yellow';
-                this.tag = 'MARK';
-            }
-
-            static get isInline() {
-                return true;
-            }
-
-            render() {
-                this.button = document.createElement('button');
-                this.button.innerHTML = '🖍️';
-                this.button.classList.add('cdx-button');
-                this.button.addEventListener('click', () => this.showColorPopup());
-                return this.button;
-            }
-
-            showColorPopup() {
-                const popup = document.getElementById('marker-popup');
-                const rect = this.button.getBoundingClientRect();
-                popup.style.left = `${rect.left + window.scrollX}px`;
-                popup.style.top = `${rect.bottom + window.scrollY}px`;
-                popup.style.display = 'block';
-            }
-
-            surround(range) {
-                if (range) {
-                    const selectedText = range.extractContents();
-                    const mark = document.createElement(this.tag);
-                    mark.style.backgroundColor = this.color;
-                    mark.appendChild(selectedText);
-                    range.insertNode(mark);
-                }
-            }
-
-            static get sanitize() {
-                return {
-                    mark: { style: true }
-                };
-            }
-
-            static get toolbox() {
-                return { icon: '🖍️', title: 'Marker' };
-            }
-        }
-
-        function setMarkerColor(color) {
-            document.querySelectorAll('mark').forEach(mark => mark.style.backgroundColor = color);
-            document.getElementById('marker-popup').style.display = 'none';
-        }
-
-        function renderSubheadings() {
-            let mainEditorContainer = document.getElementById("main-editor");
-            mainEditorContainer.innerHTML = subheadings.map((sub, index) => `
+        function createSubheadingBlock(subheading, index) {
+            return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${sub.checked ? 'checked' : ''}>
-                        <span class="subheading-title">${sub.title} (ID: ${sub.id})</span>
-                        <input type="number" class="number-input" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
+                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
+                        <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
+
+                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
+                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
-                </div>
-            `).join('');
+                </div>`;
+        }
+
+        function renderSubheadings() {
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
@@ -176,12 +152,53 @@
                         underline: Underline,
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
                         image: { class: ImageTool },
-                        code: { class: CodeTool },
-                        marker: Marker
+                        code: { class: CodeTool }
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
+        }
+
+        function toggleCheckbox(index) {
+            subheadings[index].checked = !subheadings[index].checked;
+            saveSubheadings();
+        }
+
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            let nextNumber = findNextNumber();
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
+            saveSubheadings();
+            renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
+
+        function clearEditor(index) {
+            if (confirm("Are you sure?")) {
+                innerEditors[index].clear();
+                subheadings[index].content = JSON.stringify(defaultEditorContent());
+                saveSubheadings();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm("Are you sure?")) {
+                localStorage.clear();
+                subheadings = [];
+                renderSubheadings();
+            }
+        }
+
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
 
         renderSubheadings();
