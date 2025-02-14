@@ -41,6 +41,18 @@
             margin-bottom: 10px;
             position: relative;
         }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .subheading-left {
+            display: flex;
+            align-items: center;
+        }
         .editor-box {
             width: 100%;
             min-height: 150px;
@@ -59,6 +71,10 @@
         .remove-btn { background: red; color: white; }
         .add-btn { background: green; color: white; }
         .clear-btn { background: orange; color: white; }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
@@ -73,9 +89,9 @@
         localStorage.setItem('outerEditorID', outerEditorID);
 
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", id: generateSubheadingID("Name"), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", id: generateSubheadingID("Age"), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", id: generateSubheadingID("Address"), content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", id: generateSubheadingID("Name"), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", id: generateSubheadingID("Age"), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", id: generateSubheadingID("Address"), checked: false, content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
 
@@ -98,7 +114,10 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
+                        <div class="subheading-left">
+                            <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
+                            <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
+                        </div>
                         <div>
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
@@ -121,7 +140,7 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         marker: { class: Marker, shortcut: 'CMD+SHIFT+M' },
-                        code: { class: Code, shortcut: 'CMD+SHIFT+C' },
+                        code: { class: CodeTool, shortcut: 'CMD+SHIFT+C' },
                         quote: { class: Quote, inlineToolbar: true },
                         image: {
                             class: ImageTool,
@@ -137,10 +156,15 @@
             });
         }
 
+        function toggleCheckbox(index) {
+            subheadings[index].checked = !subheadings[index].checked;
+            saveSubheadings();
+        }
+
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, id: generateSubheadingID(newTitle), content: JSON.stringify(defaultEditorContent()) });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, id: generateSubheadingID(newTitle), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
