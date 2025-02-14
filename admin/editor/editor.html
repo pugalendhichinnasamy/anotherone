@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Sorting and Default Content</title>
-
+    <title>Editor.js with Sorted Numbering & Checkbox</title>
+    
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
@@ -67,20 +67,34 @@
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
+        .number-input {
+            width: 50px;
+            margin-left: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Sorting and Default Content</h1>
+        <h1>Editor.js with Sorted Numbering & Checkbox</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11 },
-            { title: "Age", number: 12 },
-            { title: "Address", number: 13 }
+            { title: "Name", number: 11, checked: false, content: "" },
+            { title: "Age", number: 12, checked: false, content: "" },
+            { title: "Address", number: 13, checked: false, content: "" }
         ];
         let innerEditors = {};
 
@@ -88,20 +102,19 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <input type="checkbox">
-                        <input type="number" value="${subheading.number}" min="1" class="num-input" onchange="updateNumber(${index}, this.value)">
-                        <div>${subheading.title}</div>
-                        <div>
-                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
-                        </div>
+                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
+                        <span class="subheading-title">${subheading.title}</span>
+                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
+                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
         }
 
         function renderSubheadings() {
+            sortSubheadings();
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
             
@@ -127,23 +140,38 @@
                         },
                         code: CodeTool
                     },
-                    data: JSON.parse(localStorage.getItem(`editor-${index}`)) || {
-                        blocks: [
-                            { type: "header", data: { text: "Default Heading", level: 2 } },
-                            { type: "paragraph", data: { text: "This is a sample paragraph with default text content. It contains at least 100 words to ensure proper formatting and readability. You can edit or replace it as needed." } },
-                            { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
-                        ]
-                    }
+                    data: sub.content ? { blocks: JSON.parse(sub.content).blocks } : { blocks: [] }
                 });
             });
+        }
+
+        function toggleCheckbox(index) {
+            subheadings[index].checked = !subheadings[index].checked;
+            saveSubheadings();
+        }
+
+        function updateNumber(index, value) {
+            let newValue = parseInt(value) || 0;
+            subheadings[index].number = newValue;
+            sortSubheadings();
+            saveSubheadings();
+            renderSubheadings();
         }
 
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: Math.max(...subheadings.map(s => s.number)) + 1 });
+            let nextNumber = findNextNumber();
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: "" });
             saveSubheadings();
             renderSubheadings();
+        }
+
+        function findNextNumber() {
+            let numbers = subheadings.map(s => s.number);
+            let next = 11;
+            while (numbers.includes(next)) next++;
+            return next;
         }
 
         function removeSubheading(index) {
@@ -154,32 +182,28 @@
             }
         }
 
-        function updateNumber(index, newValue) {
-            subheadings[index].number = parseInt(newValue);
-            subheadings.sort((a, b) => a.number - b.number);
-            saveSubheadings();
-            renderSubheadings();
-        }
-
         function clearEditor(index) {
-            innerEditors[index].clear();
-            localStorage.removeItem(`editor-${index}`);
+            if (innerEditors[index]) {
+                innerEditors[index].clear();
+                subheadings[index].content = "";
+                localStorage.removeItem(`editor-${index}`);
+            }
         }
 
         function clearAllData() {
-            if (confirm("Clear all data? This will reset everything to the original state.")) {
+            if (confirm("Clear all data?")) {
                 localStorage.clear();
-                subheadings = [
-                    { title: "Name", number: 11 },
-                    { title: "Age", number: 12 },
-                    { title: "Address", number: 13 }
-                ];
+                subheadings = [];
                 renderSubheadings();
             }
         }
 
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        function sortSubheadings() {
+            subheadings.sort((a, b) => a.number - b.number);
         }
 
         renderSubheadings();
