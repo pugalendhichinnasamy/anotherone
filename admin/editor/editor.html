@@ -75,9 +75,14 @@
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
 
+        /* 🔹 Checkbox Styling */
+        .checkbox {
+            margin-right: 10px;
+        }
+
         /* 🔹 Inline Toolbar Styling */
         .ce-inline-toolbar {
-            transform: scale(1.2); /* Adjust inline toolbar size */
+            transform: scale(1.2);
             transform-origin: center;
         }
         .ce-inline-tool {
@@ -94,7 +99,7 @@
                 padding: 15px;
             }
             .ce-inline-toolbar {
-                transform: scale(1); /* Adjust toolbar for smaller screens */
+                transform: scale(1);
             }
             .ce-inline-tool {
                 width: 28px !important;
@@ -155,7 +160,9 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <div>${subheading.title}</div>
+                        <div>
+                            <input type="checkbox" class="checkbox"> ${subheading.title}
+                        </div>
                         <div>
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
