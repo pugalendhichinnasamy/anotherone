@@ -179,6 +179,13 @@
                 renderSubheadings();
             }
         }
+        function clearEditor(index) {
+            if (confirm("Are you sure?"))
+            innerEditors[index].clear();
+            subheadings[index].content = JSON.stringify(defaultEditorContent());
+            saveSubheadings();
+        }       
+
 
         function clearAllData() {
             if (confirm("Are you sure?")) {
