@@ -92,7 +92,6 @@
     </div>
 
     <script>
-        // Generate Outer Editor ID based on the current date
         function getOuterEditorID() {
             const today = new Date();
             const year = today.getFullYear();
@@ -173,24 +172,12 @@
             renderSubheadings();
         }
 
-        function toggleCheckbox(index) {
-            subheadings[index].checked = !subheadings[index].checked;
-            saveSubheadings();
-        }
-
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            let maxNumber = Math.max(...subheadings.map(s => s.number)) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: maxNumber, id: generateSubheadingID(newTitle, maxNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function removeSubheading(index) {
-            subheadings.splice(index, 1);
-            saveSubheadings();
-            renderSubheadings();
+        function clearAllData() {
+            if (confirm("Are you sure you want to clear all data?")) {
+                localStorage.removeItem('subheadings');
+                subheadings = [];
+                renderSubheadings();
+            }
         }
 
         function saveSubheadings() {
