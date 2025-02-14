@@ -57,7 +57,7 @@
             background: #fff;
             margin-top: 5px;
         }
-        .remove-btn, .add-btn, .clear-btn {
+        .btn {
             padding: 5px 10px;
             border: none;
             cursor: pointer;
@@ -67,48 +67,40 @@
         .remove-btn { background: red; color: white; }
         .add-btn { background: green; color: white; }
         .clear-btn { background: orange; color: white; }
+        .save-btn { background: blue; color: white; }
+        .preview-btn { background: purple; color: white; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Editor.js Subheading Manager</h1>
         <button class="add-btn" onclick="addSubheading()">➕ Add Subheading</button>
+        <button class="save-btn" onclick="saveAllSubheadings()">💾 Save All</button>
+        <button class="preview-btn" onclick="previewSubheadings()">👀 Preview</button>
         <button class="clear-btn" onclick="confirmClearAll()">🗑️ Clear All</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
-        function getOuterEditorID() {
-            const today = new Date();
-            return `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-        }
-
-        let outerEditorID = getOuterEditorID();
-
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
         let innerEditors = {};
-
-        function generateSubheadingID(title, number) {
-            let letters = title.replace(/[^a-zA-Z]/g, "").slice(0, 2).toLowerCase();
-            if (letters.length < 2) letters = "xx";
-            return `${outerEditorID}${letters}${number}`;
-        }
 
         function defaultEditorContent() {
             return {
                 blocks: [
                     { type: "header", data: { text: "New Subheading", level: 2 } },
-                    { type: "paragraph", data: { text: "You can edit this content." } }
+                    { type: "paragraph", data: { text: "Edit this content." } }
                 ]
             };
         }
 
-        function createSubheadingBlock(subheading, index) {
+        function createSubheadingBlock(sub, index) {
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <span>${subheading.title}</span>
+                        <span>${sub.title}</span>
                         <div>
+                            <button class="save-btn" onclick="saveSubheading(${index})">💾 Save</button>
                             <button class="clear-btn" onclick="confirmClear(${index})">🗑️ Clear</button>
                             <button class="remove-btn" onclick="confirmRemove(${index})">❌ Remove</button>
                         </div>
@@ -177,19 +169,35 @@
             renderSubheadings();
         }
 
+        function saveSubheading(index) {
+            innerEditors[index].save().then((outputData) => {
+                subheadings[index].content = JSON.stringify(outputData);
+                saveSubheadings();
+                alert("Subheading saved!");
+            });
+        }
+
+        function saveAllSubheadings() {
+            Promise.all(Object.keys(innerEditors).map(index => innerEditors[index].save()))
+                .then(results => {
+                    results.forEach((data, index) => {
+                        subheadings[index].content = JSON.stringify(data);
+                    });
+                    saveSubheadings();
+                    alert("All subheadings saved!");
+                });
+        }
+
+        function previewSubheadings() {
+            let previewContent = subheadings.map(s => `<h3>${s.title}</h3>${s.content}`).join("<hr>");
+            let newWindow = window.open();
+            newWindow.document.write(previewContent);
+        }
+
         function addSubheading() {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-
-            let maxNumber = subheadings.length > 0 ? Math.max(...subheadings.map(s => s.number)) + 1 : 1;
-            let newSubheading = {
-                title: newTitle,
-                number: maxNumber,
-                id: generateSubheadingID(newTitle, maxNumber),
-                content: JSON.stringify(defaultEditorContent())
-            };
-
-            subheadings.push(newSubheading);
+            subheadings.push({ title: newTitle, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
