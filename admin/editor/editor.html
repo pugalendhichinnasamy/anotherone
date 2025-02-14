@@ -161,15 +161,20 @@
             });
         }
 
+        function getNextAvailableNumber() {
+            let existingNumbers = subheadings.map(sub => sub.number);
+            let newNumber = 10;
+            while (existingNumbers.includes(newNumber)) {
+                newNumber++;
+            }
+            return newNumber;
+        }
+
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
 
-            let nextNumber = subheadings[afterIndex].number + 1;
-            if (subheadings.some(sub => sub.number === nextNumber)) {
-                alert("Number already taken. Choose another.");
-                return;
-            }
+            let nextNumber = getNextAvailableNumber();
 
             subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
 
