@@ -176,10 +176,8 @@
         }
         function clearEditor(index) {
               if (confirm("Clear all data?")){
-            if (innerEditors[index]) 
                 innerEditors[index].clear();
                 subheadings[index].content = "";
-                localStorage.removeItem(`editor-${index}`);
             }
         }
 
