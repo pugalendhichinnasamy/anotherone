@@ -10,6 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
 
     <style>
         body {
@@ -147,9 +153,15 @@
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
                     tools: {
-                        header: Header,
-                        paragraph: Paragraph,
-                        table: Table
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { class: Paragraph, inlineToolbar: true },
+                        table: Table,
+                        quote: { class: Quote, inlineToolbar: true },
+                        inlineCode: InlineCode,
+                        underline: Underline,
+                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        image: { class: ImageTool },
+                        code: { class: CodeTool }
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
@@ -170,39 +182,6 @@
             subheadings[index].id = generateSubheadingID(subheadings[index].title, newNumber);
             saveSubheadings();
             renderSubheadings();
-        }
-
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            let nextNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-        function clearEditor(index) {
-            if (confirm("Clear this subheading content?")) {
-                innerEditors[index].clear();
-                subheadings[index].content = JSON.stringify(defaultEditorContent());
-                saveSubheadings();
-            }
-        }
-
-        function clearAllData() {
-            if (confirm("⚠️ Warning: This will erase ALL data! Continue?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
         }
 
         function saveSubheadings() {
