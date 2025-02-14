@@ -71,10 +71,6 @@
             text-align: center;
             margin-right: 5px;
         }
-        .checkbox {
-            margin-right: 10px;
-            transform: scale(1.5);
-        }
         .subheading-title {
             flex-grow: 1;
             margin-left: 10px;
@@ -89,29 +85,18 @@
     </div>
 
     <script>
-        const MAIN_EDITOR_ID = "20025"; // 🔥 Fixed main editor ID
-
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 12, id: generateSubheadingID("Name", 12), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 13, id: generateSubheadingID("Age", 13), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 14, id: generateSubheadingID("Address", 14), content: JSON.stringify(defaultEditorContent()) }
-        ];
+        const MAIN_EDITOR_ID = "20025"; // Fixed main editor ID
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
         let innerEditors = {};
 
         function generateSubheadingID(title, number) {
             let letters = title.replace(/[^a-zA-Z]/g, "").slice(0, 2).toLowerCase();
             if (letters.length < 2) letters = "kk"; // Default if no letters found
-            return `${MAIN_EDITOR_ID}${letters}${number}`; // 🔥 Combined ID
+            return `${MAIN_EDITOR_ID}${letters}${number}`; // Combined ID
         }
 
         function defaultEditorContent() {
-            return {
-                blocks: [
-                    { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is sample content. You can edit or replace it." } },
-                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
-                ]
-            };
+            return { blocks: [{ type: "paragraph", data: { text: "Enter your content here..." } }] };
         }
 
         function createSubheadingBlock(subheading, index) {
@@ -135,20 +120,29 @@
             subheadings.forEach((sub) => {
                 innerEditors[sub.id] = new EditorJS({
                     holder: `editor-${sub.id}`,
-                    tools: {
-                        header: { class: Header, inlineToolbar: true },
-                        paragraph: { class: Paragraph, inlineToolbar: true },
-                        table: Table,
-                        quote: { class: Quote, inlineToolbar: true },
-                        inlineCode: InlineCode,
-                        underline: Underline,
-                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
-                        image: { class: ImageTool },
-                        code: { class: CodeTool }
-                    },
+                    tools: { paragraph: { class: Paragraph, inlineToolbar: true } },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
+
+            saveSubheadings();
+        }
+
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            let nextNumber = Math.max(...subheadings.map(sub => sub.number), 0) + 1;
+            let newId = generateSubheadingID(newTitle, nextNumber);
+
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: newId, content: JSON.stringify(defaultEditorContent()) });
+            renderSubheadings();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure you want to delete this?")) {
+                subheadings.splice(index, 1);
+                renderSubheadings();
+            }
         }
 
         function updateNumber(index, newValue) {
@@ -159,20 +153,27 @@
             subheadings[index].id = generateSubheadingID(subheadings[index].title, newNumber);
 
             subheadings.sort((a, b) => a.number - b.number);
-            saveSubheadings();
             renderSubheadings();
         }
 
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        function clearEditor(index) {
+            if (confirm("Clear content?")) {
+                innerEditors[subheadings[index].id].clear();
+                subheadings[index].content = JSON.stringify(defaultEditorContent());
+                saveSubheadings();
+            }
         }
 
         function clearAllData() {
-            if (confirm("Are you sure?")) {
+            if (confirm("Are you sure you want to clear all?")) {
                 localStorage.clear();
                 subheadings = [];
                 renderSubheadings();
             }
+        }
+
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
 
         renderSubheadings();
