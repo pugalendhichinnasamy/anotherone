@@ -132,6 +132,7 @@
         }
 
         function renderSubheadings() {
+            subheadings.sort((a, b) => a.number - b.number);
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
             
@@ -158,36 +159,24 @@
             });
         }
 
-        function updateNumber(index, newValue) {
-            newValue = parseInt(newValue, 10);
-            if (subheadings.some(sub => sub.number === newValue)) {
-                alert("This number is already taken. Please choose another.");
-                renderSubheadings();
-                return;
-            }
-            subheadings[index].number = newValue;
-            saveSubheadings();
-            renderSubheadings();
-        }
-
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            let nextNumber = Math.max(...subheadings.map(s => s.number)) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
+            let insertIndex = afterIndex + 1;
+            let nextNumber = subheadings[insertIndex] ? subheadings[insertIndex].number : Math.max(...subheadings.map(s => s.number)) + 1;
+            subheadings.splice(insertIndex, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
+            subheadings.forEach((sub, i) => sub.number = i + 1);
             saveSubheadings();
             renderSubheadings();
         }
 
-        function removeSubheading(index) {
+           function removeSubheading(index) {
             if (confirm("Are you sure?")) {
                 subheadings.splice(index, 1);
                 saveSubheadings();
                 renderSubheadings();
             }
         }
-
-
         function clearEditor(index) {
               if (confirm("Clear all data?")){
             if (innerEditors[index]) 
@@ -198,11 +187,11 @@
         }
 
         function clearAllData() {
-            if (confirm("Clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
+             if (confirm("Clear all data?")){
+            localStorage.clear();
+            subheadings = [];
+            renderSubheadings();
+        }
         }
 
         function saveSubheadings() {
