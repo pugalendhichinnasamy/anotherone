@@ -178,6 +178,20 @@
             saveSubheadings();
             renderSubheadings();
         }
+        function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
+        function clearEditor(index) {
+            innerEditors[index].clear();
+            subheadings[index].content = JSON.stringify(defaultEditorContent());
+            saveSubheadings();
+        }
+
+        
 
         function clearAllData() {
             if (confirm("Are you sure you want to clear all data?")) {
