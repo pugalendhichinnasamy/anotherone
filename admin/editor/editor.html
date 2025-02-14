@@ -77,6 +77,10 @@
             margin-right: 10px;
             transform: scale(1.5);
         }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -99,12 +103,11 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
+                        <span class="subheading-title">${subheading.title}</span>
                         <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                        <div>
-                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
-                        </div>
+                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
@@ -137,7 +140,7 @@
                         },
                         code: CodeTool
                     },
-                    data: sub.content ? { blocks: [{ type: "header", data: { text: sub.title, level: 2 } }, ...JSON.parse(sub.content).blocks] } : { blocks: [{ type: "header", data: { text: sub.title, level: 2 } }] }
+                    data: sub.content ? { blocks: JSON.parse(sub.content).blocks } : { blocks: [] }
                 });
             });
         }
