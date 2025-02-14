@@ -124,7 +124,7 @@
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
-                    <div id="editor-${index}" class="editor-box"></div>
+                    <div id="editor-${subheading.id}" class="editor-box"></div>
                 </div>`;
         }
 
@@ -132,9 +132,9 @@
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
 
-            subheadings.forEach((sub, index) => {
-                innerEditors[index] = new EditorJS({
-                    holder: `editor-${index}`,
+            subheadings.forEach((sub) => {
+                innerEditors[sub.id] = new EditorJS({
+                    holder: `editor-${sub.id}`,
                     tools: {
                         header: { class: Header, inlineToolbar: true },
                         paragraph: { class: Paragraph, inlineToolbar: true },
@@ -163,33 +163,9 @@
             renderSubheadings();
         }
 
-        function addSubheading(afterIndex) {
-            let newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-            let nextNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
-            saveSubheadings();
-            renderSubheadings();
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
-
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-
-
-        function clearEditor(index) {
-            if (confirm("Are you sure?"))
-            innerEditors[index].clear();
-            subheadings[index].content = JSON.stringify(defaultEditorContent());
-            saveSubheadings();
-        }       
-
-        
 
         function clearAllData() {
             if (confirm("Are you sure?")) {
@@ -197,11 +173,6 @@
                 subheadings = [];
                 renderSubheadings();
             }
-        }
-        
-
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
 
         renderSubheadings();
