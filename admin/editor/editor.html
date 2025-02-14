@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Unique IDs</title>
+    <title>Editor.js with Inline Tools & Buttons</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -16,6 +16,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
         body {
@@ -83,7 +85,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Unique IDs</h1>
+        <h1>Editor.js with Inline Tools & Buttons</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -136,7 +138,19 @@
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: { header: Header, paragraph: Paragraph, table: Table, quote: Quote, inlineCode: InlineCode, underline: Underline, linkTool: LinkTool, image: ImageTool, code: CodeTool },
+                    tools: {
+                        header: { class: Header, inlineToolbar: true },
+                        paragraph: { class: Paragraph, inlineToolbar: true },
+                        table: Table,
+                        quote: { class: Quote, inlineToolbar: true },
+                        inlineCode: { class: InlineCode },
+                        underline: Underline,
+                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        image: { class: ImageTool },
+                        code: { class: CodeTool },
+                        list: { class: List, inlineToolbar: true },
+                        marker: { class: Marker, shortcut: 'CMD+SHIFT+M' }
+                    },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
