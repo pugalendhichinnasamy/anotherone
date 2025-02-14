@@ -33,28 +33,6 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .subheading-container {
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-            margin-bottom: 10px;
-        }
-        .subheading-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #ddd;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .subheading-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
         .editor-box {
             width: 100%;
             min-height: 150px;
@@ -63,7 +41,25 @@
             background: #fff;
             margin-top: 5px;
         }
-        .checkbox { margin-right: 10px; }
+        .subheading-container {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .subheading-controls {
+            display: flex;
+            gap: 5px;
+        }
         .remove-btn, .clear-btn, .add-btn {
             padding: 3px 8px;
             border: none;
@@ -73,6 +69,25 @@
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
+        .color-picker {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            gap: 5px;
+        }
+        .color-box {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            border: 1px solid #aaa;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -97,12 +112,26 @@
 
             constructor() {
                 this.colors = ["yellow", "pink", "blue", "green", "orange"];
-                this.currentColorIndex = 0;
+                this.currentColor = this.colors[0];
 
                 this.button = document.createElement("button");
                 this.button.innerHTML = "🖍️";
                 this.button.style.cursor = "pointer";
-                this.button.addEventListener("click", () => this.toggleColor());
+                this.button.style.position = "relative";
+
+                this.colorPicker = document.createElement("div");
+                this.colorPicker.classList.add("color-picker");
+
+                this.colors.forEach(color => {
+                    const colorBox = document.createElement("div");
+                    colorBox.classList.add("color-box");
+                    colorBox.style.backgroundColor = color;
+                    colorBox.addEventListener("click", () => this.setColor(color));
+                    this.colorPicker.appendChild(colorBox);
+                });
+
+                this.button.appendChild(this.colorPicker);
+                this.button.addEventListener("click", (e) => this.togglePicker(e));
             }
 
             render() {
@@ -111,13 +140,23 @@
 
             surround(range) {
                 const span = document.createElement("span");
-                span.style.backgroundColor = this.colors[this.currentColorIndex];
+                span.style.backgroundColor = this.currentColor;
                 range.surroundContents(span);
             }
 
-            toggleColor() {
-                this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
-                this.button.style.backgroundColor = this.colors[this.currentColorIndex]; // Visual feedback
+            togglePicker(event) {
+                event.stopPropagation();
+                this.colorPicker.style.display = this.colorPicker.style.display === "flex" ? "none" : "flex";
+
+                document.addEventListener("click", () => {
+                    this.colorPicker.style.display = "none";
+                }, { once: true });
+            }
+
+            setColor(color) {
+                this.currentColor = color;
+                this.button.style.backgroundColor = color;
+                this.colorPicker.style.display = "none";
             }
         }
 
@@ -125,10 +164,7 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <div>
-                            <input type="checkbox" class="checkbox">
-                            ${subheading.title}
-                        </div>
+                        <div>${subheading.title}</div>
                         <div class="subheading-controls">
                             <input type="number" class="subheading-number" value="${subheading.number}" onchange="updateOrder(${index}, this.value)">
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
@@ -143,7 +179,7 @@
         function renderSubheadings() {
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-            
+
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
@@ -152,19 +188,11 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
-                        marker: MultiColorMarker, // Multi-color marker (no popup)
-                        inlineCode: InlineCode, // Add inline code tool
+                        marker: MultiColorMarker,
+                        inlineCode: InlineCode,
                         underline: Underline,
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
-                        image: {
-                            class: ImageTool,
-                            config: {
-                                endpoints: {
-                                    byFile: "https://your-backend.com/uploadFile",
-                                    byUrl: "https://your-backend.com/fetchUrl"
-                                }
-                            }
-                        },
+                        image: { class: ImageTool },
                         code: CodeTool
                     },
                     data: JSON.parse(localStorage.getItem(`editor-${index}`)) || { blocks: [] }
@@ -186,28 +214,6 @@
                 saveSubheadings();
                 renderSubheadings();
             }
-        }
-
-        function clearEditor(index) {
-            if (innerEditors[index]) {
-                innerEditors[index].clear();
-                localStorage.removeItem(`editor-${index}`);
-            }
-        }
-
-        function clearAllData() {
-            if (confirm("Clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
-                renderSubheadings();
-            }
-        }
-
-        function updateOrder(index, newNumber) {
-            subheadings[index].number = parseInt(newNumber);
-            subheadings.sort((a, b) => a.number - b.number);
-            saveSubheadings();
-            renderSubheadings();
         }
 
         function saveSubheadings() {
