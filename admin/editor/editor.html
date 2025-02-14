@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js - Subheading Fix</title>
+    <title>Editor.js with Default Content</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -16,7 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
         body {
@@ -84,31 +83,24 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js - Subheading Fix</h1>
+        <h1>Editor.js with Default Content</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
-        let mainEditorID = localStorage.getItem('mainEditorID') || Date.now().toString().slice(0, 4);
-        localStorage.setItem('mainEditorID', mainEditorID);
-
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, checked: false, id: generateSubheadingID(11), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 12, checked: false, id: generateSubheadingID(12), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 13, checked: false, id: generateSubheadingID(13), content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 12, checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 13, checked: false, content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
-
-        function generateSubheadingID(number) {
-            return `${mainEditorID}_${number}`;
-        }
 
         function defaultEditorContent() {
             return {
                 blocks: [
                     { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is sample content. You can edit or replace it." } },
+                    { type: "paragraph", data: { text: "This is a sample paragraph with default text content. It contains at least 100 words to ensure proper formatting and readability. You can edit or replace it as needed." } },
                     { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
                 ]
             };
@@ -119,10 +111,10 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
-                        <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
+                        <span class="subheading-title">${subheading.title}</span>
                         <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
@@ -142,37 +134,71 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
-                        inlineCode: { class: InlineCode },
+                        inlineCode: InlineCode,
                         underline: Underline,
-                        link: { class: LinkTool },
-                        image: { class: ImageTool },
-                        code: { class: CodeTool },
-                        marker: { class: Marker, shortcut: 'CMD+SHIFT+M' }
+                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        image: {
+                            class: ImageTool,
+                            config: {
+                                endpoints: {
+                                    byFile: "https://your-backend.com/uploadFile",
+                                    byUrl: "https://your-backend.com/fetchUrl"
+                                }
+                            }
+                        },
+                        code: CodeTool
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
         }
 
+        function toggleCheckbox(index) {
+            subheadings[index].checked = !subheadings[index].checked;
+            saveSubheadings();
+        }
+
+        function updateNumber(index, value) {
+            subheadings[index].number = parseInt(value) || 0;
+            sortSubheadings();
+            saveSubheadings();
+            renderSubheadings();
+        }
+
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
             let nextNumber = findNextNumber();
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
 
         function findNextNumber() {
             let numbers = subheadings.map(s => s.number);
-            let next = Math.max(...numbers) + 1;
+            let next = 11;
+            while (numbers.includes(next)) next++;
             return next;
         }
 
         function removeSubheading(index) {
-            if (confirm("Remove this subheading?")) {
+            if (confirm("Are you sure?")) {
                 subheadings.splice(index, 1);
                 saveSubheadings();
+                renderSubheadings();
+            }
+        }
+
+        function clearEditor(index) {
+            innerEditors[index].clear();
+            subheadings[index].content = JSON.stringify(defaultEditorContent());
+            saveSubheadings();
+        }
+
+        function clearAllData() {
+            if (confirm("Clear all data?")) {
+                localStorage.clear();
+                subheadings = [];
                 renderSubheadings();
             }
         }
