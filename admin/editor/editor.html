@@ -39,7 +39,6 @@
             border-radius: 5px;
             background: #f9f9f9;
             margin-bottom: 10px;
-            position: relative;
         }
         .subheading-header {
             display: flex;
@@ -149,7 +148,7 @@
                             }
                         },
                         embed: { class: Embed, inlineToolbar: true },
-                        link: { class: Link, inlineToolbar: true },
+                        link: { class: LinkTool, inlineToolbar: true },
                     },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
