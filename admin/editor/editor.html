@@ -3,95 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js Without List Tool</title>
+    <title>Editor.js with Inline Tools & Subheadings</title>
 
-    <!-- Editor.js Core -->
+    <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-
-    <!-- Standard Tools (excluding List) -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script>
-
-    <!-- Inline Tools -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; text-align: center; }
-        .container { width: 60%; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); text-align: left; }
-        .subheading-container { padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9; margin-bottom: 10px; }
-        .subheading-header { display: flex; align-items: center; justify-content: space-between; background: #ddd; padding: 5px; border-radius: 5px; }
-        .editor-box { width: 100%; min-height: 150px; padding: 10px; border: 1px solid #ccc; background: #fff; margin-top: 5px; }
-        .remove-btn, .clear-btn, .add-btn, .preview-btn { padding: 5px 10px; border: none; cursor: pointer; border-radius: 5px; }
-        .remove-btn { background: red; color: white; } .clear-btn { background: orange; color: white; } .add-btn { background: green; color: white; } .preview-btn { background: blue; color: white; }
-        .number-input { width: 50px; margin-left: 10px; padding: 5px; text-align: center; }
-        .subheading-title { flex-grow: 1; margin-left: 10px; font-weight: bold; }
-        .subheading-title[contenteditable="true"] { background: #fff; padding: 2px; border: 1px solid #ccc; border-radius: 3px; }
-        #preview-container { display: none; padding: 10px; background: #fff; border: 1px solid #ccc; margin-top: 20px; width: 60%; border-radius: 8px; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 60%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .subheading-container {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .editor-box {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-top: 5px;
+        }
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
+        .number-input {
+            width: 50px;
+            margin-left: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js Without List Tool</h1>
-        <button class="clear-btn" onclick="clearAllData()">Clear All Data</button>
-        <button class="preview-btn" onclick="previewData()">Preview</button>
-        
-        <h2>Main Content</h2>
-        <div id="outer-editor"></div>
-
-        <h2>Subheadings</h2>
+        <h1>Editor.js with Inline Tools & Subheadings</h1>
+        <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
-    <div id="preview-container">
-        <h2>Preview</h2>
-        <pre id="preview-content"></pre>
-    </div>
-
     <script>
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+            { title: "Name", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 12, checked: false, content: JSON.stringify(defaultEditorContent()) }
+        ];
         let innerEditors = {};
+        const currentDate = new Date();
+        const datePart = `${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}${String(currentDate.getDate()).padStart(2, '0')}`;
 
-        let outerEditor = new EditorJS({
-            holder: 'outer-editor',
-            tools: getEditorTools(),
-            data: JSON.parse(localStorage.getItem('outerEditorData')) || defaultEditorContent(),
-            onChange: () => saveOuterData()
-        });
-
-        function getEditorTools() {
+        function defaultEditorContent() {
             return {
-                header: Header,
-                paragraph: { class: Paragraph, inlineToolbar: true },
-                table: Table,
-                quote: Quote,
-                delimiter: Delimiter,
-                code: CodeTool,
-                warning: Warning,
-                underline: Underline,
-                link: LinkTool,
-                marker: Marker,
-                inlineCode: InlineCode
+                blocks: [
+                    { type: "header", data: { text: "Default Heading", level: 2 } },
+                    { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } },
+                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
+                ]
             };
         }
 
-        function defaultEditorContent() {
-            return { blocks: [{ type: "header", data: { text: "Default Heading", level: 2 } }, { type: "paragraph", data: { text: "Sample paragraph." } }] };
+        function generateUniqueID(title, number) {
+            let initials = title.substring(0, 2).toLowerCase();
+            return `${datePart}${initials}${number}`;
         }
 
         function createSubheadingBlock(subheading, index) {
+            let uniqueID = generateUniqueID(subheading.title, subheading.number);
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <span class="subheading-title" contenteditable="true" onblur="updateTitle(${index}, this)">${subheading.title}</span>
-                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this)">
+                        <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
+                        <span class="subheading-title">${subheading.title} (${uniqueID})</span>
+                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
                         <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
@@ -101,37 +132,67 @@
         }
 
         function renderSubheadings() {
-            document.getElementById("main-editor").innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            let mainEditorContainer = document.getElementById("main-editor");
+            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: getEditorTools(),
-                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent(),
-                    onChange: () => saveSubheadings()
+                    tools: {
+                        header: Header,
+                        paragraph: {
+                            class: Paragraph,
+                            inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
+                        },
+                        table: Table,
+                        quote: Quote,
+                        underline: Underline,
+                        linkTool: LinkTool,
+                        image: ImageTool,
+                        code: CodeTool,
+                        inlineCode: InlineCode,
+                        marker: Marker
+                    },
+                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
         }
 
-        function updateTitle(index, element) {
-            let newTitle = element.innerText.trim();
-            if (!newTitle) { alert("Title cannot be empty!"); element.innerText = subheadings[index].title; return; }
-            subheadings[index].title = newTitle;
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            let nextNumber = Math.max(...subheadings.map(s => s.number)) + 1;
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
 
-        function updateNumber(index, input) {
-            let newNumber = parseInt(input.value);
-            if (subheadings.some((s, i) => s.number === newNumber && i !== index)) { alert("Number already in use!"); input.value = subheadings[index].number; return; }
-            subheadings[index].number = newNumber;
-            saveSubheadings();
-            renderSubheadings();
+         function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
+        function clearEditor(index) {
+              if (confirm("Clear all data?")){
+            if (innerEditors[index]) 
+                innerEditors[index].clear();
+                subheadings[index].content = "";
+                localStorage.removeItem(`editor-${index}`);
+            }
         }
 
-        function saveOuterData() { outerEditor.save().then(output => localStorage.setItem('outerEditorData', JSON.stringify(output))); }
-        function saveSubheadings() { localStorage.setItem('subheadings', JSON.stringify(subheadings)); }
-        function previewData() { document.getElementById("preview-container").style.display = "block"; document.getElementById("preview-content").innerText = JSON.stringify(subheadings, null, 2); }
-        function clearAllData() { localStorage.clear(); location.reload(); }
+        function clearAllData() {
+             if (confirm("Clear all data?")){
+            localStorage.clear();
+            subheadings = [];
+            renderSubheadings();
+        }
+        }
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
 
         renderSubheadings();
     </script>
