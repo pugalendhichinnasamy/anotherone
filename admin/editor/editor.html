@@ -86,7 +86,6 @@
     <div class="container">
         <h1>Editor.js Without List Tool</h1>
         <button onclick="clearAllData()">Clear All Data</button>
-        <button class="add-btn" onclick="addSubheading()">➕ Add Subheading</button>
         <div id="main-editor"></div>
     </div>
 
@@ -119,6 +118,7 @@
                         <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
                         <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
@@ -152,7 +152,7 @@
             saveSubheadings();
         }
 
-        function addSubheading() {
+        function addSubheading(index) {
             let newNumber = subheadings.length > 0 ? subheadings[subheadings.length - 1].number + 1 : 1;
             let newSubheading = {
                 title: "New Subheading",
@@ -162,7 +162,7 @@
                 content: JSON.stringify(defaultEditorContent())
             };
 
-            subheadings.push(newSubheading);
+            subheadings.splice(index + 1, 0, newSubheading);
             saveSubheadings();
             renderSubheadings();
         }
