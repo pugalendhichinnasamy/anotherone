@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Default Content</title>
-
+    <title>Editor.js with Sorted Numbering & Checkbox</title>
+    
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
@@ -34,6 +34,8 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
         .subheading-container {
+            display: flex;
+            flex-direction: column;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
@@ -83,28 +85,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Default Content</h1>
+        <h1>Editor.js with Sorted Numbering & Checkbox</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
 
     <script>
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 12, checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 13, checked: false, content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", number: 11, checked: false, content: "" },
+            { title: "Age", number: 12, checked: false, content: "" },
+            { title: "Address", number: 13, checked: false, content: "" }
         ];
         let innerEditors = {};
-
-        function defaultEditorContent() {
-            return {
-                blocks: [
-                    { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is a sample paragraph with default text content. It contains at least 100 words to ensure proper formatting and readability. You can edit or replace it as needed." } },
-                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
-                ]
-            };
-        }
 
         function createSubheadingBlock(subheading, index) {
             return `
@@ -148,7 +140,7 @@
                         },
                         code: CodeTool
                     },
-                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                    data: sub.content ? { blocks: JSON.parse(sub.content).blocks } : { blocks: [] }
                 });
             });
         }
@@ -159,7 +151,8 @@
         }
 
         function updateNumber(index, value) {
-            subheadings[index].number = parseInt(value) || 0;
+            let newValue = parseInt(value) || 0;
+            subheadings[index].number = newValue;
             sortSubheadings();
             saveSubheadings();
             renderSubheadings();
@@ -169,7 +162,7 @@
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
             let nextNumber = findNextNumber();
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: "" });
             saveSubheadings();
             renderSubheadings();
         }
@@ -190,9 +183,11 @@
         }
 
         function clearEditor(index) {
-            innerEditors[index].clear();
-            subheadings[index].content = JSON.stringify(defaultEditorContent());
-            saveSubheadings();
+            if (innerEditors[index]) {
+                innerEditors[index].clear();
+                subheadings[index].content = "";
+                localStorage.removeItem(`editor-${index}`);
+            }
         }
 
         function clearAllData() {
