@@ -194,16 +194,28 @@
             renderSubheadings();
         }
 
-        function removeSubheading(index) {
-            subheadings.splice(index, 1);
-            saveSubheadings();
-            renderSubheadings();
+         function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
+
+        function clearEditor(index) {
+            if (confirm("Clear all data?")) {
+                if (innerEditors[index]) innerEditors[index].clear();
+                subheadings[index].content = "";
+                localStorage.removeItem(`editor-${index}`);
+            }
         }
 
         function clearAllData() {
-            localStorage.clear();
-            subheadings = [];
-            renderSubheadings();
+            if (confirm("Clear all data?")) {
+                localStorage.clear();
+                subheadings = [];
+                renderSubheadings();
+            }
         }
 
         function saveSubheadings() {
