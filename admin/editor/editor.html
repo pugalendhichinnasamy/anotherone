@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
 
     <style>
         body {
@@ -27,7 +28,8 @@
             align-items: center;
         }
         .container {
-            width: 60%;
+            width: 90%;
+            max-width: 800px;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -47,6 +49,7 @@
             background: #ddd;
             padding: 5px;
             border-radius: 5px;
+            flex-wrap: wrap;
         }
         .editor-box {
             width: 100%;
@@ -74,6 +77,20 @@
             border-radius: 5px;
             padding: 5px;
         }
+        @media (max-width: 600px) {
+            .subheading-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .number-input, .title-input {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            .remove-btn, .add-btn, .clear-btn {
+                margin-left: 0;
+                margin-top: 5px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -94,7 +111,6 @@
 
         let outerEditorID = getOuterEditorID();
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
-
         let innerEditors = {};
 
         function generateSubheadingID(title, number) {
@@ -134,7 +150,18 @@
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
-                    tools: { header: Header, paragraph: Paragraph, table: Table, marker: Marker, code: CodeTool, quote: Quote, image: ImageTool, embed: Embed, link: LinkTool },
+                    tools: { 
+                        header: Header, 
+                        paragraph: Paragraph, 
+                        table: Table, 
+                        marker: Marker, 
+                        code: CodeTool, 
+                        quote: Quote, 
+                        image: ImageTool, 
+                        embed: Embed, 
+                        link: LinkTool,
+                        inlineCode: InlineCode 
+                    },
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
@@ -150,7 +177,6 @@
                 title: newTitle,
                 number: newNumber,
                 id: newID,
-                checked: false,
                 content: JSON.stringify(defaultEditorContent())
             };
 
@@ -169,19 +195,6 @@
 
         function clearEditorContent(index) {
             subheadings[index].content = JSON.stringify(defaultEditorContent());
-            saveSubheadings();
-            renderSubheadings();
-        }
-
-        function updateSubheadingTitle(index, newTitle) {
-            subheadings[index].title = newTitle;
-            subheadings[index].id = generateSubheadingID(newTitle, subheadings[index].number);
-            document.getElementById(`id-${index}`).innerText = subheadings[index].id;
-            saveSubheadings();
-        }
-
-        function updateSubheadingNumber(index, newNumber) {
-            subheadings[index].number = parseInt(newNumber);
             saveSubheadings();
             renderSubheadings();
         }
