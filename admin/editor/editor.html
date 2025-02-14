@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes & Add Button Fix</title>
+    <title>Editor.js with Checkboxes & Dynamic IDs</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -83,7 +83,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Checkboxes & Add Button Fix</h1>
+        <h1>Editor.js with Checkboxes & Dynamic IDs</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -152,15 +152,21 @@
             });
         }
 
-        function toggleCheckbox(index) {
-            subheadings[index].checked = !subheadings[index].checked;
+        function updateNumber(index, newValue) {
+            let newNumber = parseInt(newValue);
+            if (isNaN(newNumber) || newNumber <= 0) return;
+
+            subheadings[index].number = newNumber;
+            subheadings[index].id = generateSubheadingID(newNumber);  // Update unique ID
+
             saveSubheadings();
+            renderSubheadings();  // Re-render to reflect the updated ID
         }
 
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            let nextNumber = subheadings.length + 1;  // Proper sequence
+            let nextNumber = subheadings.length + 1;
             subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
@@ -173,14 +179,6 @@
                 renderSubheadings();
             }
         }
-
-
-    function clearEditor(index) {
-            if (confirm("Are you sure?"))
-            innerEditors[index].clear();
-            subheadings[index].content = JSON.stringify(defaultEditorContent());
-            saveSubheadings();
-        }       
 
         function clearAllData() {
             if (confirm("Are you sure?")) {
