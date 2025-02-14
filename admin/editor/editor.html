@@ -33,30 +33,6 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .subheading-container {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-            margin-bottom: 10px;
-            position: relative;
-        }
-        .subheading-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #ddd;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        .subheading-left {
-            display: flex;
-            align-items: center;
-        }
-        .subheading-right {
-            display: flex;
-            align-items: center;
-        }
         .editor-box {
             width: 100%;
             min-height: 150px;
@@ -75,22 +51,6 @@
         .remove-btn { background: red; color: white; }
         .add-btn { background: green; color: white; }
         .clear-btn { background: orange; color: white; }
-        .number-input {
-            width: 60px;
-            padding: 5px;
-            text-align: center;
-            margin-right: 5px;
-        }
-        .error-message {
-            color: red;
-            font-size: 12px;
-            margin-left: 5px;
-            display: none;
-        }
-        .checkbox {
-            margin-right: 10px;
-            transform: scale(1.2);
-        }
     </style>
 </head>
 <body>
@@ -103,13 +63,10 @@
     <script>
         let outerEditorID = "2025";
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
-
         let innerEditors = {};
 
-        function generateSubheadingID(title, number) {
-            let letters = title.replace(/[^a-zA-Z]/g, "").slice(0, 2).toLowerCase();
-            if (letters.length < 2) letters = "kk";
-            return `${outerEditorID}${letters}${number}`;
+        function saveToLocalStorage() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
         }
 
         function defaultEditorContent() {
@@ -125,17 +82,10 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <div class="subheading-left">
-                            <input type="checkbox" class="checkbox">
-                            <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
-                        </div>
-                        <div class="subheading-right">
-                            <input type="number" class="number-input" value="${subheading.number}" oninput="updateNumber(${index}, this)">
-                            <span class="error-message" id="error-${index}">Duplicate number!</span>
-                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
-                        </div>
+                        <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
+                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
@@ -145,21 +95,27 @@
             subheadings.sort((a, b) => a.number - b.number);
             let mainEditorContainer = document.getElementById("main-editor");
             mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            
             subheadings.forEach((sub, index) => {
                 innerEditors[index] = new EditorJS({
                     holder: `editor-${index}`,
                     tools: {
-                        header: { class: Header, inlineToolbar: true },
-                        paragraph: { class: Paragraph, inlineToolbar: true },
+                        header: Header,
+                        paragraph: Paragraph,
                         table: Table,
-                        quote: { class: Quote, inlineToolbar: true },
+                        quote: Quote,
                         inlineCode: InlineCode,
                         underline: Underline,
-                        link: { class: LinkTool },
-                        image: { class: ImageTool },
-                        code: { class: CodeTool }
+                        link: LinkTool,
+                        image: ImageTool,
+                        code: CodeTool
                     },
-                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent(),
+                    onChange: async () => {
+                        const data = await innerEditors[index].save();
+                        subheadings[index].content = JSON.stringify(data);
+                        saveToLocalStorage();
+                    }
                 });
             });
         }
@@ -167,22 +123,30 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            let nextNumber = Math.max(...subheadings.map(sub => sub.number), 10) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
+            let nextNumber = Math.max(10, ...subheadings.map(sub => sub.number)) + 1;
+            subheadings.splice(afterIndex + 1, 0, {
+                title: newTitle,
+                number: nextNumber,
+                id: `${outerEditorID}${newTitle.slice(0, 2).toLowerCase()}${nextNumber}`,
+                content: JSON.stringify(defaultEditorContent())
+            });
+            saveToLocalStorage();
             renderSubheadings();
         }
 
         function removeSubheading(index) {
             if (confirm("Are you sure?")) {
                 subheadings.splice(index, 1);
+                saveToLocalStorage();
                 renderSubheadings();
             }
         }
 
         function clearEditor(index) {
             if (confirm("Are you sure?")) {
-                innerEditors[index].clear();
+                innerEditors[index].blocks.clear();
                 subheadings[index].content = JSON.stringify(defaultEditorContent());
+                saveToLocalStorage();
             }
         }
 
