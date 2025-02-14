@@ -166,6 +166,14 @@
             saveSubheadings();
             renderSubheadings();
         }
+
+         function removeSubheading(index) {
+            if (confirm("Are you sure?")) {
+                subheadings.splice(index, 1);
+                saveSubheadings();
+                renderSubheadings();
+            }
+        }
         function clearEditor(index) {
             if (innerEditors[index]) {
                 innerEditors[index].clear();
