@@ -151,7 +151,8 @@
         }
 
         function updateNumber(index, value) {
-            subheadings[index].number = parseInt(value) || 0;
+            let newValue = parseInt(value) || 0;
+            subheadings[index].number = newValue;
             saveSubheadings();
             renderSubheadings();
         }
