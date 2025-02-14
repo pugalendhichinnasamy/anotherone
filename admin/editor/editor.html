@@ -80,6 +80,12 @@
             margin-right: 10px;
         }
 
+        /* 🔹 Number Styling */
+        .subheading-number {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
         /* 🔹 Inline Toolbar Styling */
         .ce-inline-toolbar {
             transform: scale(1.2);
@@ -119,49 +125,19 @@
 
     <script>
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11 },
-            { title: "Age", number: 12 },
-            { title: "Address", number: 13 }
+            { title: "Name", number: 1 },
+            { title: "Age", number: 2 },
+            { title: "Address", number: 3 }
         ];
         let innerEditors = {};
-
-        /* 🔹 Multi-Color Marker Inline Tool */
-        class MultiColorMarker {
-            static get isInline() { return true; }
-            static get title() { return "Multi-Color Marker"; }
-            static get sanitize() { return { span: true }; }
-
-            constructor() {
-                this.colors = ["yellow", "pink", "blue", "green", "orange"];
-                this.currentColorIndex = 0;
-                this.button = document.createElement("button");
-                this.button.innerHTML = "🖍️";
-                this.button.style.cursor = "pointer";
-                this.button.addEventListener("click", () => this.toggleColor());
-            }
-
-            render() {
-                return this.button;
-            }
-
-            surround(range) {
-                const span = document.createElement("span");
-                span.style.backgroundColor = this.colors[this.currentColorIndex];
-                range.surroundContents(span);
-            }
-
-            toggleColor() {
-                this.currentColorIndex = (this.currentColorIndex + 1) % this.colors.length;
-                this.button.style.backgroundColor = this.colors[this.currentColorIndex];
-            }
-        }
 
         function createSubheadingBlock(subheading, index) {
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <div>
-                            <input type="checkbox" class="checkbox"> ${subheading.title}
+                            <input type="checkbox" class="checkbox">
+                            <span class="subheading-number">${index + 1}.</span> ${subheading.title}
                         </div>
                         <div>
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
@@ -185,7 +161,7 @@
                         paragraph: { class: Paragraph, inlineToolbar: true },
                         table: Table,
                         quote: { class: Quote, inlineToolbar: true },
-                        marker: MultiColorMarker,
+                        marker: { class: class MultiColorMarker },
                         inlineCode: InlineCode,
                         underline: Underline,
                         link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
@@ -208,7 +184,7 @@
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: subheadings.length + 1 });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle });
             saveSubheadings();
             renderSubheadings();
         }
