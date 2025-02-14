@@ -82,11 +82,13 @@
     </div>
 
     <script>
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+        const defaultSubheadings = [
             { title: "Name", number: 11 },
             { title: "Age", number: 12 },
             { title: "Address", number: 13 }
         ];
+
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [...defaultSubheadings];
         let innerEditors = {};
 
         function getDefaultContent(title) {
@@ -191,9 +193,11 @@
         }
 
         function clearAllData() {
-            localStorage.clear();
-            subheadings = [];
-            renderSubheadings();
+            if (confirm("Clear all data? This will reset everything to default.")) {
+                localStorage.setItem('subheadings', JSON.stringify(defaultSubheadings));
+                subheadings = [...defaultSubheadings];
+                renderSubheadings();
+            }
         }
 
         function saveSubheadings() {
