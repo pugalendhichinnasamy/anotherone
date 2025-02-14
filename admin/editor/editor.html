@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js Without List Tool</title>
+    <title>Editor.js - Subheading Fix</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -84,7 +84,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js Without List Tool</h1>
+        <h1>Editor.js - Subheading Fix</h1>
         <button onclick="clearAllData()">Clear All Data</button>
         <div id="main-editor"></div>
     </div>
@@ -93,7 +93,11 @@
         let mainEditorID = localStorage.getItem('mainEditorID') || Date.now().toString().slice(0, 4);
         localStorage.setItem('mainEditorID', mainEditorID);
 
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [];
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+            { title: "Name", number: 11, checked: false, id: generateSubheadingID(11), content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 12, checked: false, id: generateSubheadingID(12), content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 13, checked: false, id: generateSubheadingID(13), content: JSON.stringify(defaultEditorContent()) }
+        ];
         let innerEditors = {};
 
         function generateSubheadingID(number) {
@@ -140,7 +144,7 @@
                         quote: { class: Quote, inlineToolbar: true },
                         inlineCode: { class: InlineCode },
                         underline: Underline,
-                        link: { class: LinkTool, config: { endpoint: "https://your-backend.com/fetchUrl" } },
+                        link: { class: LinkTool },
                         image: { class: ImageTool },
                         code: { class: CodeTool },
                         marker: { class: Marker, shortcut: 'CMD+SHIFT+M' }
@@ -148,45 +152,27 @@
                     data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
                 });
             });
-
-            saveSubheadings();
         }
 
-        function addSubheading(index) {
-            let newNumber = subheadings.length > 0 ? subheadings[subheadings.length - 1].number + 1 : 1;
-            let newSubheading = {
-                title: "New Subheading",
-                number: newNumber,
-                checked: false,
-                id: generateSubheadingID(newNumber),
-                content: JSON.stringify(defaultEditorContent())
-            };
-
-            subheadings.splice(index + 1, 0, newSubheading);
+        function addSubheading(afterIndex) {
+            let newTitle = prompt("Enter subheading name:");
+            if (!newTitle) return;
+            let nextNumber = findNextNumber();
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
 
+        function findNextNumber() {
+            let numbers = subheadings.map(s => s.number);
+            let next = Math.max(...numbers) + 1;
+            return next;
+        }
+
         function removeSubheading(index) {
-            if (confirm("Are you sure you want to remove this subheading?")) {
+            if (confirm("Remove this subheading?")) {
                 subheadings.splice(index, 1);
                 saveSubheadings();
-                renderSubheadings();
-            }
-        }
-
-        function clearEditor(index) {
-            if (confirm("Clear this editor's content?")) {
-                innerEditors[index].clear();
-                subheadings[index].content = JSON.stringify(defaultEditorContent());
-                saveSubheadings();
-            }
-        }
-
-        function clearAllData() {
-            if (confirm("Are you sure you want to clear all data?")) {
-                localStorage.clear();
-                subheadings = [];
                 renderSubheadings();
             }
         }
