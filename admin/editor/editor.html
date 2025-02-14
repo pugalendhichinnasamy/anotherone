@@ -43,6 +43,14 @@
             padding: 5px;
             border-radius: 5px;
         }
+        .subheading-left {
+            display: flex;
+            align-items: center;
+        }
+        .subheading-right {
+            display: flex;
+            align-items: center;
+        }
         .editor-box {
             width: 100%;
             min-height: 150px;
@@ -56,6 +64,7 @@
             border: none;
             cursor: pointer;
             border-radius: 5px;
+            margin-left: 5px;
         }
         .remove-btn { background: red; color: white; }
         .add-btn { background: green; color: white; }
@@ -70,10 +79,10 @@
             color: red;
             font-size: 12px;
             margin-left: 5px;
-            position: absolute;
-            top: 35px;
-            left: 50%;
-            transform: translateX(-50%);
+        }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.2);
         }
     </style>
 </head>
@@ -89,9 +98,9 @@
         localStorage.setItem('outerEditorID', outerEditorID);
 
         let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 11, id: generateSubheadingID("Name", 11), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Age", number: 12, id: generateSubheadingID("Age", 12), content: JSON.stringify(defaultEditorContent()) },
-            { title: "Address", number: 13, id: generateSubheadingID("Address", 13), content: JSON.stringify(defaultEditorContent()) }
+            { title: "Name", number: 11, id: generateSubheadingID("Name", 11), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Age", number: 12, id: generateSubheadingID("Age", 12), checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Address", number: 13, id: generateSubheadingID("Address", 13), checked: false, content: JSON.stringify(defaultEditorContent()) }
         ];
         let innerEditors = {};
 
@@ -114,12 +123,17 @@
             return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
-                        <input type="number" class="number-input" value="${subheading.number}" oninput="updateNumber(${index}, this)">
-                        <span class="error-message" id="error-${index}"></span>
-                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                        <div class="subheading-left">
+                            <input type="checkbox" class="checkbox" onchange="toggleCheckbox(${index})" ${subheading.checked ? 'checked' : ''}>
+                            <span class="subheading-title">${subheading.title} (ID: ${subheading.id})</span>
+                        </div>
+                        <div class="subheading-right">
+                            <input type="number" class="number-input" value="${subheading.number}" oninput="updateNumber(${index}, this)">
+                            <span class="error-message" id="error-${index}"></span>
+                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
+                        </div>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
@@ -154,37 +168,15 @@
             errorMessage.innerText = "";
             subheadings[index].number = newNumber;
             subheadings[index].id = generateSubheadingID(subheadings[index].title, newNumber);
-            reorderNumbers();
             saveSubheadings();
             renderSubheadings();
-        }
-
-        function reorderNumbers() {
-            let reservedNumbers = Array.from({ length: 10 }, (_, i) => i + 1);
-            let existingNumbers = subheadings.map(sub => sub.number).filter(num => num >= 11).sort((a, b) => a - b);
-
-            subheadings.sort((a, b) => a.number - b.number);
-
-            let newNumberMap = {};
-            let newNumber = 11;
-
-            for (let sub of subheadings) {
-                if (sub.number >= 11) {
-                    while (reservedNumbers.includes(newNumber)) newNumber++;
-                    newNumberMap[sub.number] = newNumber;
-                    sub.number = newNumber;
-                    sub.id = generateSubheadingID(sub.title, newNumber);
-                    newNumber++;
-                }
-            }
         }
 
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
             let nextNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), content: JSON.stringify(defaultEditorContent()) });
-            reorderNumbers();
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, id: generateSubheadingID(newTitle, nextNumber), checked: false, content: JSON.stringify(defaultEditorContent()) });
             saveSubheadings();
             renderSubheadings();
         }
@@ -192,7 +184,6 @@
         function removeSubheading(index) {
             if (confirm("Are you sure?")) {
                 subheadings.splice(index, 1);
-                reorderNumbers();
                 saveSubheadings();
                 renderSubheadings();
             }
