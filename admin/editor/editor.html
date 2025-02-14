@@ -193,21 +193,17 @@
             }
         }
 
-        function clearEditorContent(index)
-            {
-            if (confirm("Are you sure?")){
+        function clearEditorContent(index) {
             subheadings[index].content = JSON.stringify(defaultEditorContent());
             saveSubheadings();
             renderSubheadings();
-        }}
+        }
 
-        function clearAllData() 
-        {
-            if (confirm("Are you sure?")){
+        function clearAllData() {
             localStorage.removeItem('subheadings');
             subheadings = [];
             renderSubheadings();
-        }}
+        }
 
         function saveSubheadings() {
             localStorage.setItem('subheadings', JSON.stringify(subheadings));
