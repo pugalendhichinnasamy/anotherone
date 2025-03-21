@@ -11,12 +11,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
 
     <style>
         body {
@@ -109,7 +103,6 @@
     <script>
         const editorWrapper = document.getElementById('editor-wrapper');
 
-        // Default Editor Content
         function createDefaultContent() {
             return {
                 blocks: [
@@ -120,12 +113,10 @@
             };
         }
 
-        // Function to sanitize text
         function sanitizeText(text) {
             return text.replace(/\.\s+/g, '.').replace(/\s+$/, '');
         }
 
-        // Function to render Job Summary editor (Restores all original features)
         function renderJobSummaryEditor() {
             editorWrapper.innerHTML = `
                 <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
@@ -140,7 +131,6 @@
 
             let innerEditors = {};
 
-            // Save editor data after sanitizing text
             function saveEditorData(index) {
                 if (innerEditors[index]) {
                     innerEditors[index].save().then(outputData => {
@@ -149,14 +139,12 @@
                                 block.data.text = sanitizeText(block.data.text);
                             }
                         });
-
                         subheadings[index].content = JSON.stringify(outputData);
                         localStorage.setItem('subheadings', JSON.stringify(subheadings));
                     });
                 }
             }
 
-            // Render and initialize subheadings dynamically
             function renderSubheadings() {
                 const mainEditorContainer = document.getElementById('main-editor');
                 mainEditorContainer.innerHTML = subheadings.map((sub, index) => `
@@ -164,9 +152,10 @@
                         <div class="subheading-header">
                             <input type="checkbox" class="checkbox" ${sub.checked ? 'checked' : ''}>
                             <span class="subheading-title">${sub.title} (#${sub.number})</span>
-                            <input type="number" class="number-input" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
+                            <input type="number" class="number-input" id="number-input-${index}" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
                             <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                            <button class="clear-btn" onclick="clearSubheading(${index})">🗑️</button>
                         </div>
                         <div id="editor-${index}" class="editor-box"></div>
                     </div>
@@ -182,19 +171,56 @@
                 });
             }
 
+            function addSubheading(afterIndex) {
+                let newTitle = prompt("Enter subheading name:");
+                if (!newTitle) return;
+
+                let newNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
+                subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: newNumber, checked: false, content: JSON.stringify(createDefaultContent()) });
+                renderSubheadings();
+                saveSubheadings();
+            }
+
+            function updateNumber(index, newValue) {
+                const parsedValue = parseInt(newValue, 10);
+                if (isNaN(parsedValue) || subheadings.some(sub => sub.number === parsedValue)) {
+                    alert("This number is invalid or already in use.");
+                    renderSubheadings();
+                    return;
+                }
+                subheadings[index].number = parsedValue;
+                renderSubheadings();
+                saveSubheadings();
+            }
+
+            function removeSubheading(index) {
+                if (confirm("Are you sure you want to remove this subheading?")) {
+                    subheadings.splice(index, 1);
+                    renderSubheadings();
+                    saveSubheadings();
+                }
+            }
+
+            function clearSubheading(index) {
+                if (confirm("Are you sure you want to clear this subheading? This action cannot be undone.")) {
+                    subheadings[index].content = JSON.stringify(createDefaultContent());
+                    renderSubheadings();
+                    saveSubheadings();
+                }
+            }
+
+            function clearAllData() {
+                if (confirm("Are you sure you want to clear all data? This will remove all subheadings.")) {
+                    localStorage.clear();
+                    subheadings = [];
+                    renderSubheadings();
+                }
+            }
+
             renderSubheadings();
         }
 
-        // Function for Blog Post and Question Paper editors
-        function renderBasicEditor(title) {
-            editorWrapper.innerHTML = `<h2>${title} Editor</h2><div id="basic-editor"></div>`;
-            new EditorJS({ holder: 'basic-editor', tools: { header: Header, paragraph: Paragraph } });
-        }
-
-        // Event listeners for editor switching
         document.getElementById('job-summary-checkbox').addEventListener('click', renderJobSummaryEditor);
-        document.getElementById('blog-post-checkbox').addEventListener('click', () => renderBasicEditor('Blog Post'));
-        document.getElementById('question-paper-checkbox').addEventListener('click', () => renderBasicEditor('Question Paper'));
     </script>
 </body>
 </html>
