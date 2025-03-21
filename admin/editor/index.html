@@ -33,11 +33,12 @@
 
   <h1>Select a Property Editor</h1>
 
-  <div class="checkbox-group">
-    <label><input type="radio" name="editor" onclick="loadEditor('job')"> Job Editor</label>
-    <label><input type="radio" name="editor" onclick="loadEditor('page')"> Page Editor</label>
-    <label><input type="radio" name="editor" onclick="loadEditor('blog')"> Blog Editor</label>
-  </div>
+  <!-- Category Selector -->
+        <div class="category-checkbox-container">
+            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
+            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
+            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
+        </div>
 
   <iframe id="editorFrame"></iframe>
 
