@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Editor.js Selection</title>
+    <title>Dynamic Editor.js with Job Summary Features</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -34,9 +34,6 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .editor-container {
-            margin-top: 20px;
-        }
         .checkbox-container {
             display: flex;
             justify-content: space-between;
@@ -46,15 +43,58 @@
             transform: scale(1.3);
             margin-right: 10px;
         }
-        h2 {
-            text-align: center;
+        .subheading-container {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
             margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .editor-box {
+            width: 100%;
+            min-height: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-top: 5px;
+        }
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
+        .number-input {
+            width: 50px;
+            margin-left: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Select the Editor Type</h1>
+        <h1>Select Editor Type</h1>
         <div class="checkbox-container">
             <label><input type="radio" name="editor-type" id="job-summary-checkbox"> Job Summary</label>
             <label><input type="radio" name="editor-type" id="blog-post-checkbox"> Blog Post</label>
@@ -67,98 +107,95 @@
     </div>
 
     <script>
-        // Editor Instances
-        let editor;
         const editorWrapper = document.getElementById('editor-wrapper');
 
-        // Utility function to create default Job Summary content
-        function createJobSummaryEditor() {
+        // Utility function for Job Summary Default Content
+        function createDefaultJobSummaryContent() {
+            return {
+                blocks: [
+                    { type: "header", data: { text: "Default Heading", level: 2 } },
+                    { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } },
+                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
+                ]
+            };
+        }
+
+        // Function to render the full Job Summary editor with all your functionality
+        function renderJobSummaryEditor() {
             editorWrapper.innerHTML = `
-                <h2>Job Summary Editor</h2>
-                <button onclick="clearAllData()" style="background: orange; padding: 8px; border-radius: 5px; color: white;">🗑️ Clear All</button>
-                <div id="job-summary-editor"></div>
+                <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
+                <div id="main-editor"></div>
             `;
 
             let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-                { title: "Name", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
-                { title: "Age", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
-                { title: "Address", number: 12, checked: false, content: JSON.stringify(defaultEditorContent()) }
+                { title: "Name", number: 10, checked: false, content: JSON.stringify(createDefaultJobSummaryContent()) },
+                { title: "Age", number: 11, checked: false, content: JSON.stringify(createDefaultJobSummaryContent()) },
+                { title: "Address", number: 12, checked: false, content: JSON.stringify(createDefaultJobSummaryContent()) }
             ];
 
             let innerEditors = {};
 
-            function defaultEditorContent() {
-                return {
-                    blocks: [
-                        { type: "header", data: { text: "Default Heading", level: 2 } },
-                        { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } },
-                        { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
-                    ]
-                };
+            function saveEditorData(index) {
+                if (innerEditors[index]) {
+                    innerEditors[index].save().then(outputData => {
+                        subheadings[index].content = JSON.stringify(outputData);
+                        localStorage.setItem('subheadings', JSON.stringify(subheadings));
+                    });
+                }
             }
 
             function renderSubheadings() {
-                const mainEditorContainer = document.createElement('div');
-                mainEditorContainer.id = 'main-editor';
-                editorWrapper.appendChild(mainEditorContainer);
-
-                subheadings.sort((a, b) => a.number - b.number);
+                const mainEditorContainer = document.getElementById('main-editor');
+                mainEditorContainer.innerHTML = subheadings.map((sub, index) => `
+                    <div class="subheading-container" id="subheading-${index}">
+                        <div class="subheading-header">
+                            <span class="subheading-title">${sub.title}</span>
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        </div>
+                        <div id="editor-${index}" class="editor-box"></div>
+                    </div>
+                `).join('');
 
                 subheadings.forEach((sub, index) => {
-                    const subheadingBlock = document.createElement('div');
-                    subheadingBlock.innerHTML = `
-                        <div class="subheading-container">
-                            <div class="subheading-header">
-                                <span>${sub.title}</span>
-                            </div>
-                            <div id="editor-${index}" class="editor-box"></div>
-                        </div>
-                    `;
-                    mainEditorContainer.appendChild(subheadingBlock);
-
                     innerEditors[index] = new EditorJS({
                         holder: `editor-${index}`,
                         tools: {
                             header: Header,
-                            paragraph: {
-                                class: Paragraph,
-                                inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
-                            },
+                            paragraph: Paragraph,
                             table: Table,
-                            quote: Quote,
-                            underline: Underline,
-                            linkTool: LinkTool,
-                            image: ImageTool,
-                            code: CodeTool,
-                            inlineCode: InlineCode,
-                            marker: Marker
+                            quote: Quote
                         },
-                        data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                        data: sub.content ? JSON.parse(sub.content) : createDefaultJobSummaryContent(),
+                        onChange: () => saveEditorData(index)
                     });
                 });
+            }
+
+            function removeSubheading(index) {
+                subheadings.splice(index, 1);
+                localStorage.setItem('subheadings', JSON.stringify(subheadings));
+                renderSubheadings();
             }
 
             renderSubheadings();
         }
 
-        // Function to create normal editor for Blog Post and Question Paper
-        function createBasicEditor(editorType) {
-            editorWrapper.innerHTML = `<h2>${editorType} Editor</h2><div id="basic-editor"></div>`;
-            editor = new EditorJS({
+        // Function for basic Blog Post and Question Paper editors
+        function renderBasicEditor(title) {
+            editorWrapper.innerHTML = `<h2>${title} Editor</h2><div id="basic-editor"></div>`;
+            new EditorJS({
                 holder: 'basic-editor',
                 tools: {
                     header: Header,
-                    paragraph: Paragraph,
-                    table: Table,
-                    quote: Quote
+                    paragraph: Paragraph
                 }
             });
         }
 
-        // Radio button event listeners
-        document.getElementById('job-summary-checkbox').addEventListener('click', createJobSummaryEditor);
-        document.getElementById('blog-post-checkbox').addEventListener('click', () => createBasicEditor('Blog Post'));
-        document.getElementById('question-paper-checkbox').addEventListener('click', () => createBasicEditor('Question Paper'));
+        // Event Listeners for Radio Buttons
+        document.getElementById('job-summary-checkbox').addEventListener('click', renderJobSummaryEditor);
+        document.getElementById('blog-post-checkbox').addEventListener('click', () => renderBasicEditor('Blog Post'));
+        document.getElementById('question-paper-checkbox').addEventListener('click', () => renderBasicEditor('Question Paper'));
     </script>
 </body>
 </html>
