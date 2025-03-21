@@ -34,17 +34,31 @@
   <h1>Select a Property Editor</h1>
 
   <!-- Category Selector -->
-        <div class="category-checkbox-container">
-            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
-            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
-            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
-        </div>
+  <div class="category-checkbox-container">
+    <label>
+      <input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary
+    </label>
+    <label>
+      <input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post
+    </label>
+    <label>
+      <input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper
+    </label>
+  </div>
 
   <iframe id="editorFrame"></iframe>
 
   <script>
-    function loadEditor(editor) {
-      document.getElementById('editorFrame').src = `${editor}/${editor}.html`;
+    // Function to handle category selection and dynamically load corresponding editor HTML
+    function toggleCategory(category) {
+      const iframe = document.getElementById('editorFrame');
+
+      // Clear the iframe if a checkbox is unchecked, otherwise load the respective HTML
+      if (document.getElementById(category).checked) {
+        iframe.src = `${category}/${category}.html`;
+      } else {
+        iframe.src = ''; // Unload the iframe if the category is unchecked
+      }
     }
   </script>
 
