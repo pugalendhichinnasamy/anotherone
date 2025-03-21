@@ -109,8 +109,8 @@
     <script>
         const editorWrapper = document.getElementById('editor-wrapper');
 
-        // Utility function for Job Summary Default Content
-        function createDefaultJobSummaryContent() {
+        // Default Editor Content
+        function createDefaultContent() {
             return {
                 blocks: [
                     { type: "header", data: { text: "Default Heading", level: 2 } },
@@ -120,7 +120,12 @@
             };
         }
 
-        // Function to render the full Job Summary editor with all your functionality
+        // Function to sanitize text
+        function sanitizeText(text) {
+            return text.replace(/\.\s+/g, '.').replace(/\s+$/, '');
+        }
+
+        // Function to render Job Summary editor (Restores all original features)
         function renderJobSummaryEditor() {
             editorWrapper.innerHTML = `
                 <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
@@ -128,28 +133,39 @@
             `;
 
             let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-                { title: "Name", number: 10, checked: false, content: JSON.stringify(createDefaultJobSummaryContent()) },
-                { title: "Age", number: 11, checked: false, content: JSON.stringify(createDefaultJobSummaryContent()) },
-                { title: "Address", number: 12, checked: false, content: JSON.stringify(createDefaultJobSummaryContent()) }
+                { title: "Name", number: 10, checked: false, content: JSON.stringify(createDefaultContent()) },
+                { title: "Age", number: 11, checked: false, content: JSON.stringify(createDefaultContent()) },
+                { title: "Address", number: 12, checked: false, content: JSON.stringify(createDefaultContent()) }
             ];
 
             let innerEditors = {};
 
+            // Save editor data after sanitizing text
             function saveEditorData(index) {
                 if (innerEditors[index]) {
                     innerEditors[index].save().then(outputData => {
+                        outputData.blocks.forEach(block => {
+                            if (["paragraph", "header", "quote"].includes(block.type)) {
+                                block.data.text = sanitizeText(block.data.text);
+                            }
+                        });
+
                         subheadings[index].content = JSON.stringify(outputData);
                         localStorage.setItem('subheadings', JSON.stringify(subheadings));
                     });
                 }
             }
 
+            // Render and initialize subheadings dynamically
             function renderSubheadings() {
                 const mainEditorContainer = document.getElementById('main-editor');
                 mainEditorContainer.innerHTML = subheadings.map((sub, index) => `
                     <div class="subheading-container" id="subheading-${index}">
                         <div class="subheading-header">
-                            <span class="subheading-title">${sub.title}</span>
+                            <input type="checkbox" class="checkbox" ${sub.checked ? 'checked' : ''}>
+                            <span class="subheading-title">${sub.title} (#${sub.number})</span>
+                            <input type="number" class="number-input" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
+                            <button class="add-btn" onclick="addSubheading(${index})">➕</button>
                             <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         </div>
                         <div id="editor-${index}" class="editor-box"></div>
@@ -159,40 +175,23 @@
                 subheadings.forEach((sub, index) => {
                     innerEditors[index] = new EditorJS({
                         holder: `editor-${index}`,
-                        tools: {
-                            header: Header,
-                            paragraph: Paragraph,
-                            table: Table,
-                            quote: Quote
-                        },
-                        data: sub.content ? JSON.parse(sub.content) : createDefaultJobSummaryContent(),
+                        tools: { header: Header, paragraph: Paragraph, table: Table },
+                        data: sub.content ? JSON.parse(sub.content) : createDefaultContent(),
                         onChange: () => saveEditorData(index)
                     });
                 });
             }
 
-            function removeSubheading(index) {
-                subheadings.splice(index, 1);
-                localStorage.setItem('subheadings', JSON.stringify(subheadings));
-                renderSubheadings();
-            }
-
             renderSubheadings();
         }
 
-        // Function for basic Blog Post and Question Paper editors
+        // Function for Blog Post and Question Paper editors
         function renderBasicEditor(title) {
             editorWrapper.innerHTML = `<h2>${title} Editor</h2><div id="basic-editor"></div>`;
-            new EditorJS({
-                holder: 'basic-editor',
-                tools: {
-                    header: Header,
-                    paragraph: Paragraph
-                }
-            });
+            new EditorJS({ holder: 'basic-editor', tools: { header: Header, paragraph: Paragraph } });
         }
 
-        // Event Listeners for Radio Buttons
+        // Event listeners for editor switching
         document.getElementById('job-summary-checkbox').addEventListener('click', renderJobSummaryEditor);
         document.getElementById('blog-post-checkbox').addEventListener('click', () => renderBasicEditor('Blog Post'));
         document.getElementById('question-paper-checkbox').addEventListener('click', () => renderBasicEditor('Question Paper'));
