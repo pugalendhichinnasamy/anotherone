@@ -1,0 +1,11 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #ede7f6;
+  text-align: center;
+}
+input, button {
+  margin: 10px;
+}
+#pageList {
+  margin-top: 20px;
+}
