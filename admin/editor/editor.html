@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Popup Subheading Feature</title>
+    <title>Editor.js with Default Subheadings</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
@@ -45,14 +45,12 @@
             margin-top: 5px;
         }
 
-        /* Top-Right Controls */
         .subheading-controls {
             position: absolute;
             top: 10px;
             right: 10px;
             display: flex;
             align-items: center;
-            justify-content: flex-end;
         }
 
         .remove-btn, .clear-btn, .add-btn {
@@ -146,9 +144,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Popup Subheading Feature</h1>
+        <h1>Editor.js with Default Subheadings</h1>
 
-        <!-- Category Selector -->
         <div class="category-checkbox-container">
             <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
             <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
@@ -164,13 +161,11 @@
             <button class="add-btn" onclick="openModal()">➕ Add Subheading</button>
         </div>
 
-        <!-- Simplified Blog Post Editor -->
         <div id="blog-post-editor" class="category-editor">
             <h2>Blog Post Editor</h2>
             <div id="simple-blog-editor"></div>
         </div>
 
-        <!-- Simplified Question Paper Editor -->
         <div id="question-paper-editor" class="category-editor">
             <h2>Question Paper Editor</h2>
             <div id="simple-question-editor"></div>
@@ -189,7 +184,11 @@
     </div>
 
     <script>
-        let subheadings = [];
+        let subheadings = [
+            { title: "Name", number: 1 },
+            { title: "Books", number: 2 },
+            { title: "Mouse", number: 3 }
+        ];
         let activeCategory = "job-summary";
 
         function toggleCategory(selectedId) {
@@ -238,7 +237,6 @@
             renderJobSummary();
         }
 
-        // Modal Handling
         function openModal() {
             document.getElementById("subheading-modal").style.display = "flex";
         }
