@@ -15,10 +15,7 @@ const editor = new editorJS({
       class: Paragraph,
       inlineToolbar: true,
     },
-    list: {
-      class: List,
-      inlineToolbar: true,
-    },
+    
     image: {
       class: ImageTool,
       config: {
