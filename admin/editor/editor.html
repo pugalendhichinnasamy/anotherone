@@ -81,147 +81,135 @@
             margin-left: 10px;
             font-weight: bold;
         }
-        .editor-title {
-            font-weight: bold;
-            margin-top: 15px;
+        .category-checkbox-container {
+            display: flex;
+            margin-bottom: 10px;
+            justify-content: space-around;
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Editor.js with Inline Tools & Subheadings</h1>
-        <div>
-            <label><input type="radio" name="editor-type" value="job-summary" onclick="handleEditorTypeChange(this)"> Job Summary</label>
-            <label><input type="radio" name="editor-type" value="blog-post" onclick="handleEditorTypeChange(this)"> Blog Post</label>
-            <label><input type="radio" name="editor-type" value="question-paper" onclick="handleEditorTypeChange(this)"> Question Paper</label>
+
+        <div class="category-checkbox-container">
+            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
+            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
+            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
         </div>
 
-        <div id="job-summary-container" style="display:none;">
-            <h2>Job Summary</h2>
-            <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
-            <div id="job-summary-editor"></div>
+        <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
+
+        <div id="job-summary-editor" class="category-editor">
+            <h2>Job Summary Editor</h2>
+            <div id="job-summary-main-editor"></div>
         </div>
 
-        <div id="blog-post-container" style="display:none;">
+        <div id="blog-post-editor" class="category-editor">
             <h2>Blog Post Editor</h2>
-            <div id="blog-post-editor"></div>
+            <div id="blog-post-main-editor"></div>
         </div>
 
-        <div id="question-paper-container" style="display:none;">
+        <div id="question-paper-editor" class="category-editor">
             <h2>Question Paper Editor</h2>
-            <div id="question-paper-editor"></div>
+            <div id="question-paper-main-editor"></div>
         </div>
     </div>
 
     <script>
-        let currentDate = new Date();
-        const datePart = `${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}${String(currentDate.getDate()).padStart(2, '0')}`;
+        // Category selection logic (Job Summary, Blog Post, Question Paper)
+        function toggleCategory(selectedId) {
+            document.querySelectorAll(".category-checkbox").forEach(checkbox => {
+                checkbox.checked = checkbox.id === selectedId;
+            });
+            document.querySelectorAll(".category-editor").forEach(editor => {
+                editor.classList.toggle("disabled", editor.id !== `${selectedId}-editor`);
+            });
+        }
 
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Position Summary", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) }
+        // Job Summary Subheadings Data
+        let subheadings = JSON.parse(localStorage.getItem('jobSummarySubheadings')) || [
+            { title: "Company", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
+            { title: "Position", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) }
         ];
-
         let innerEditors = {};
-        let jobSummaryActive = false;
-        let blogPostActive = false;
-        let questionPaperActive = false;
 
         function defaultEditorContent() {
             return {
                 blocks: [
                     { type: "header", data: { text: "Default Heading", level: 2 } },
-                    { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } }
+                    { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } },
+                    { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
                 ]
             };
         }
 
-        function handleEditorTypeChange(radio) {
-            const editorType = radio.value;
-            if (editorType === "job-summary") {
-                document.getElementById("job-summary-container").style.display = "block";
-                document.getElementById("blog-post-container").style.display = "none";
-                document.getElementById("question-paper-container").style.display = "none";
-                renderJobSummary();
-            } else if (editorType === "blog-post") {
-                document.getElementById("job-summary-container").style.display = "none";
-                document.getElementById("blog-post-container").style.display = "block";
-                document.getElementById("question-paper-container").style.display = "none";
-                renderBlogPost();
-            } else if (editorType === "question-paper") {
-                document.getElementById("job-summary-container").style.display = "none";
-                document.getElementById("blog-post-container").style.display = "none";
-                document.getElementById("question-paper-container").style.display = "block";
-                renderQuestionPaper();
-            }
+        function saveSubheadings() {
+            localStorage.setItem('jobSummarySubheadings', JSON.stringify(subheadings));
         }
 
-        function renderJobSummary() {
-            if (jobSummaryActive) return;
-            jobSummaryActive = true;
-
-            subheadings.forEach((sub, index) => createJobSummaryEditor(sub, index));
+        function renderSubheadings() {
+            subheadings.sort((a, b) => a.number - b.number);
+            let mainEditorContainer = document.getElementById("job-summary-main-editor");
+            mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
+            subheadings.forEach((sub, index) => {
+                innerEditors[index] = new EditorJS({
+                    holder: `editor-${index}`,
+                    tools: {
+                        header: Header,
+                        paragraph: {
+                            class: Paragraph,
+                            inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
+                        },
+                        table: Table,
+                        quote: Quote,
+                        underline: Underline,
+                        linkTool: LinkTool,
+                        image: ImageTool,
+                        code: CodeTool,
+                        inlineCode: InlineCode,
+                        marker: Marker
+                    },
+                    data: sub.content ? JSON.parse(sub.content) : defaultEditorContent(),
+                    onChange: () => saveEditorData(index)
+                });
+            });
         }
 
-        function createJobSummaryEditor(subheading, index) {
-            const editorContainer = document.createElement("div");
-            editorContainer.innerHTML = `
+        function saveEditorData(index) {
+            innerEditors[index].save().then((outputData) => {
+                subheadings[index].content = JSON.stringify(outputData);
+                saveSubheadings();
+            }).catch(console.error);
+        }
+
+        function createSubheadingBlock(subheading, index) {
+            return `
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
-                        <span class="subheading-title">${subheading.title}</span>
-                        <button class="add-btn" onclick="addSubheading(${index})">➕ Add</button>
-                        <button class="remove-btn" onclick="removeSubheading(${index})">❌ Remove</button>
-                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️ Clear</button>
+                        <input type="checkbox" class="checkbox" ${subheading.checked ? 'checked' : ''}>
+                        <span class="subheading-title">${subheading.title} (${generateUniqueID(subheading)})</span>
+                        <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
+                        <button class="add-btn" onclick="addSubheading(${index})">➕</button>
+                        <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
+                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
-                </div>
-            `;
-
-            document.getElementById("job-summary-editor").appendChild(editorContainer);
-
-            innerEditors[index] = new EditorJS({
-                holder: `editor-${index}`,
-                tools: {
-                    header: Header,
-                    paragraph: {
-                        class: Paragraph,
-                        inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
-                    },
-                    table: Table,
-                    quote: Quote,
-                    underline: Underline,
-                    linkTool: LinkTool,
-                    image: ImageTool,
-                    code: CodeTool,
-                    inlineCode: InlineCode,
-                    marker: Marker
-                },
-                data: subheading.content ? JSON.parse(subheading.content) : defaultEditorContent()
-            });
+                </div>`;
         }
 
-        function addSubheading(afterIndex) {
-            const newTitle = prompt("Enter subheading name:");
-            if (!newTitle) return;
-
-            subheadings.splice(afterIndex + 1, 0, {
-                title: newTitle,
-                number: afterIndex + 1,
-                content: JSON.stringify(defaultEditorContent())
-            });
-
-            document.getElementById("job-summary-editor").innerHTML = "";
-            subheadings.forEach((sub, index) => createJobSummaryEditor(sub, index));
+        function generateUniqueID(subheading) {
+            let initials = subheading.title.substring(0, 2).toLowerCase();
+            let currentDate = new Date();
+            let datePart = `${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}${String(currentDate.getDate()).padStart(2, '0')}`;
+            return `${datePart}${initials}${subheading.number}`;
         }
 
-        function removeSubheading(index) {
-            subheadings.splice(index, 1);
-            document.getElementById("job-summary-editor").innerHTML = "";
-            subheadings.forEach((sub, index) => createJobSummaryEditor(sub, index));
-        }
-
-        function clearEditor(index) {
-            if (innerEditors[index]) innerEditors[index].clear();
-        }
+        renderSubheadings();
     </script>
 </body>
 </html>
