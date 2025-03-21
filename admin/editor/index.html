@@ -3,22 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Editor</title>
-  <link rel="stylesheet" href="editor.css">  <!-- Linking CSS file -->
+  <title>Interactive Editors</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    .checkbox-group {
+      margin: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+    iframe {
+      width: 80%;
+      height: 400px;
+      border: 2px solid #ccc;
+      background-color: #fff;
+    }
+  </style>
 </head>
 <body>
 
-  <div class="editor-container">
-    <h2>Simple Text Editor</h2>
-    <textarea id="editorInput" placeholder="Type your text here..."></textarea>
-    <button id="saveButton">Save Text</button>
+  <h1>Select a Property Editor</h1>
 
-    <div class="output-container">
-      <h3>Saved Content:</h3>
-      <p id="outputText"></p>
-    </div>
+  <div class="checkbox-group">
+    <label><input type="radio" name="editor" onclick="loadEditor('job')"> Job Editor</label>
+    <label><input type="radio" name="editor" onclick="loadEditor('page')"> Page Editor</label>
+    <label><input type="radio" name="editor" onclick="loadEditor('blog')"> Blog Editor</label>
   </div>
 
-  <script src="editor.js"></script>  <!-- Linking JavaScript file -->
+  <iframe id="editorFrame"></iframe>
+
+  <script>
+    function loadEditor(editor) {
+      document.getElementById('editorFrame').src = `${editor}/${editor}.html`;
+    }
+  </script>
+
 </body>
 </html>
