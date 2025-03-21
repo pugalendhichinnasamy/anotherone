@@ -1,8 +1,5 @@
-function addJob() {
-  const jobTitle = document.getElementById('jobTitle').value;
-  const jobList = document.getElementById('jobList');
-  const jobItem = document.createElement('p');
-  jobItem.textContent = `Job: ${jobTitle}`;
-  jobList.appendChild(jobItem);
-}
-
+// Function to save and display the text entered in the textarea
+document.getElementById('saveButton').addEventListener('click', function() {
+  const text = document.getElementById('editorInput').value;  // Get input value
+  document.getElementById('outputText').innerText = text;     // Display it below
+});
