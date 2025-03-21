@@ -30,7 +30,7 @@ body {
         }
         .editor-box {
             width: 100%;
-            min-height: 15000px;
+            min-height: 100px;
             padding: 10px;
             border: 1px solid #ccc;
             background: #fff;
