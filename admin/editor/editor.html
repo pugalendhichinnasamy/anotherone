@@ -185,33 +185,20 @@
                 holder: `editor-${index}`,
                 tools: { 
                     header: Header, 
-                    paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"] } 
-                }
+                    paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"] },
+                    table: { class: Table }
+                },
+                data: { blocks: [{ type: 'paragraph', data: { text: "Sample text under the job subheading." } }] }
             });
         }
 
-        function updateNumber(index, newValue) {
-            subheadings[index].number = parseInt(newValue);
-            renderJobSummary();
-        }
-
-        function addSubheading() {
-            subheadings.push({ title: `New Subheading ${subheadings.length + 1}`, number: subheadings.length + 1, content: "" });
-            renderJobSummary();
-        }
-
-        function clearAllData() {
-            subheadings = [];
-            renderJobSummary();
-        }
-
         function initializeEditors() {
-            if (activeCategory === "job-summary") {
-                renderJobSummary();
-            } else {
+            if (activeCategory === "job-summary") renderJobSummary();
+            else {
                 new EditorJS({
                     holder: activeCategory === "blog-post" ? "simple-blog-editor" : "simple-question-editor",
-                    tools: { header: Header, paragraph: Paragraph }
+                    tools: { header: Header, paragraph: Paragraph, table: Table },
+                    data: { blocks: [{ type: "header", data: { text: "Sample Text", level: 2 } }] }
                 });
             }
         }
