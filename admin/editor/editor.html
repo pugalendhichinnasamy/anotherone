@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Subheadings and Top-Aligned Controls</title>
+    <title>Editor.js with Subheadings and Simplified Editors</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -46,7 +46,7 @@
             margin-top: 5px;
         }
 
-        /* Top-Right Controls: Add, Remove, Clear, and Number Input */
+        /* Top-Right Controls */
         .subheading-controls {
             position: absolute;
             top: 10px;
@@ -74,7 +74,6 @@
             margin-right: 5px;
         }
 
-        /* Top-Left Checkbox and Subheading Title */
         .subheading-header {
             display: flex;
             align-items: center;
@@ -103,7 +102,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Subheadings & Top-Aligned Controls</h1>
+        <h1>Editor.js with Subheadings & Simplified Editors</h1>
 
         <!-- Category Selector -->
         <div class="category-checkbox-container">
@@ -114,27 +113,29 @@
 
         <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
 
+        <!-- Job Summary Editor with Subheadings -->
         <div id="job-summary-editor" class="category-editor">
             <h2>Job Summary Editor</h2>
             <div id="job-summary-main-editor"></div>
-            <button class="add-btn" onclick="addSubheading()">➕ Add Subheading</button>
         </div>
 
+        <!-- Simplified Blog Post Editor -->
         <div id="blog-post-editor" class="category-editor">
             <h2>Blog Post Editor</h2>
-            <div id="blog-post-main-editor"></div>
+            <div id="simple-blog-editor"></div>
         </div>
 
+        <!-- Simplified Question Paper Editor -->
         <div id="question-paper-editor" class="category-editor">
             <h2>Question Paper Editor</h2>
-            <div id="question-paper-main-editor"></div>
+            <div id="simple-question-editor"></div>
         </div>
     </div>
 
     <script>
         let activeCategory = "job-summary";
 
-        // Toggle category and ensure only one checkbox is active
+        // Toggle between different categories (Job Summary, Blog Post, Question Paper)
         function toggleCategory(selectedId) {
             activeCategory = selectedId;
             document.querySelectorAll(".category-checkbox").forEach(checkbox => {
@@ -209,7 +210,22 @@
             renderJobSummary();
         }
 
-        toggleCategory("job-summary"); // Default initial category
+        // Initialize Job Summary Editor with Subheadings by default
+        function initializeEditors() {
+            if (activeCategory === "job-summary") {
+                renderJobSummary();
+            } else {
+                new EditorJS({
+                    holder: activeCategory === "blog-post" ? "simple-blog-editor" : "simple-question-editor",
+                    tools: {
+                        header: Header,
+                        paragraph: Paragraph
+                    }
+                });
+            }
+        }
+
+        toggleCategory("job-summary"); // Default to Job Summary
     </script>
 </body>
 </html>
