@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Inline Tools & Subheadings</title>
+    <title>Editor.js with Job Summary Subheadings & More</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -94,7 +94,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Inline Tools & Subheadings</h1>
+        <h1>Editor.js with Job Summary Subheadings & More</h1>
 
         <div class="category-checkbox-container">
             <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
@@ -111,64 +111,62 @@
 
         <div id="blog-post-editor" class="category-editor">
             <h2>Blog Post Editor</h2>
-            <div id="blog-post-editorjs"></div>
+            <div id="blog-post-main-editor"></div>
         </div>
 
         <div id="question-paper-editor" class="category-editor">
             <h2>Question Paper Editor</h2>
-            <div id="question-paper-editorjs"></div>
+            <div id="question-paper-main-editor"></div>
         </div>
     </div>
 
     <script>
+        // Handle Active Category Selection
+        let activeCategory = "job-summary";
         function toggleCategory(selectedId) {
-            document.querySelectorAll(".category-checkbox").forEach(checkbox => {
-                checkbox.checked = checkbox.id === selectedId;
-            });
+            activeCategory = selectedId;
             document.querySelectorAll(".category-editor").forEach(editor => {
-                editor.classList.toggle("disabled", editor.id !== `${selectedId}-editor`);
+                editor.style.display = editor.id === `${selectedId}-editor` ? "block" : "none";
             });
+            initializeEditors();
         }
 
-        let subheadings = JSON.parse(localStorage.getItem('jobSummarySubheadings')) || [
-            { title: "Company", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
-            { title: "Position", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) }
+        let subheadings = [
+            { title: "Company", number: 10, content: "" },
+            { title: "Position", number: 11, content: "" }
         ];
-        let innerEditors = {};
-
-        function defaultEditorContent() {
-            return { blocks: [{ type: "header", data: { text: "Default Heading", level: 2 } }] };
-        }
 
         function renderSubheadings() {
-            subheadings.sort((a, b) => a.number - b.number);
-            let mainEditorContainer = document.getElementById("job-summary-main-editor");
-            mainEditorContainer.innerHTML = subheadings.map((sub, index) => `
-                <div class="subheading-container" id="subheading-${index}">
+            const container = document.getElementById("job-summary-main-editor");
+            container.innerHTML = subheadings.map(createSubheadingBlock).join('');
+        }
+
+        function createSubheadingBlock(sub, index) {
+            const uniqueID = generateUniqueID(sub);
+            return `
+                <div class="subheading-container">
                     <div class="subheading-header">
-                        <input type="checkbox" class="checkbox" ${sub.checked ? 'checked' : ''}>
-                        <span class="subheading-title">${sub.title}</span>
-                        <input type="number" class="number-input" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
-                        <button class="add-btn" onclick="addSubheading()">➕</button>
+                        <input type="checkbox" class="checkbox">
+                        <span class="subheading-title">${sub.title} (${uniqueID})</span>
+                        <input type="number" class="number-input" value="${sub.number}">
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
                     </div>
-                    <div id="editor-${index}" class="editor-box"></div>
-                </div>`).join('');
-            subheadings.forEach((sub, index) => {
-                innerEditors[index] = new EditorJS({ holder: `editor-${index}`, data: sub.content ? JSON.parse(sub.content) : {} });
-            });
+                    <div id="editor-${uniqueID}" class="editor-box"></div>
+                </div>`;
         }
 
-        function addSubheading() { subheadings.push({ title: "New Subheading", number: subheadings.length + 1 }); renderSubheadings(); }
-        function removeSubheading(index) { subheadings.splice(index, 1); renderSubheadings(); }
-        function clearEditor(index) { innerEditors[index].clear(); }
-        function clearAllData() { subheadings = []; renderSubheadings(); }
+        function generateUniqueID(subheading) {
+            const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+            return `${datePart}-${subheading.title.substring(0, 2).toLowerCase()}-${subheading.number}`;
+        }
+
+        function clearAllData() {
+            subheadings = [];
+            renderSubheadings();
+        }
 
         renderSubheadings();
-
-        new EditorJS({ holder: 'blog-post-editorjs', tools: { header: Header, paragraph: Paragraph } });
-        new EditorJS({ holder: 'question-paper-editorjs', tools: { header: Header, paragraph: Paragraph } });
     </script>
 </body>
 </html>
