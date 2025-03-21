@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Default Subheadings</title>
+    <title>Editor.js with Popup Subheading</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
@@ -158,28 +158,18 @@
         <div id="job-summary-editor" class="category-editor">
             <h2>Job Summary Editor</h2>
             <div id="job-summary-main-editor"></div>
-            <button class="add-btn" onclick="openModal()">➕ Add Subheading</button>
+            
         </div>
 
-        <div id="blog-post-editor" class="category-editor">
-            <h2>Blog Post Editor</h2>
-            <div id="simple-blog-editor"></div>
-        </div>
-
-        <div id="question-paper-editor" class="category-editor">
-            <h2>Question Paper Editor</h2>
-            <div id="simple-question-editor"></div>
-        </div>
-    </div>
-
-    <!-- Modal Popup -->
-    <div class="modal" id="subheading-modal">
-        <div class="modal-content">
-            <h3>Enter Subheading Title</h3>
-            <input type="text" id="subheading-input" placeholder="Type your subheading">
-            <br>
-            <button class="save-btn" onclick="saveSubheading()">Save</button>
-            <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+        <!-- Modal Popup -->
+        <div class="modal" id="subheading-modal">
+            <div class="modal-content">
+                <h3>Enter Subheading Title</h3>
+                <input type="text" id="subheading-input" placeholder="Type your subheading">
+                <br>
+                <button class="save-btn" onclick="saveSubheading()">Save</button>
+                <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -189,6 +179,7 @@
             { title: "Books", number: 2 },
             { title: "Mouse", number: 3 }
         ];
+
         let activeCategory = "job-summary";
 
         function toggleCategory(selectedId) {
