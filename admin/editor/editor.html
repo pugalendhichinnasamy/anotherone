@@ -103,6 +103,10 @@
             pointer-events: none;
             opacity: 0.5;
         }
+
+        .category-editor {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -122,6 +126,7 @@
         <div id="job-summary-editor" class="category-editor">
             <h2>Job Summary Editor</h2>
             <div id="job-summary-main-editor"></div>
+            <button class="add-btn" onclick="addSubheading()">➕ Add New Subheading</button>
         </div>
 
         <div id="blog-post-editor" class="category-editor">
@@ -136,192 +141,87 @@
     </div>
 
     <script>
-        // 1. SCRIPT FOR JOB SUMMARY BLOCK
-        <script>
-    let currentDate = new Date();
-    const datePart = `${currentDate.getFullYear()}${String(currentDate.getMonth() + 1).padStart(2, '0')}${String(currentDate.getDate()).padStart(2, '0')}`;
+        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+            { title: "Name", number: 10, checked: false },
+            { title: "Age", number: 11, checked: false },
+            { title: "Address", number: 12, checked: false }
+        ];
 
-    let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-        { title: "Name", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
-        { title: "Age", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
-        { title: "Address", number: 12, checked: false, content: JSON.stringify(defaultEditorContent()) }
-    ];
+        function renderJobSummary() {
+            const container = document.getElementById('job-summary-main-editor');
+            container.innerHTML = '';
+            subheadings.forEach((subheading, index) => {
+                const uniqueId = `JS${String(subheading.number).padStart(3, '0')}`;
+                container.innerHTML += `
+                    <div class="subheading-container">
+                        <div class="subheading-header">
+                            <input type="checkbox" ${subheading.checked ? 'checked' : ''}>
+                            <span class="subheading-title">${subheading.title} (ID: ${uniqueId})</span>
+                            <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
+                            <button class="remove-btn" onclick="removeSubheading(${index})">❌ Remove</button>
+                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️ Clear</button>
+                        </div>
+                        <div id="editor-${index}" class="editor-box"></div>
+                    </div>`;
+                new EditorJS({ holder: `editor-${index}`, tools: { header: Header, paragraph: Paragraph } });
+            });
+        }
 
-    let innerEditors = {};
-
-    function defaultEditorContent() {
-        return {
-            blocks: [
-                { type: "header", data: { text: "Default Heading", level: 2 } },
-                { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } },
-                { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
-            ]
-        };
-    }
-
-    function sanitizeText(text) {
-        return text
-            .replace(/\.\s+/g, '.')  
-            .replace(/\s+$/, '');   
-    }
-
-    function saveEditorData(index) {
-        if (innerEditors[index]) {
-            innerEditors[index].save().then((outputData) => {
-                outputData.blocks.forEach(block => {
-                    if (block.type === "paragraph" || block.type === "header" || block.type === "quote") {
-                        block.data.text = sanitizeText(block.data.text);
-                    }
-                });
-
-                subheadings[index].content = JSON.stringify(outputData);
+        function addSubheading() {
+            const newTitle = prompt('Enter subheading title:');
+            if (newTitle) {
+                const maxNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
+                subheadings.push({ title: newTitle, number: maxNumber, checked: false });
+                renderJobSummary();
                 saveSubheadings();
-            }).catch((error) => {
-                console.error("Saving failed: ", error);
-            });
+            }
         }
-    }
 
-    function generateUniqueID(title, number) {
-        let initials = title.substring(0, 2).toLowerCase();
-        return `${datePart}${initials}${number}`;
-    }
-
-    function createSubheadingBlock(subheading, index) {
-        let uniqueID = generateUniqueID(subheading.title, subheading.number);
-        return `
-            <div class="subheading-container" id="subheading-${index}">
-                <div class="subheading-header">
-                    <input type="checkbox" class="checkbox" ${subheading.checked ? 'checked' : ''}>
-                    <span class="subheading-title">${subheading.title} (${uniqueID})</span>
-                    <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                    <button class="add-btn" onclick="addSubheading(${index})">➕</button>
-                    <button class="remove-btn" onclick="removeSubheading(${index})">❌</button>
-                    <button class="clear-btn" onclick="clearEditor(${index})">🗑️</button>
-                </div>
-                <div id="editor-${index}" class="editor-box"></div>
-            </div>`;
-    }
-
-    function renderJobSummary() {
-        subheadings.sort((a, b) => a.number - b.number);
-        let mainEditorContainer = document.getElementById("job-summary-main-editor");
-        mainEditorContainer.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-
-        subheadings.forEach((sub, index) => {
-            innerEditors[index] = new EditorJS({
-                holder: `editor-${index}`,
-                tools: {
-                    header: Header,
-                    paragraph: {
-                        class: Paragraph,
-                        inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
-                    },
-                    table: Table,
-                    quote: Quote,
-                    underline: Underline,
-                    marker: Marker,
-                    inlineCode: InlineCode
-                },
-                data: sub.content ? JSON.parse(sub.content) : defaultEditorContent(),
-                onChange: () => saveEditorData(index)
-            });
-        });
-    }
-
-    function saveSubheadings() {
-        localStorage.setItem('subheadings', JSON.stringify(subheadings));
-    }
-
-    function getNextAvailableNumber() {
-        let existingNumbers = subheadings.map(sub => sub.number);
-        let newNumber = 10;
-        while (existingNumbers.includes(newNumber)) {
-            newNumber++;
-        }
-        return newNumber;
-    }
-
-    function addSubheading(afterIndex) {
-        let newTitle = prompt("Enter subheading name:");
-        if (!newTitle) return;
-
-        let nextNumber = getNextAvailableNumber();
-
-        subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, checked: false, content: JSON.stringify(defaultEditorContent()) });
-
-        saveSubheadings();
-        renderJobSummary();
-    }
-
-    function updateNumber(index, newValue) {
-        newValue = parseInt(newValue, 10);
-        if (subheadings.some(sub => sub.number === newValue)) {
-            alert("This number is already taken. Please choose another.");
-            renderJobSummary();
-            return;
-        }
-        subheadings[index].number = newValue;
-        saveSubheadings();
-        renderJobSummary();
-    }
-
-    function removeSubheading(index) {
-        if (confirm("Are you sure?")) {
-            subheadings.splice(index, 1);
+        function updateNumber(index, newValue) {
+            if (subheadings.some(sub => sub.number === parseInt(newValue))) {
+                alert('This number is already taken. Choose another.');
+                return;
+            }
+            subheadings[index].number = parseInt(newValue);
             saveSubheadings();
             renderJobSummary();
         }
-    }
 
-    function clearEditor(index) {
-        if (confirm("Clear all data?")) {
-            if (innerEditors[index]) innerEditors[index].clear();
-            subheadings[index].content = "";
-            localStorage.removeItem(`editor-${index}`);
-        }
-    }
-
-    function clearAllData() {
-        if (confirm("Clear all data?")) {
-            localStorage.clear();
-            subheadings = [];
-            renderJobSummary();
-        }
-    }
-
-    // Initialize Job Summary editor on page load
-    renderJobSummary();
-</script>
-
-
-
-    
-<script>
-
-        // 2. SCRIPT FOR BLOG POST BLOCK
-        function initializeBlogPostEditor() {
-            new EditorJS({
-                holder: "simple-blog-editor",
-                tools: { header: Header, paragraph: Paragraph }
-            });
+        function removeSubheading(index) {
+            if (confirm('Are you sure you want to remove this subheading?')) {
+                subheadings.splice(index, 1);
+                renderJobSummary();
+                saveSubheadings();
+            }
         }
 
-        // 3. SCRIPT FOR QUESTION PAPER BLOCK
-        function initializeQuestionPaperEditor() {
-            new EditorJS({
-                holder: "simple-question-editor",
-                tools: { header: Header, paragraph: Paragraph }
-            });
+        function clearEditor(index) {
+            if (confirm('Clear this subheading content?')) {
+                subheadings[index].content = '';
+                renderJobSummary();
+                saveSubheadings();
+            }
         }
 
-        // MAIN INITIALIZATION LOGIC
-        function toggleCategory(selectedId) {
-            // Logic to toggle between Job Summary, Blog Post, and Question Paper categories.
-            // Includes initialization of specific editor scripts based on the active category.
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data?')) {
+                subheadings = [];
+                localStorage.removeItem('subheadings');
+                renderJobSummary();
+            }
         }
 
-        toggleCategory("job-summary"); // Default to Job Summary
+        function saveSubheadings() {
+            localStorage.setItem('subheadings', JSON.stringify(subheadings));
+        }
+
+        function toggleCategory(category) {
+            document.querySelectorAll('.category-editor').forEach(el => el.style.display = 'none');
+            document.getElementById(`${category}-editor`).style.display = 'block';
+            if (category === 'job-summary') renderJobSummary();
+        }
+
+        toggleCategory('job-summary'); // Default to Job Summary on load
     </script>
 </body>
 </html>
