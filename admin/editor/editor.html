@@ -98,6 +98,11 @@
         .subheading-title {
             font-weight: bold;
         }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
     </style>
 </head>
 <body>
@@ -181,8 +186,7 @@
                 tools: { 
                     header: Header, 
                     paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"] } 
-                },
-                data: { blocks: [{ type: 'paragraph', data: { text: "Sample content under subheading" } }] }
+                }
             });
         }
 
@@ -199,6 +203,17 @@
         function clearAllData() {
             subheadings = [];
             renderJobSummary();
+        }
+
+        function initializeEditors() {
+            if (activeCategory === "job-summary") {
+                renderJobSummary();
+            } else {
+                new EditorJS({
+                    holder: activeCategory === "blog-post" ? "simple-blog-editor" : "simple-question-editor",
+                    tools: { header: Header, paragraph: Paragraph }
+                });
+            }
         }
 
         toggleCategory("job-summary"); // Default to Job Summary
