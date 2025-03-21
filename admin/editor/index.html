@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Editor Example</title>
+    <title>Editor.js with Inline Tools & Subheadings</title>
 
-    <!-- Editor.js and Plugins -->
+    <link rel="stylesheet" href="styles/main.css">
+
+    <!-- External JS libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
@@ -18,38 +19,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
-
-
-    <!-- Main Global CSS -->
-    <link rel="stylesheet" href="styles/main.css">
 </head>
-
 <body>
-
     <div class="container">
-        <h1>Multi-Block Editor</h1>
-
-        <div class="category-checkbox-container">
-            <label>
-                <input type="checkbox" id="job-summary-checkbox">
-                Job Summary
-            </label>
-            <label>
-                <input type="checkbox" id="blog-post-checkbox">
-                Blog Post
-            </label>
-            <label>
-                <input type="checkbox" id="question-paper-checkbox">
-                Question Paper
-            </label>
-        </div>
-
-        <div id="editor-container">
-            <!-- Editor Blocks will be dynamically inserted here -->
-        </div>
+        <h1>Editor.js with Inline Tools & Subheadings</h1>
+        <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
+        <div id="main-editor"></div>
     </div>
 
-    <script src="editor.js"></script>
+    <script src="scripts/editorTools.js"></script> <!-- Tools and Config -->
+    <script src="scripts/utils.js"></script>       <!-- Utility Functions -->
+    <script src="scripts/editor.js"></script>      <!-- Main Editor Logic -->
 </body>
-
 </html>
