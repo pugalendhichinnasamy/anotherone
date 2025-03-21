@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Subheadings & More</title>
+    <title>Editor.js with Checkboxes, Reordering, and Subheadings</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -58,6 +58,11 @@
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
+        .number-input {
+            width: 50px;
+            padding: 5px;
+            margin-left: 10px;
+        }
         .category-checkbox-container {
             display: flex;
             margin-bottom: 10px;
@@ -71,7 +76,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Subheadings & More</h1>
+        <h1>Editor.js with Subheadings, Checkboxes & Reordering</h1>
 
         <!-- Category Selector -->
         <div class="category-checkbox-container">
@@ -100,18 +105,21 @@
     </div>
 
     <script>
-        // Track active category
         let activeCategory = "job-summary";
 
+        // Toggle category and ensure only one checkbox is active
         function toggleCategory(selectedId) {
             activeCategory = selectedId;
+            document.querySelectorAll(".category-checkbox").forEach(checkbox => {
+                checkbox.checked = checkbox.id === selectedId;
+            });
             document.querySelectorAll(".category-editor").forEach(editor => {
                 editor.style.display = editor.id === `${selectedId}-editor` ? "block" : "none";
             });
             initializeEditors();
         }
 
-        // Initialize Editor.js instances for different categories
+        // Initialize Editor.js instances
         let jobSummaryEditor, blogPostEditor, questionPaperEditor;
 
         function initializeEditors() {
@@ -124,30 +132,27 @@
             }
         }
 
-        // Helper function to create a basic Editor.js instance
+        // Helper to create a simple Editor.js instance
         function createSimpleEditor(holderId) {
             return new EditorJS({
                 holder: holderId,
-                tools: {
-                    header: Header,
-                    paragraph: Paragraph
-                },
-                onReady: () => console.log(`Editor for ${holderId} is ready.`)
+                tools: { header: Header, paragraph: Paragraph }
             });
         }
 
-        // Handle Job Summary Subheadings
+        // Subheading Data for Job Summary with Number Input for Reordering
         let subheadings = [
-            { title: "Company Overview", content: "" },
-            { title: "Job Responsibilities", content: "" }
+            { title: "Company Overview", number: 1, content: "" },
+            { title: "Job Responsibilities", number: 2, content: "" }
         ];
 
         function renderJobSummary() {
             const container = document.getElementById("job-summary-main-editor");
-            container.innerHTML = subheadings.map((sub, index) => createSubheadingBlock(sub, index)).join('');
-            subheadings.forEach((sub, index) => {
-                createSubheadingEditor(index);
-            });
+            container.innerHTML = subheadings
+                .sort((a, b) => a.number - b.number)
+                .map((sub, index) => createSubheadingBlock(sub, index))
+                .join('');
+            subheadings.forEach((_, index) => createSubheadingEditor(index));
         }
 
         function createSubheadingBlock(sub, index) {
@@ -155,8 +160,9 @@
                 <div class="subheading-container" id="subheading-${index}">
                     <div class="subheading-header">
                         <span>${sub.title}</span>
+                        <input type="number" class="number-input" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌ Remove</button>
-                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️ Clear Content</button>
+                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️ Clear</button>
                     </div>
                     <div id="editor-${index}" class="editor-box"></div>
                 </div>`;
@@ -165,21 +171,17 @@
         function createSubheadingEditor(index) {
             new EditorJS({
                 holder: `editor-${index}`,
-                tools: {
-                    header: Header,
-                    paragraph: Paragraph
-                },
-                data: subheadings[index].content ? JSON.parse(subheadings[index].content) : {},
-                onChange: () => saveEditorData(index)
+                tools: { header: Header, paragraph: Paragraph }
             });
         }
 
-        function saveEditorData(index) {
-            subheadings[index].content = JSON.stringify({ message: `Content for subheading ${index}` });
+        function updateNumber(index, newValue) {
+            subheadings[index].number = parseInt(newValue);
+            renderJobSummary();
         }
 
         function addSubheading() {
-            subheadings.push({ title: `New Subheading ${subheadings.length + 1}`, content: "" });
+            subheadings.push({ title: `New Subheading ${subheadings.length + 1}`, number: subheadings.length + 1, content: "" });
             renderJobSummary();
         }
 
@@ -198,8 +200,7 @@
             renderJobSummary();
         }
 
-        // Initial Render
-        toggleCategory("job-summary");
+        toggleCategory("job-summary"); // Default initial category
     </script>
 </body>
 </html>
