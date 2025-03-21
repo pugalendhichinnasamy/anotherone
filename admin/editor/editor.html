@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Inline Tools & Subheadings</title>
+    <title>Dynamic Editor.js Selection</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -34,124 +34,131 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
+        .editor-container {
+            margin-top: 20px;
+        }
         .checkbox-container {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             margin-bottom: 20px;
         }
-        .checkbox-item {
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
+        .checkbox-container input {
+            transform: scale(1.3);
+            margin-right: 10px;
         }
-        .editor-container {
-            display: none;
-        }
-        .subheading-container {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
+        h2 {
+            text-align: center;
             margin-bottom: 10px;
-        }
-        .editor-box {
-            width: 100%;
-            min-height: 150px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background: #fff;
-            margin-top: 5px;
-        }
-        .clear-btn {
-            padding: 5px 10px;
-            background: orange;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Editor.js with Inline Tools & Subheadings</h1>
-
-        <!-- Checkboxes for top selection -->
+        <h1>Select the Editor Type</h1>
         <div class="checkbox-container">
-            <label class="checkbox-item">
-                <input type="checkbox" id="job-summary-checkbox" onchange="selectEditor('job-summary')" class="checkbox"> Job Summary
-            </label>
-            <label class="checkbox-item">
-                <input type="checkbox" id="blog-post-checkbox" onchange="selectEditor('blog-post')" class="checkbox"> Blog Post
-            </label>
-            <label class="checkbox-item">
-                <input type="checkbox" id="question-paper-checkbox" onchange="selectEditor('question-paper')" class="checkbox"> Question Paper
-            </label>
+            <label><input type="radio" name="editor-type" id="job-summary-checkbox"> Job Summary</label>
+            <label><input type="radio" name="editor-type" id="blog-post-checkbox"> Blog Post</label>
+            <label><input type="radio" name="editor-type" id="question-paper-checkbox"> Question Paper</label>
         </div>
 
-        <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
-
-        <div id="job-summary-editor" class="editor-container">
-            <h2>Job Summary Editor</h2>
-            <div id="job-summary-main-editor"></div>
-        </div>
-
-        <div id="blog-post-editor" class="editor-container">
-            <h2>Blog Post Editor</h2>
-            <div id="blog-post-main-editor" class="editor-box">Start writing your blog post here...</div>
-        </div>
-
-        <div id="question-paper-editor" class="editor-container">
-            <h2>Question Paper Editor</h2>
-            <div id="question-paper-main-editor" class="editor-box">Start creating your question paper here...</div>
+        <div id="editor-wrapper">
+            <h2>Select an editor type above to load the corresponding editor</h2>
         </div>
     </div>
 
     <script>
-        let selectedEditor = '';
-        let editorInstance;
+        // Editor Instances
+        let editor;
+        const editorWrapper = document.getElementById('editor-wrapper');
 
-        function selectEditor(editorType) {
-            selectedEditor = editorType;
-            document.getElementById("job-summary-editor").style.display = 'none';
-            document.getElementById("blog-post-editor").style.display = 'none';
-            document.getElementById("question-paper-editor").style.display = 'none';
+        // Utility function to create default Job Summary content
+        function createJobSummaryEditor() {
+            editorWrapper.innerHTML = `
+                <h2>Job Summary Editor</h2>
+                <button onclick="clearAllData()" style="background: orange; padding: 8px; border-radius: 5px; color: white;">🗑️ Clear All</button>
+                <div id="job-summary-editor"></div>
+            `;
 
-            document.getElementById(`${editorType}-editor`).style.display = 'block';
+            let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
+                { title: "Name", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
+                { title: "Age", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
+                { title: "Address", number: 12, checked: false, content: JSON.stringify(defaultEditorContent()) }
+            ];
 
-            if (editorType === 'job-summary' && !editorInstance) {
-                initializeJobSummaryEditor();
+            let innerEditors = {};
+
+            function defaultEditorContent() {
+                return {
+                    blocks: [
+                        { type: "header", data: { text: "Default Heading", level: 2 } },
+                        { type: "paragraph", data: { text: "This is a sample paragraph with default text content." } },
+                        { type: "table", data: { content: [["Column 1", "Column 2"], ["Data 1", "Data 2"]] } }
+                    ]
+                };
             }
+
+            function renderSubheadings() {
+                const mainEditorContainer = document.createElement('div');
+                mainEditorContainer.id = 'main-editor';
+                editorWrapper.appendChild(mainEditorContainer);
+
+                subheadings.sort((a, b) => a.number - b.number);
+
+                subheadings.forEach((sub, index) => {
+                    const subheadingBlock = document.createElement('div');
+                    subheadingBlock.innerHTML = `
+                        <div class="subheading-container">
+                            <div class="subheading-header">
+                                <span>${sub.title}</span>
+                            </div>
+                            <div id="editor-${index}" class="editor-box"></div>
+                        </div>
+                    `;
+                    mainEditorContainer.appendChild(subheadingBlock);
+
+                    innerEditors[index] = new EditorJS({
+                        holder: `editor-${index}`,
+                        tools: {
+                            header: Header,
+                            paragraph: {
+                                class: Paragraph,
+                                inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
+                            },
+                            table: Table,
+                            quote: Quote,
+                            underline: Underline,
+                            linkTool: LinkTool,
+                            image: ImageTool,
+                            code: CodeTool,
+                            inlineCode: InlineCode,
+                            marker: Marker
+                        },
+                        data: sub.content ? JSON.parse(sub.content) : defaultEditorContent()
+                    });
+                });
+            }
+
+            renderSubheadings();
         }
 
-        function initializeJobSummaryEditor() {
-            editorInstance = new EditorJS({
-                holder: 'job-summary-main-editor',
+        // Function to create normal editor for Blog Post and Question Paper
+        function createBasicEditor(editorType) {
+            editorWrapper.innerHTML = `<h2>${editorType} Editor</h2><div id="basic-editor"></div>`;
+            editor = new EditorJS({
+                holder: 'basic-editor',
                 tools: {
                     header: Header,
-                    paragraph: {
-                        class: Paragraph,
-                        inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
-                    },
+                    paragraph: Paragraph,
                     table: Table,
-                    quote: Quote,
-                    underline: Underline,
-                    linkTool: LinkTool,
-                    image: ImageTool,
-                    code: CodeTool,
-                    inlineCode: InlineCode,
-                    marker: Marker
+                    quote: Quote
                 }
             });
         }
 
-        function clearAllData() {
-            if (selectedEditor === 'job-summary' && editorInstance) {
-                editorInstance.clear();
-            } else {
-                document.querySelector(`#${selectedEditor}-main-editor`).innerHTML = '';
-            }
-        }
+        // Radio button event listeners
+        document.getElementById('job-summary-checkbox').addEventListener('click', createJobSummaryEditor);
+        document.getElementById('blog-post-checkbox').addEventListener('click', () => createBasicEditor('Blog Post'));
+        document.getElementById('question-paper-checkbox').addEventListener('click', () => createBasicEditor('Question Paper'));
     </script>
 </body>
 </html>
