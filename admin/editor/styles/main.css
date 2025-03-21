@@ -1,19 +1,62 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    padding: 20px;
-}
-
-.container {
-    width: 70%;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.category-checkbox-container {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 10px;
-}
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 60%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .subheading-container {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .editor-box {
+            width: 100%;
+            min-height: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-top: 5px;
+        }
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
+        .number-input {
+            width: 50px;
+            margin-left: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
+            font-weight: bold;
+        }
