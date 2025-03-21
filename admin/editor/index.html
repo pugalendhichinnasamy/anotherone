@@ -3,64 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Editors</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #f5f5f5;
-    }
-    h1 {
-      margin-top: 20px;
-    }
-    .checkbox-group {
-      margin: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
-    iframe {
-      width: 80%;
-      height: 400px;
-      border: 2px solid #ccc;
-      background-color: #fff;
-    }
-  </style>
+  <title>Simple Editor</title>
+  <link rel="stylesheet" href="editor.css">  <!-- Linking CSS file -->
 </head>
 <body>
 
-  <h1>Select a Property Editor</h1>
+  <div class="editor-container">
+    <h2>Simple Text Editor</h2>
+    <textarea id="editorInput" placeholder="Type your text here..."></textarea>
+    <button id="saveButton">Save Text</button>
 
-  <!-- Category Selector -->
-  <div class="category-checkbox-container">
-    <label>
-      <input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary
-    </label>
-    <label>
-      <input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post
-    </label>
-    <label>
-      <input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper
-    </label>
+    <div class="output-container">
+      <h3>Saved Content:</h3>
+      <p id="outputText"></p>
+    </div>
   </div>
 
-  <iframe id="editorFrame"></iframe>
-
-  <script>
-    // Function to handle category selection and dynamically load corresponding editor HTML
-    function toggleCategory(category) {
-      const iframe = document.getElementById('editorFrame');
-
-      // Clear the iframe if a checkbox is unchecked, otherwise load the respective HTML
-      if (document.getElementById(category).checked) {
-        iframe.src = `${category}/${category}.html`;
-      } else {
-        iframe.src = ''; // Unload the iframe if the category is unchecked
-      }
-    }
-  </script>
-
+  <script src="editor.js"></script>  <!-- Linking JavaScript file -->
 </body>
 </html>
