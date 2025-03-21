@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Editor.js with Multiple Features</title>
+    <title>Multi-Block Editor.js Implementation</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -18,7 +18,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f4f4f4;
+            background-color: #f4f4f4;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -26,77 +26,32 @@
         }
 
         .container {
-            width: 60%;
+            width: 70%;
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .subheading-container {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: #f9f9f9;
-            margin-bottom: 10px;
-            padding: 10px;
-            position: relative;
-        }
-
-        .editor-box {
-            width: 100%;
-            min-height: 100px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            background: #fff;
-            margin-top: 5px;
-        }
-
-        .subheading-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .remove-btn, .clear-btn, .add-btn {
-            padding: 5px 10px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-left: 5px;
-        }
-
-        .remove-btn { background: red; color: white; }
-        .clear-btn { background: orange; color: white; }
-        .add-btn { background: green; color: white; }
-
         .category-checkbox-container {
             display: flex;
-            margin-bottom: 10px;
             justify-content: space-around;
+            margin-bottom: 10px;
         }
 
-        .number-input {
-            width: 50px;
-            padding: 5px;
+        .editor-block {
+            display: none;
+            margin-top: 20px;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .editor-header {
             text-align: center;
-            margin-right: 5px;
-        }
-
-        .subheading-header {
-            display: flex;
-            align-items: center;
-        }
-
-        .checkbox {
-            margin-right: 10px;
-            transform: scale(1.5);
-        }
-
-        .subheading-title {
             font-weight: bold;
+            margin-bottom: 10px;
         }
 
         .disabled {
@@ -104,124 +59,142 @@
             opacity: 0.5;
         }
 
-        .category-editor {
-            display: none;
+        .clear-btn {
+            background: red;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>Enhanced Editor.js with Multiple Features</h1>
+        <h1>Multi-Block Editor.js Example</h1>
 
-        <!-- Category Selector -->
+        <!-- Category Checkbox Selector -->
         <div class="category-checkbox-container">
-            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
-            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
-            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
+            <label>
+                <input type="checkbox" id="job-summary" onclick="toggleEditor('job-summary')">
+                Job Summary
+            </label>
+            <label>
+                <input type="checkbox" id="blog-post" onclick="toggleEditor('blog-post')">
+                Blog Post
+            </label>
+            <label>
+                <input type="checkbox" id="question-paper" onclick="toggleEditor('question-paper')">
+                Question Paper
+            </label>
         </div>
 
-        <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
-
-        <!-- Editors for Each Category -->
-        <div id="job-summary-editor" class="category-editor">
-            <h2>Job Summary Editor</h2>
-            <div id="job-summary-main-editor"></div>
-            <button class="add-btn" onclick="addSubheading()">➕ Add New Subheading</button>
+        <!-- Job Summary Block -->
+        <div id="job-summary-editor" class="editor-block">
+            <div class="editor-header">Job Summary Editor</div>
+            <div id="job-summary-editorjs"></div>
+            <button class="clear-btn" onclick="clearEditor('job-summary-editorjs')">🗑️ Clear Editor</button>
         </div>
 
-        <div id="blog-post-editor" class="category-editor">
-            <h2>Blog Post Editor</h2>
-            <div id="simple-blog-editor"></div>
+        <!-- Blog Post Block -->
+        <div id="blog-post-editor" class="editor-block">
+            <div class="editor-header">Blog Post Editor</div>
+            <div id="blog-post-editorjs"></div>
+            <button class="clear-btn" onclick="clearEditor('blog-post-editorjs')">🗑️ Clear Editor</button>
         </div>
 
-        <div id="question-paper-editor" class="category-editor">
-            <h2>Question Paper Editor</h2>
-            <div id="simple-question-editor"></div>
+        <!-- Question Paper Block -->
+        <div id="question-paper-editor" class="editor-block">
+            <div class="editor-header">Question Paper Editor</div>
+            <div id="question-paper-editorjs"></div>
+            <button class="clear-btn" onclick="clearEditor('question-paper-editorjs')">🗑️ Clear Editor</button>
         </div>
     </div>
 
     <script>
-        let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
-            { title: "Name", number: 10, checked: false },
-            { title: "Age", number: 11, checked: false },
-            { title: "Address", number: 12, checked: false }
-        ];
+        // Initialize all Editor.js editors and their tools
+        const jobSummaryEditor = new EditorJS({
+            holder: 'job-summary-editorjs',
+            tools: {
+                header: Header,
+                paragraph: Paragraph,
+                table: Table,
+                quote: Quote,
+                underline: Underline,
+                marker: Marker,
+                inlineCode: InlineCode
+            }
+        });
 
-        function renderJobSummary() {
-            const container = document.getElementById('job-summary-main-editor');
-            container.innerHTML = '';
-            subheadings.forEach((subheading, index) => {
-                const uniqueId = `JS${String(subheading.number).padStart(3, '0')}`;
-                container.innerHTML += `
-                    <div class="subheading-container">
-                        <div class="subheading-header">
-                            <input type="checkbox" ${subheading.checked ? 'checked' : ''}>
-                            <span class="subheading-title">${subheading.title} (ID: ${uniqueId})</span>
-                            <input type="number" class="number-input" value="${subheading.number}" onchange="updateNumber(${index}, this.value)">
-                            <button class="remove-btn" onclick="removeSubheading(${index})">❌ Remove</button>
-                            <button class="clear-btn" onclick="clearEditor(${index})">🗑️ Clear</button>
-                        </div>
-                        <div id="editor-${index}" class="editor-box"></div>
-                    </div>`;
-                new EditorJS({ holder: `editor-${index}`, tools: { header: Header, paragraph: Paragraph } });
-            });
-        }
+        const blogPostEditor = new EditorJS({
+            holder: 'blog-post-editorjs',
+            tools: {
+                header: Header,
+                paragraph: Paragraph,
+                quote: Quote,
+                underline: Underline
+            }
+        });
 
-        function addSubheading() {
-            const newTitle = prompt('Enter subheading title:');
-            if (newTitle) {
-                const maxNumber = Math.max(...subheadings.map(sub => sub.number)) + 1;
-                subheadings.push({ title: newTitle, number: maxNumber, checked: false });
-                renderJobSummary();
-                saveSubheadings();
+        const questionPaperEditor = new EditorJS({
+            holder: 'question-paper-editorjs',
+            tools: {
+                header: Header,
+                paragraph: Paragraph,
+                table: Table
+            }
+        });
+
+        // Function to toggle editor visibility and disable other checkboxes
+        function toggleEditor(selectedId) {
+            const jobSummaryCheckbox = document.getElementById('job-summary');
+            const blogPostCheckbox = document.getElementById('blog-post');
+            const questionPaperCheckbox = document.getElementById('question-paper');
+
+            // Get the associated editor block
+            const jobSummaryEditorBlock = document.getElementById('job-summary-editor');
+            const blogPostEditorBlock = document.getElementById('blog-post-editor');
+            const questionPaperEditorBlock = document.getElementById('question-paper-editor');
+
+            // Handle checkbox selection
+            if (selectedId === 'job-summary' && jobSummaryCheckbox.checked) {
+                jobSummaryEditorBlock.style.display = 'block';
+                blogPostCheckbox.disabled = true;
+                questionPaperCheckbox.disabled = true;
+            } else if (selectedId === 'blog-post' && blogPostCheckbox.checked) {
+                blogPostEditorBlock.style.display = 'block';
+                jobSummaryCheckbox.disabled = true;
+                questionPaperCheckbox.disabled = true;
+            } else if (selectedId === 'question-paper' && questionPaperCheckbox.checked) {
+                questionPaperEditorBlock.style.display = 'block';
+                jobSummaryCheckbox.disabled = true;
+                blogPostCheckbox.disabled = true;
+            } else {
+                // Reset if checkbox is unchecked
+                jobSummaryEditorBlock.style.display = 'none';
+                blogPostEditorBlock.style.display = 'none';
+                questionPaperEditorBlock.style.display = 'none';
+
+                jobSummaryCheckbox.disabled = false;
+                blogPostCheckbox.disabled = false;
+                questionPaperCheckbox.disabled = false;
             }
         }
 
-        function updateNumber(index, newValue) {
-            if (subheadings.some(sub => sub.number === parseInt(newValue))) {
-                alert('This number is already taken. Choose another.');
-                return;
-            }
-            subheadings[index].number = parseInt(newValue);
-            saveSubheadings();
-            renderJobSummary();
-        }
+        // Function to clear the Editor.js content dynamically
+        function clearEditor(editorId) {
+            const editorInstance = {
+                'job-summary-editorjs': jobSummaryEditor,
+                'blog-post-editorjs': blogPostEditor,
+                'question-paper-editorjs': questionPaperEditor
+            }[editorId];
 
-        function removeSubheading(index) {
-            if (confirm('Are you sure you want to remove this subheading?')) {
-                subheadings.splice(index, 1);
-                renderJobSummary();
-                saveSubheadings();
+            if (editorInstance) {
+                editorInstance.clear();
             }
         }
-
-        function clearEditor(index) {
-            if (confirm('Clear this subheading content?')) {
-                subheadings[index].content = '';
-                renderJobSummary();
-                saveSubheadings();
-            }
-        }
-
-        function clearAllData() {
-            if (confirm('Are you sure you want to clear all data?')) {
-                subheadings = [];
-                localStorage.removeItem('subheadings');
-                renderJobSummary();
-            }
-        }
-
-        function saveSubheadings() {
-            localStorage.setItem('subheadings', JSON.stringify(subheadings));
-        }
-
-        function toggleCategory(category) {
-            document.querySelectorAll('.category-editor').forEach(el => el.style.display = 'none');
-            document.getElementById(`${category}-editor`).style.display = 'block';
-            if (category === 'job-summary') renderJobSummary();
-        }
-
-        toggleCategory('job-summary'); // Default to Job Summary on load
     </script>
+
 </body>
 </html>
