@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Editor.js with Default Content</title>
+    <title>Enhanced Editor.js with Multiple Features</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -51,45 +51,74 @@
             margin-top: 5px;
         }
 
+        .subheading-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
+
         .category-checkbox-container {
             display: flex;
             margin-bottom: 10px;
             justify-content: space-around;
         }
 
-        .clear-btn {
-            background: orange;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            margin: 10px 0;
+        .number-input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+            margin-right: 5px;
         }
 
-        .category-editor {
-            display: none;
+        .subheading-header {
+            display: flex;
+            align-items: center;
         }
 
-        .category-editor.active {
-            display: block;
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+
+        .subheading-title {
+            font-weight: bold;
+        }
+
+        .disabled {
+            pointer-events: none;
+            opacity: 0.5;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Enhanced Editor.js with Default Text and Table</h1>
+        <h1>Enhanced Editor.js with Multiple Features</h1>
 
         <!-- Category Selector -->
         <div class="category-checkbox-container">
-            <label><input type="checkbox" id="job-summary" class="category-checkbox" onchange="toggleCategory('job-summary')"> Job Summary</label>
-            <label><input type="checkbox" id="blog-post" class="category-checkbox" onchange="toggleCategory('blog-post')"> Blog Post</label>
-            <label><input type="checkbox" id="question-paper" class="category-checkbox" onchange="toggleCategory('question-paper')"> Question Paper</label>
+            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
+            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
+            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
         </div>
 
         <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
 
-        <!-- Editors -->
+        <!-- Editors for Each Category -->
         <div id="job-summary-editor" class="category-editor">
             <h2>Job Summary Editor</h2>
             <div id="job-summary-main-editor"></div>
@@ -97,82 +126,97 @@
 
         <div id="blog-post-editor" class="category-editor">
             <h2>Blog Post Editor</h2>
-            <div id="blog-post-main-editor"></div>
+            <div id="simple-blog-editor"></div>
         </div>
 
         <div id="question-paper-editor" class="category-editor">
             <h2>Question Paper Editor</h2>
-            <div id="question-paper-main-editor"></div>
+            <div id="simple-question-editor"></div>
         </div>
     </div>
 
     <script>
         let activeCategory = "job-summary";
 
-        function toggleCategory(category) {
-            activeCategory = category;
+        let subheadings = [
+            { title: "Company Overview", number: 1, content: "" },
+            { title: "Job Responsibilities", number: 2, content: "" }
+        ];
+
+        function toggleCategory(selectedId) {
+            activeCategory = selectedId;
             document.querySelectorAll(".category-checkbox").forEach(checkbox => {
-                checkbox.checked = checkbox.id === category;
+                checkbox.checked = checkbox.id === selectedId;
             });
             document.querySelectorAll(".category-editor").forEach(editor => {
-                editor.classList.remove("active");
+                editor.style.display = editor.id === `${selectedId}-editor` ? "block" : "none";
             });
-            document.getElementById(`${category}-editor`).classList.add("active");
-            initializeEditor(category);
+            initializeEditors();
         }
 
-        function initializeEditor(category) {
-            let defaultContent = getDefaultContent(category);
+        function renderJobSummary() {
+            const container = document.getElementById("job-summary-main-editor");
+            container.innerHTML = subheadings
+                .sort((a, b) => a.number - b.number)
+                .map((sub, index) => createSubheadingBlock(sub, index))
+                .join('');
+            subheadings.forEach((_, index) => createSubheadingEditor(index));
+        }
+
+        function createSubheadingBlock(sub, index) {
+            return `
+                <div class="subheading-container" id="subheading-${index}">
+                    <div class="subheading-header">
+                        <input type="checkbox" class="checkbox">
+                        <span class="subheading-title">${sub.title}</span>
+                    </div>
+                    <div class="subheading-controls">
+                        <input type="number" class="number-input" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
+                        <button class="add-btn" onclick="addSubheading()">➕ Add</button>
+                        <button class="remove-btn" onclick="removeSubheading(${index})">❌ Remove</button>
+                        <button class="clear-btn" onclick="clearEditor(${index})">🗑️ Clear</button>
+                    </div>
+                    <div id="editor-${index}" class="editor-box"></div>
+                </div>`;
+        }
+
+        function createSubheadingEditor(index) {
             new EditorJS({
-                holder: `${category}-main-editor`,
-                tools: {
-                    header: Header,
-                    paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline"] },
-                    table: { class: Table, inlineToolbar: true },
-                },
-                data: defaultContent,
+                holder: `editor-${index}`,
+                tools: { 
+                    header: Header, 
+                    paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"] } 
+                }
             });
         }
 
-        function getDefaultContent(category) {
-            if (category === "job-summary") {
-                return {
-                    blocks: [
-                        { type: "header", data: { text: "Welcome to the Job Summary Editor!", level: 2 } },
-                        { type: "paragraph", data: { text: "Use this editor to describe the job summary, company overview, and responsibilities." } },
-                        { type: "table", data: { content: [["Department", "Role", "Location"], ["HR", "Manager", "New York"]] } },
-                    ],
-                };
-            } else if (category === "blog-post") {
-                return {
-                    blocks: [
-                        { type: "header", data: { text: "Write Your Amazing Blog Post Here!", level: 2 } },
-                        { type: "paragraph", data: { text: "Start writing your thoughts, opinions, and stories below." } },
-                        { type: "table", data: { content: [["Title", "Category", "Views"], ["My First Blog", "Technology", "1000"]] } },
-                    ],
-                };
-            } else if (category === "question-paper") {
-                return {
-                    blocks: [
-                        { type: "header", data: { text: "Question Paper Instructions", level: 2 } },
-                        { type: "paragraph", data: { text: "Please write your question paper details below. Include questions, marks, and difficulty levels." } },
-                        { type: "table", data: { content: [["Question", "Marks", "Difficulty"], ["What is AI?", "5", "Medium"]] } },
-                    ],
-                };
-            }
-            return { blocks: [] }; // Default empty data
+        function updateNumber(index, newValue) {
+            subheadings[index].number = parseInt(newValue);
+            renderJobSummary();
+        }
+
+        function addSubheading() {
+            subheadings.push({ title: `New Subheading ${subheadings.length + 1}`, number: subheadings.length + 1, content: "" });
+            renderJobSummary();
         }
 
         function clearAllData() {
-            if (confirm("Are you sure you want to clear all data?")) {
-                document.querySelectorAll(".category-editor .editor-js").forEach(editor => {
-                    editor.innerHTML = ""; // Clear content
+            subheadings = [];
+            renderJobSummary();
+        }
+
+        function initializeEditors() {
+            if (activeCategory === "job-summary") {
+                renderJobSummary();
+            } else {
+                new EditorJS({
+                    holder: activeCategory === "blog-post" ? "simple-blog-editor" : "simple-question-editor",
+                    tools: { header: Header, paragraph: Paragraph }
                 });
-                alert("All data has been cleared!");
             }
         }
 
-        toggleCategory("job-summary"); // Initialize with Job Summary as default
+        toggleCategory("job-summary"); // Default to Job Summary
     </script>
 </body>
 </html>
