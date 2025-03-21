@@ -1,3 +1,12 @@
+import { defaultEditorContent } from './editorTools.js';
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Example of using defaultEditorContent in the job-summary logic
+    const editorContent = defaultEditorContent();
+    console.log("Editor Content Loaded: ", editorContent);
+});
+
+
 let subheadings = JSON.parse(localStorage.getItem('subheadings')) || [
     { title: "Name", number: 10, checked: false, content: JSON.stringify(defaultEditorContent()) },
     { title: "Age", number: 11, checked: false, content: JSON.stringify(defaultEditorContent()) },
