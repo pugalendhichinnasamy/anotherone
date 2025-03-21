@@ -1,7 +1,0 @@
-[
-    { "id": 1, "name": "Introduction", "checked": true },
-    { "id": 2, "name": "Setup Guide", "checked": true },
-    { "id": 3, "name": "Features", "checked": false },
-    { "id": 4, "name": "FAQs", "checked": false },
-    { "id": 5, "name": "Conclusion", "checked": true }
-]
