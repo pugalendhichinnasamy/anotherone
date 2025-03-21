@@ -3,40 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Inline Tools & Subheadings</title>
-
-    <link rel="stylesheet" href="styles/main.css">
-
-    <!-- External JS libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
+    <title>Toggle Editors</title>
+    <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Editor.js with Inline Tools & Subheadings</h1>
-        <!-- Category Selector -->
-        <div class="category-checkbox-container">
-            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
-            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
-            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
-        </div>
-        <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
-        <div id="main-editor"></div>
+
+    <h1>Select an Editor</h1>
+
+    <div>
+        <button id="job-btn">Job Summary Editor</button>
+        <button id="blog-btn">Blog Editor</button>
+        <button id="question-btn">Question Editor</button>
     </div>
 
-    <script type="module" src="scripts/job-summary.js"></script> 
+    <div id="editor-container"></div>
 
-    <script src="scripts/editorTools.js"></script> <!-- Tools and Config -->
-    <script src="scripts/utils.js"></script>       <!-- Utility Functions -->
-    <script src="scripts/editor.js"></script>      <!-- Main Editor Logic -->
+    <script src="main.js"></script>
 </body>
 </html>
