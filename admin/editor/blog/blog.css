@@ -1,0 +1,15 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fff8e1;
+  text-align: center;
+}
+input, textarea, button {
+  margin: 10px;
+}
+#blogDisplay {
+  margin-top: 20px;
+}
+textarea {
+  width: 80%;
+  height: 100px;
+}
