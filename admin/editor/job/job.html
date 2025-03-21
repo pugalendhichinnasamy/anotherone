@@ -3,16 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Editor</title>
-  <link rel="stylesheet" href="job.css">
+  <title>Simple Editor</title>
+  <link rel="stylesheet" href="editor.css">  <!-- Linking CSS file -->
 </head>
 <body>
 
-  <h2>Job Editor</h2>
-  <input type="text" id="jobTitle" placeholder="Enter job title" />
-  <button onclick="addJob()">Add Job Description</button>
-  <div id="jobList"></div>
+  <div class="editor-container">
+    <h2>Simple Text Editor</h2>
+    <textarea id="editorInput" placeholder="Type your text here..."></textarea>
+    <button id="saveButton">Save Text</button>
 
-  <script src="job.js"></script>
+    <div class="output-container">
+      <h3>Saved Content:</h3>
+      <p id="outputText"></p>
+    </div>
+  </div>
+
+  <script src="editor.js"></script>  <!-- Linking JavaScript file -->
 </body>
 </html>
