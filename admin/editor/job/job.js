@@ -1,6 +1,6 @@
 // Initialize Editor.js
-const editor = new EditorJS({
-  holder: 'editorjs', // ID of the container where Editor.js will be rendered
+const editor = new jobJS({
+  holder: 'jobjs', // ID of the container where Editor.js will be rendered
 
   tools: {
     header: {
