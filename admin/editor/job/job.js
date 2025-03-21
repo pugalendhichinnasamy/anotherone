@@ -3,54 +3,20 @@ const editor = new EditorJS({
   holder: 'jobjs', // ID of the container where Editor.js will be rendered
 
   tools: {
-    header: {
-      class: Header,
-      inlineToolbar: true,
-      config: {
-        levels: [1, 2, 3],
-        defaultLevel: 2,
-      },
-    },
-    paragraph: {
-      class: Paragraph,
-      inlineToolbar: true,
-    },
-    
-    image: {
-      class: ImageTool,
-      config: {
-        endpoints: {
-          byFile: 'http://localhost:8008/uploadFile', // File upload endpoint
-          byUrl: 'http://localhost:8008/fetchUrl',    // URL upload endpoint
-        },
-      },
-    },
-    quote: {
-      class: Quote,
-      inlineToolbar: true,
-      config: {
-        quotePlaceholder: 'Enter a quote',
-        captionPlaceholder: 'Quote’s author',
-      },
-    },
-    embed: {
-      class: Embed,
-      config: {
-        services: {
-          youtube: true,
-          twitter: true,
-        },
-      },
-    },
-    table: {
-      class: Table,
-      inlineToolbar: true,
-      config: {
-        rows: 2,
-        cols: 3,
-      },
-    },
-  },
+                        header: Header,
+                        paragraph: {
+                            class: Paragraph,
+                            inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"]
+                        },
+                        table: Table,
+                        quote: Quote,
+                        underline: Underline,
+                        linkTool: LinkTool,
+                        image: ImageTool,
+                        code: CodeTool,
+                        inlineCode: InlineCode,
+                        marker: Marker
+                    },
 
   // Placeholder text in the editor
   placeholder: 'Start writing your content here...',
