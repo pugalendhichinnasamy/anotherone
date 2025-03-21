@@ -1,45 +1,62 @@
 body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background-color: #f5f5f5;
-  padding: 20px;
-}
-
-h1 {
-  margin-bottom: 20px;
-}
-
-#editorjs {
-  width: 80%;
-  max-width: 800px;
-  min-height: 300px;
-  margin: 0 auto 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background: #fff;
-  padding: 10px;
-}
-
-button {
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-
-#output {
-  text-align: left;
-  width: 80%;
-  max-width: 800px;
-  margin: 20px auto;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 5px;
-}
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 60%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .subheading-container {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .subheading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .editor-box {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-top: 5px;
+        }
+        .remove-btn, .clear-btn, .add-btn {
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .remove-btn { background: red; color: white; }
+        .clear-btn { background: orange; color: white; }
+        .add-btn { background: green; color: white; }
+        .number-input {
+            width: 50px;
+            margin-left: 10px;
+            padding: 5px;
+            text-align: center;
+        }
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
+            font-weight: bold;
+        }
