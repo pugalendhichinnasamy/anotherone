@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor.js with Checkboxes, Reordering, and Subheadings</title>
+    <title>Editor.js with Subheadings, Checkboxes, and Reordering</title>
 
     <!-- Editor.js and Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
@@ -19,6 +19,7 @@
             flex-direction: column;
             align-items: center;
         }
+
         .container {
             width: 60%;
             background: white;
@@ -26,21 +27,18 @@
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         .subheading-container {
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             background: #f9f9f9;
             margin-bottom: 10px;
-        }
-        .subheading-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: #ddd;
-            padding: 5px;
-            border-radius: 5px;
         }
+
         .editor-box {
             width: 100%;
             min-height: 100px;
@@ -49,25 +47,48 @@
             background: #fff;
             margin-top: 5px;
         }
+
         .remove-btn, .clear-btn, .add-btn {
             padding: 5px 10px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
+            margin-left: 5px;
         }
+
         .remove-btn { background: red; color: white; }
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
         .number-input {
             width: 50px;
             padding: 5px;
-            margin-left: 10px;
+            text-align: center;
         }
+
+        .checkbox {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+
+        .subheading-title {
+            flex-grow: 1;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .subheading-controls {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 300px;
+        }
+
         .category-checkbox-container {
             display: flex;
             margin-bottom: 10px;
             justify-content: space-around;
         }
+
         .disabled {
             pointer-events: none;
             opacity: 0.5;
@@ -119,28 +140,6 @@
             initializeEditors();
         }
 
-        // Initialize Editor.js instances
-        let jobSummaryEditor, blogPostEditor, questionPaperEditor;
-
-        function initializeEditors() {
-            if (activeCategory === "job-summary") {
-                renderJobSummary();
-            } else if (activeCategory === "blog-post") {
-                blogPostEditor = createSimpleEditor("blog-post-main-editor");
-            } else if (activeCategory === "question-paper") {
-                questionPaperEditor = createSimpleEditor("question-paper-main-editor");
-            }
-        }
-
-        // Helper to create a simple Editor.js instance
-        function createSimpleEditor(holderId) {
-            return new EditorJS({
-                holder: holderId,
-                tools: { header: Header, paragraph: Paragraph }
-            });
-        }
-
-        // Subheading Data for Job Summary with Number Input for Reordering
         let subheadings = [
             { title: "Company Overview", number: 1, content: "" },
             { title: "Job Responsibilities", number: 2, content: "" }
@@ -158,8 +157,9 @@
         function createSubheadingBlock(sub, index) {
             return `
                 <div class="subheading-container" id="subheading-${index}">
-                    <div class="subheading-header">
-                        <span>${sub.title}</span>
+                    <input type="checkbox" class="checkbox">
+                    <div class="subheading-title">${sub.title}</div>
+                    <div class="subheading-controls">
                         <input type="number" class="number-input" value="${sub.number}" onchange="updateNumber(${index}, this.value)">
                         <button class="remove-btn" onclick="removeSubheading(${index})">❌ Remove</button>
                         <button class="clear-btn" onclick="clearEditor(${index})">🗑️ Clear</button>
