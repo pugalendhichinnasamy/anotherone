@@ -72,12 +72,6 @@
         .clear-btn { background: orange; color: white; }
         .add-btn { background: green; color: white; }
 
-        .category-checkbox-container {
-            display: flex;
-            margin-bottom: 10px;
-            justify-content: space-around;
-        }
-
         .number-input {
             width: 50px;
             padding: 5px;
@@ -109,50 +103,17 @@
     <div class="container">
         <h1>Enhanced Editor.js with Multiple Features</h1>
 
-        <!-- Category Selector -->
-        <div class="category-checkbox-container">
-            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
-            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
-            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
-        </div>
-
-        <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
-
-        <!-- Editors for Each Category -->
         <div id="job-summary-editor" class="category-editor">
             <h2>Job Summary Editor</h2>
             <div id="job-summary-main-editor"></div>
         </div>
-
-        <div id="blog-post-editor" class="category-editor">
-            <h2>Blog Post Editor</h2>
-            <div id="simple-blog-editor"></div>
-        </div>
-
-        <div id="question-paper-editor" class="category-editor">
-            <h2>Question Paper Editor</h2>
-            <div id="simple-question-editor"></div>
-        </div>
     </div>
 
     <script>
-        let activeCategory = "job-summary";
-
         let subheadings = [
-            { title: "Company Overview", number: 1 },
-            { title: "Job Responsibilities", number: 2 }
+            { title: "Company Overview", number: 1, content: "" },
+            { title: "Job Responsibilities", number: 2, content: "" }
         ];
-
-        function toggleCategory(selectedId) {
-            activeCategory = selectedId;
-            document.querySelectorAll(".category-checkbox").forEach(checkbox => {
-                checkbox.checked = checkbox.id === selectedId;
-            });
-            document.querySelectorAll(".category-editor").forEach(editor => {
-                editor.style.display = editor.id === `${selectedId}-editor` ? "block" : "none";
-            });
-            initializeEditors();
-        }
 
         function renderJobSummary() {
             const container = document.getElementById("job-summary-main-editor");
@@ -186,7 +147,8 @@
                 tools: { 
                     header: Header, 
                     paragraph: { class: Paragraph, inlineToolbar: ["bold", "italic", "underline", "marker", "inlineCode"] } 
-                }
+                },
+                onReady: () => console.log(`Editor ${index} initialized`),
             });
         }
 
@@ -201,12 +163,29 @@
             renderJobSummary();
         }
 
+        function clearEditor(index) {
+            if (confirm("Clear all data in this subheading?")) {
+                const editorContainer = document.getElementById(`editor-${index}`);
+                editorContainer.innerHTML = ""; // Clear the editor's content
+                subheadings[index].content = ""; // Clear the content from subheadings array
+                createSubheadingEditor(index); // Reinitialize the editor so it can be used again
+            }
+        }
+
         function addSubheading(afterIndex) {
             let newTitle = prompt("Enter subheading name:");
             if (!newTitle) return;
+
             let nextNumber = getNextAvailableNumber();
-            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber });
+            subheadings.splice(afterIndex + 1, 0, { title: newTitle, number: nextNumber, content: "" });
             renderJobSummary();
+        }
+
+        function removeSubheading(index) {
+            if (confirm("Are you sure you want to remove this subheading?")) {
+                subheadings.splice(index, 1);
+                renderJobSummary();
+            }
         }
 
         function getNextAvailableNumber() {
@@ -216,32 +195,7 @@
             return i;
         }
 
-        function removeSubheading(index) {
-            if (confirm("Are you sure?")) {
-                subheadings.splice(index, 1);
-                renderJobSummary();
-            }
-        }
-
-        function clearEditor(index) {
-            if (confirm("Clear all data?")) {
-                document.getElementById(`editor-${index}`).innerHTML = "";
-            }
-        }
-
-        function clearAllData() {
-            if (confirm("Clear all data?")) {
-                subheadings = [];
-                renderJobSummary();
-            }
-        }
-
-        function initializeEditors() {
-            if (activeCategory === "job-summary") renderJobSummary();
-            else new EditorJS({ holder: activeCategory === "blog-post" ? "simple-blog-editor" : "simple-question-editor", tools: { header: Header, paragraph: Paragraph } });
-        }
-
-        toggleCategory("job-summary");
+        renderJobSummary();
     </script>
 </body>
 </html>
