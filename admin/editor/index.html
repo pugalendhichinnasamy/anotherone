@@ -23,6 +23,12 @@
 <body>
     <div class="container">
         <h1>Editor.js with Inline Tools & Subheadings</h1>
+        <!-- Category Selector -->
+        <div class="category-checkbox-container">
+            <label><input type="checkbox" class="category-checkbox" id="job-summary" onchange="toggleCategory('job-summary')"> Job Summary</label>
+            <label><input type="checkbox" class="category-checkbox" id="blog-post" onchange="toggleCategory('blog-post')"> Blog Post</label>
+            <label><input type="checkbox" class="category-checkbox" id="question-paper" onchange="toggleCategory('question-paper')"> Question Paper</label>
+        </div>
         <button class="clear-btn" onclick="clearAllData()">🗑️ Clear All</button>
         <div id="main-editor"></div>
     </div>
